@@ -1,0 +1,33 @@
+kopete-xfire, Xfire for Kopete
+Warren Dumortier <nwarrenfl@gmail.com>
+http://code.google.com/p/kopete-xfire/
+----------------------------------------------------------------------
+
+Xfire for Kopete a.k.a. kopete-xfire is a protocol plugin for Kopete
+allowing access to the Xfire gaming network.
+
+It requires Kopete, version 1.0 or higher.
+
+You can submit bug reports, feature requests and patcher on the google code homepage:
+http://code.google.com/p/kopete-xfire/
+
+WARNING: The plugin is still under heavy development and becomes ready to be used
+for daily usage, but don't except a stable plugin yet.
+
+Compiling instructions:
+	1. Create a build directory in the source (mkdir build)
+	2. Change to the new build directory (cd build)
+	3. Execute: cmake ../ -DCMAKE_INSTALL_PREFIX=USR_PREFIX (USR_PREFIX is usually /usr on most distros)
+	4. Compile it: make
+	5. Install it: make install (as root)
+
+Testing/installing the plugin in a custom directory:
+	1. Follow the steps above and choose a preferred CMAKE_INSTALL_PREFIX
+	2. Start Kopete using the custom services directory compiled in the preferred prefix:
+
+	export KDEDIRS=/usr:CMAKE_INSTALL_PREFIX (/usr is needed to keep the system-wide installed services usable, it can be different based on the distro)
+	kbuildsycoca4
+	kopete
+
+
+Thanks for downloading and testing this program.
