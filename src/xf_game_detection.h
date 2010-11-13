@@ -46,21 +46,21 @@ class XfireGameDetection : public QObject
 
 public:
 	// Constructor & destructor
-	XfireGameDetection(XfireAccount *pAccount);
+	XfireGameDetection(XfireAccount *p_account);
 	~XfireGameDetection();
 
-	quint32 isGameRunning(QString pExecutable);
-	gameInfo mCurrentGame; // FIXME: Make private?
+	quint32 isGameRunning(QString p_executable);
+	gameInfo m_currentGame;
 
 private:
-	XfireAccount *mAccount;
-	QList <processInfo> mProcessesList;
-	QTimer *mTimer;
+	XfireAccount *m_account;
+	QList <processInfo> m_processesList;
+	QTimer *m_timer;
 
-	QString getWinePath(QStringList pEnviron, QString pPath);
+	QString getWinePath(QStringList pEnviron, QString p_path);
 	void checkRunningGames();
 
-	QHash<QString, QString> getProcessEnviron(QString pProcessPath);
+	QHash<QString, QString> getProcessEnviron(QString p_processPath);
 
 private slots:
 	void slotUpdateRunningProcesses();

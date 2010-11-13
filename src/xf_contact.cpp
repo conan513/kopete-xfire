@@ -45,39 +45,34 @@
 XfireContact::XfireContact(Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent)
 	: Kopete::Contact(pAccount, uniqueName, parent)
 {
-	mAccount = static_cast<XfireAccount *>(pAccount);
+	m_account = static_cast<XfireAccount *>(pAccount);
 
-	mUsername = uniqueName;
+	m_username = uniqueName;
 
-	mChatSession = 0L; // Initialize message manager and account
-	mChatMessageIndex = 0; // Initialize chat message index
+	m_chatSession = 0L; // Initialize message manager and account
+	m_chatMessageIndex = 0; // Initialize chat message index
 	setOnlineStatus(XfireProtocol::protocol()->XfireOffline); // Set initial contact status to offline
 
-	// P2P
-	P2PCapable = XF_P2P_UNKNOWN;
-
-	// Buddy type
-	contactType = XF_FRIEND;
+	m_contactType = XF_FRIEND;
+	m_p2pCapable = XF_P2P_UNKNOWN;
+	m_p2pSession = NULL;
 
 	// Get and/or set the avatar
-	QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + mUsername + ".jpg"));
+	QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + m_username + ".jpg"));
 	QFileInfo file(imageLocation);
 
 	if(file.exists())
 		Kopete::Contact::setPhoto(imageLocation);
 	else
 		updateAvatar();
-
-	session = NULL;
 }
 
-void
-XfireContact::slotGotAvatar(QNetworkReply *pReply)
+void XfireContact::slotGotAvatar(QNetworkReply *pReply)
 {
 	if(pReply->error() == QNetworkReply::ContentNotFoundError)
 		return;
 
-	QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + mUsername + ".jpg"));
+	QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + m_username + ".jpg"));
 	QByteArray rawImage = pReply->readAll();
 
 	if(rawImage.isEmpty())
@@ -94,65 +89,59 @@ XfireContact::~XfireContact()
 {
 }
 
-void
-XfireContact::updateAvatar()
+void XfireContact::updateAvatar()
 {
 	updateAvatar(0);
 }
 
-void
-XfireContact::updateAvatar(quint32 pNumber)
+void XfireContact::updateAvatar(quint32 pNumber)
 {
 	QNetworkAccessManager *avatarManager;
 	avatarManager = new QNetworkAccessManager(this);
 	connect(avatarManager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotGotAvatar(QNetworkReply *)));
-	avatarManager->get(QNetworkRequest(QUrl("http://screenshot.xfire.com/avatar/" + mUsername + ".jpg?" + QString(pNumber))));
+	avatarManager->get(QNetworkRequest(QUrl("http://screenshot.xfire.com/avatar/" + m_username + ".jpg?" + QString(pNumber))));
 }
 
-void
-XfireContact::serialize(QMap<QString, QString> &serializedData, QMap<QString, QString> &addressBookData)
+void XfireContact::serialize(QMap<QString, QString> &serializedData, QMap<QString, QString> &addressBookData)
 {
 	Kopete::Contact::serialize(serializedData, addressBookData);
 }
 
-void
-XfireContact::slotChatSessionDestroyed()
+void XfireContact::slotChatSessionDestroyed()
 {
-	mChatSession->deref();
-	mChatSession = 0;
+	m_chatSession->deref();
+	m_chatSession = 0;
 }
 
-Kopete::ChatSession*
-XfireContact::manager(CanCreateFlags canCreateFlags)
+Kopete::ChatSession* XfireContact::manager(CanCreateFlags canCreateFlags)
 {
-	if(mChatSession != 0L || canCreateFlags == Kopete::Contact::CannotCreate)
-		return mChatSession;
+	if(m_chatSession != 0L || canCreateFlags == Kopete::Contact::CannotCreate)
+		return m_chatSession;
 
 	QList<Kopete::Contact *>contacts;
 	contacts.append(this);
 
-	mChatSession = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol());
+	m_chatSession = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol());
 
 	// Signals
-	connect(mChatSession, SIGNAL(messageSent(Kopete::Message &, Kopete::ChatSession *)), this, SLOT(sendMessage(Kopete::Message &)));
-	connect(mChatSession, SIGNAL(destroyed()), this, SLOT(slotChatSessionDestroyed()));
-	connect(mChatSession, SIGNAL(myselfTyping(bool)), this, SLOT(slotSendTyping(bool)));
+	connect(m_chatSession, SIGNAL(messageSent(Kopete::Message &, Kopete::ChatSession *)), this, SLOT(sendMessage(Kopete::Message &)));
+	connect(m_chatSession, SIGNAL(destroyed()), this, SLOT(slotChatSessionDestroyed()));
+	connect(m_chatSession, SIGNAL(myselfTyping(bool)), this, SLOT(slotSendTyping(bool)));
 
-	return mChatSession;
+	return m_chatSession;
 }
 
-void
-XfireContact::slotSendTyping(bool pIsTyping)
+void XfireContact::slotSendTyping(bool p_isTyping)
 {
 	XfireAccount *acc = static_cast<XfireAccount *>(account());
-	acc->server()->sendTypingStatus(mSession, mChatMessageIndex, pIsTyping);
+	acc->server()->sendTypingStatus(m_session, m_chatMessageIndex, p_isTyping);
 }
 
 void
-XfireContact::sendMessage(Kopete::Message &message)
+XfireContact::sendMessage(Kopete::Message &p_message)
 {
 	// Ask P2P request if not known yet
-	if(P2PCapable == XF_P2P_UNKNOWN)
+	if(m_p2pCapable == XF_P2P_UNKNOWN)
 	{
 		// requestP2P();
 	}
@@ -160,22 +149,21 @@ XfireContact::sendMessage(Kopete::Message &message)
 	XfireAccount *acc = static_cast<XfireAccount *>(account());
 
 	// Send IM through P2P
-	if(P2PCapable == XF_P2P_YES)
+	if(m_p2pCapable == XF_P2P_YES)
 	{
-		kDebug() << "Sending P2P IM to:" << mUsername;
+		kDebug() << "Sending P2P IM to:" << m_username;
 		// FIXME: Not implemented yet
 	}
 	else // Send IM through TCP
-		acc->server()->sendChat(mSession, mChatMessageIndex, message.plainBody());
+		acc->server()->sendChat(m_session, m_chatMessageIndex, p_message.plainBody());
 
-	mChatSession->appendMessage(message); // Append it
-	mChatMessageIndex++; // Update chat message index
+	m_chatSession->appendMessage(p_message); // Append it
+	m_chatMessageIndex++; // Update chat message index
 }
 
-void
-XfireContact::requestP2P()
+void XfireContact::requestP2P()
 {
-	if(!session)
+	if(!m_p2pSession)
 	{
 		// Generate random salt
 		QCryptographicHash hasher(QCryptographicHash::Sha1);
@@ -189,22 +177,21 @@ XfireContact::requestP2P()
 		QString randomHash = hasher.result().toHex();
 
 		kDebug() << "Creating session.";
-		session = new XfireP2PSession(this, randomHash);
-		mAccount->mP2PConnection->addSession(session);
+		m_p2pSession = new XfireP2PSession(this, randomHash);
+		m_account->m_p2pConnection->addSession(m_p2pSession);
 
-		QString localIP = mAccount->server()->mConnection->localAddress().toString();
+		QString localIP = m_account->server()->m_connection->localAddress().toString();
 		QString remoteIP = "";
 
-		mAccount->server()->sendP2pSession(mSession, QHostAddress(remoteIP).toIPv4Address(), mAccount->mP2PConnection->mConnection->localPort(),
-										   QHostAddress(localIP).toIPv4Address(), mAccount->mP2PConnection->mConnection->localPort(), 4, randomHash);
+		m_account->server()->sendP2pSession(m_session, QHostAddress(remoteIP).toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
+										   QHostAddress(localIP).toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(), 4, randomHash);
 
-		kDebug() << "Sent P2P request to:" << mUsername << randomHash;
-		P2PRequested = TRUE;
+		kDebug() << "Sent P2P request to:" << m_username << randomHash;
+		m_p2pRequested = TRUE;
 	}
 }
 
-void
-XfireContact::receivedMessage(const QString &pMessage)
+void XfireContact::receivedMessage(const QString &pMessage)
 {
 	Kopete::Message kmessage(this, account()->myself());
 	kmessage.setPlainBody(pMessage);
@@ -213,8 +200,7 @@ XfireContact::receivedMessage(const QString &pMessage)
 	manager(Kopete::Contact::CanCreate)->appendMessage(kmessage);
 }
 
-void
-XfireContact::setOnlineStatus(const Kopete::OnlineStatus &status)
+void XfireContact::setOnlineStatus(const Kopete::OnlineStatus &status)
 {
 	if(status == XfireProtocol::protocol()->XfireOnline)
 		Kopete::Contact::setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
@@ -224,14 +210,13 @@ XfireContact::setOnlineStatus(const Kopete::OnlineStatus &status)
 		Kopete::Contact::setOnlineStatus(XfireProtocol::protocol()->XfireOffline);
 }
 
-void
-XfireContact::setID(Xfire::Int32Attribute *id)
+void XfireContact::setId(Xfire::Int32Attribute *p_id)
 {
-	mID = id->value();
+	m_id = p_id->value();
 
 	// FIXME: This should be asked only on request, but not possible yet (get info not implemented in UI)
 	XfireAccount *acc = static_cast<XfireAccount *>(account());
-	acc->server()->sendAskFriendExtendedInformation(mID);
+	acc->server()->sendAskFriendExtendedInformation(m_id);
 }
 
 void

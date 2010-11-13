@@ -19,10 +19,11 @@
 #ifndef XF_CONTACT_H
 #define XF_CONTACT_H
 
+#include <QtNetwork/QNetworkReply>
+
 #include <kopetecontact.h>
 #include <kopetemessage.h>
 #include <kopetemetacontact.h>
-#include <QtNetwork/QNetworkReply>
 
 #include "XfireAttribute.h"
 #include "XfirePacket.h"
@@ -53,46 +54,46 @@ public:
 	XfireContact(Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent);
 	~XfireContact();
 
-	void receivedMessage(const QString &pMessage); // FIXME: Use slot instead stupid!
+	XfireAccount *m_account;
+
+	void receivedMessage(const QString &p_message); // FIXME: Use slot instead
 	
 	virtual void serialize(QMap<QString, QString> &serializedData, QMap<QString, QString> &);
-	void setID(Xfire::Int32Attribute *id);
+	void setId(Xfire::Int32Attribute *p_id);
 	void setMessageSucceeded();
-	void setOnlineStatus(const Kopete::OnlineStatus& status);
-	void setTypingStatus(bool pStatus);
+	void setOnlineStatus(const Kopete::OnlineStatus &p_status);
+	void setTypingStatus(bool p_status);
 	
 	// Xfire user data
-	quint32 mID;
-	Xfire::SessionID mSession;
-	QString mUsername;
+	quint32 m_id;
+	Xfire::SessionID m_session;
+	QString m_username;
 
 	// P2P
-	CanHandleP2P P2PCapable;
-	bool P2PRequested;
-	XfireP2PSession *session;
+	CanHandleP2P m_p2pCapable;
+	bool m_p2pRequested;
+	XfireP2PSession *m_p2pSession;
 	void requestP2P();
 
 	// Chatting
-	virtual Kopete::ChatSession *manager(CanCreateFlags canCreate = CannotCreate); // Returns the Kopete chat session associated with the contact
-	quint32 mChatMessageIndex;
+	virtual Kopete::ChatSession *manager(CanCreateFlags p_canCreate = CannotCreate); // Returns the Kopete chat session associated with the contact
+	quint32 m_chatMessageIndex;
 
 	// Contact type
-	ContactType contactType;
-
-	XfireAccount *mAccount;
+	ContactType m_contactType;
 
 protected:
-	Kopete::ChatSession *mChatSession;
+	Kopete::ChatSession *m_chatSession;
 	
 public slots:
 	void updateAvatar();
-	void updateAvatar(quint32 pNumber);
-	void sendMessage(Kopete::Message &message);
+	void updateAvatar(quint32 p_number);
+	void sendMessage(Kopete::Message &p_message);
 	void slotChatSessionDestroyed();
-	void slotSendTyping(bool pIsTyping);
+	void slotSendTyping(bool p_isTyping);
 
 private slots:
-	void slotGotAvatar(QNetworkReply *pReply);
+	void slotGotAvatar(QNetworkReply *p_reply);
 
 };
 

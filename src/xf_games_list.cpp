@@ -21,10 +21,10 @@
 #include <QtXml>
 
 #include <KDebug>
-#include <KStandardDirs>
 #include <KNotification>
+#include <KStandardDirs>
 
-#include "kopeteinfoevent.h"
+#include <kopeteinfoevent.h>
 
 #include "xf_games_list.h"
 
@@ -44,8 +44,7 @@ XfireGamesList::~XfireGamesList()
 {
 }
 
-void
-XfireGamesList::initConfiguredGamesList()
+void XfireGamesList::initConfiguredGamesList()
 {
 	QByteArray content;
 	QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games_config.xml"));
@@ -75,8 +74,7 @@ XfireGamesList::initConfiguredGamesList()
 	mConfiguredGamesList->setContent(content);
 }
 
-void
-XfireGamesList::initGamesList()
+void XfireGamesList::initGamesList()
 {
 	QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games.xml"));
 
@@ -95,8 +93,7 @@ XfireGamesList::initGamesList()
 	}
 }
 
-void
-XfireGamesList::slotReceivedGamesList(QNetworkReply *pReply)
+void XfireGamesList::slotReceivedGamesList(QNetworkReply *pReply)
 {
 	QByteArray reply = pReply->readAll();
 
@@ -126,22 +123,20 @@ XfireGamesList::slotReceivedGamesList(QNetworkReply *pReply)
 	}
 }
 
-QString
-XfireGamesList::getGameNameFromID(quint32 pGameID)
+QString XfireGamesList::getGameNameFromID(quint32 p_gameId)
 {
 	QDomNodeList domGames = mGamesList->elementsByTagName("game");
 	for(int i = 0; i < domGames.count(); i++)
 	{
 		quint32 gameID = domGames.at(i).attributes().namedItem("id").nodeValue().toInt();
-		if(gameID == pGameID)
+		if(gameID == p_gameId)
 			return domGames.at(i).attributes().namedItem("name").nodeValue();
 	}
 
 	return 0L;
 }
 
-quint32
-XfireGamesList::getGameIDFromName(QString pName)
+quint32 XfireGamesList::getGameIDFromName(QString pName)
 {
 	QDomNodeList domGames = mGamesList->elementsByTagName("game");
 	for(int i = 0; i < domGames.count(); i++)
@@ -154,8 +149,7 @@ XfireGamesList::getGameIDFromName(QString pName)
 	return -1;
 }
 
-QDomElement
-XfireGamesList::getConfiguredGame(QString pName)
+QDomElement XfireGamesList::getConfiguredGame(QString pName)
 {
 	QDomElement ret;
 
@@ -169,8 +163,7 @@ XfireGamesList::getConfiguredGame(QString pName)
 	return ret;
 }
 
-QList<QString>
-XfireGamesList::getGamesList()
+QList<QString> XfireGamesList::getGamesList()
 {
 	QList<QString> list;
 
@@ -181,8 +174,7 @@ XfireGamesList::getGamesList()
 	return list;
 }
 
-QList<QString>
-XfireGamesList::configuredGames()
+QList<QString> XfireGamesList::configuredGames()
 {
 	QList<QString> ret;
 
@@ -193,16 +185,14 @@ XfireGamesList::configuredGames()
 	return ret;
 }
 
-void
-XfireGamesList::removeConfiguredGame(QString pName)
+void XfireGamesList::removeConfiguredGame(QString pName)
 {
 	QDomNode game = getConfiguredGame(pName);
 	qDebug() << game.toDocument().toString();
 	game.parentNode().removeChild(game);
 }
 
-void
-XfireGamesList::updateConfiguredGame(QString pName, QString pLaunchExe, QString pDetectExe)
+void XfireGamesList::updateConfiguredGame(QString pName, QString pLaunchExe, QString pDetectExe)
 {
 	QDomElement game = getConfiguredGame(pName);
 	QDomElement command = game.firstChildElement("command");
@@ -213,8 +203,7 @@ XfireGamesList::updateConfiguredGame(QString pName, QString pLaunchExe, QString 
 	detect.firstChild().toText().setNodeValue(pDetectExe);
 }
 
-void
-XfireGamesList::saveConfiguredGamesList()
+void XfireGamesList::saveConfiguredGamesList()
 {
 	QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games_config.xml"));
 	file.open(QFile::WriteOnly | QFile::Truncate);
@@ -224,8 +213,7 @@ XfireGamesList::saveConfiguredGamesList()
 	file.close();
 }
 
-void
-XfireGamesList::saveGamesList()
+void XfireGamesList::saveGamesList()
 {
 	QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games.xml"));
 	file.open(QFile::WriteOnly | QFile::Truncate);
@@ -235,13 +223,12 @@ XfireGamesList::saveGamesList()
 	file.close();
 }
 
-bool
-XfireGamesList::gameIsConfigured(QString pName)
+bool XfireGamesList::gameIsConfigured(QString pName)
 {
 	bool ret = false;
 
 	QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
-	for (int i = 0; i < games.count(); i++)
+	for(int i = 0; i < games.count(); i++)
 	{
 		if(games.at(i).attributes().namedItem("name").nodeValue() == pName)
 		{
@@ -253,8 +240,7 @@ XfireGamesList::gameIsConfigured(QString pName)
 	return ret;
 }
 
-void
-XfireGamesList::slotGamesListUpdated()
+void XfireGamesList::slotGamesListUpdated()
 {
 	Kopete::InfoEvent *event = new Kopete::InfoEvent();
 	event->setTitle("Xfire games list update");

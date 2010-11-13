@@ -20,8 +20,10 @@
 #define XF_P2P_H
 
 #include <QObject>
-#include "xf_p2p_session.h"
+
 #include "xf_account.h"
+#include "xf_p2p_session.h"
+#include "xf_p2p_natcheck.h"
 
 // P2P packet types
 #define XFIRE_P2P_TYPE_DATA32			0x0000
@@ -38,26 +40,25 @@ class XfireP2P : public QObject
 	Q_OBJECT
 
 	public:
-		// Constructor and destructor
-		XfireP2P(XfireAccount *pAccount);
+		// Constructor & destructor
+		XfireP2P(XfireAccount *p_account);
 		~XfireP2P();
 
-		XfireAccount *mAccount;
+		XfireAccount *m_account;
 
-		QUdpSocket *mConnection;
-		QList<XfireP2PSession *> mSessions;
-
-		void addSession(XfireP2PSession *pSession);
+		QUdpSocket *m_connection;
+		QList<XfireP2PSession *> m_sessions;
+		XfireP2PNatcheck *m_natCheck;
 
 		bool isConnected();
+		void addSession(XfireP2PSession *p_session);
 
-		QByteArray createHeader(quint8 pEncoding, QByteArray pMoniker, quint32 pType, quint32 pMsgID, quint32 pSeqID, quint32 pDataLen);
-		void sendPing(XfireP2PSession *pSession);
-
-	private:
+		QByteArray createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen);
+		void sendPing(XfireP2PSession *p_session);
 
 	public slots:
 		void slotSocketRead();
+		void slotNatCheckReady();
 };
 
 #endif // XF_P2P_H

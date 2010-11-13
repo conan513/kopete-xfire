@@ -31,8 +31,8 @@ XfireServer::XfireServer(XfireAccount *parent, const QString accountId, const QS
 	m_account = parent;
 
 	// Set account & password
-	mUsername = accountId;
-	mPassword = accountPass;
+	m_username = accountId;
+	m_password = accountPass;
 
 	// Create socket to the Xfire server
 	m_connection = new QTcpSocket(this);
@@ -91,8 +91,8 @@ void XfireServer::login(const QString &p_salt)
 
 	// Subhash sha1(username+password+UltimateArena)
 	QByteArray subhash;
-	hasher.addData(mUsername.toUtf8());
-	hasher.addData(mPassword.toUtf8());
+	hasher.addData(m_username.toUtf8());
+	hasher.addData(m_password.toUtf8());
 	hasher.addData("UltimateArena");
 	subhash = hasher.result();
 
@@ -249,7 +249,7 @@ void XfireServer::sendP2pSession(const Xfire::SessionID &p_sid, quint32 p_ip, qu
 void XfireServer::sendTypingStatus(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, bool p_isTyping)
 {
 	Xfire::Packet typing(0x0002);
-	typing.addAttribute(new Xfire::SIDAttributeS("sid", pSessionID));
+	typing.addAttribute(new Xfire::SIDAttributeS("sid", p_sid));
 
 	Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS("peermsg");
 	peermsg->addAttribute(new Xfire::Int32AttributeS("msgtype", 3));
@@ -270,13 +270,13 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 		const Xfire::StringAttributeS *attr = static_cast<const Xfire::StringAttributeS*>(p_packet->getAttribute("salt"));
 		if (!attr || attr->type() != Xfire::Attribute::String)
 		{
-			kDebug() << "Bad salt packet received, ignoring.";
+			kDebug() << "Bad salt packet received, ignoring";
 			m_account->logOff(Kopete::Account::Unknown);
 			return;
 		}
 
 		// Set salt and login
-		mSalt = attr->string();
+		m_salt = attr->string();
 		login(m_salt);
 
 		break;
@@ -304,7 +304,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 			sid->type() != Xfire::Attribute::SID ||
 			!alias || alias->type() != Xfire::Attribute::String)
 		{
-			kDebug() << "Bad client information packet received, ignoring.";
+			kDebug() << "Bad client information packet received, ignoring";
 			m_account->logOff(Kopete::Account::Unknown);
 			return;
 		}
@@ -327,7 +327,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 			!nick || nick->type() != Xfire::Attribute::List ||
 			!uid || uid->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
@@ -349,14 +349,14 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 		if (!uid || uid->type() != Xfire::Attribute::List ||
 			!usid || usid->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
-		for (int i = 0; i < userid->elements().size(); i++)
+		for (int i = 0; i < uid->elements().size(); i++)
 		{
-			Xfire::SIDAttribute *sid = usersid->elements().at(i).sid;
-			m_account->updateContactSID(userid->elements().at(i).int32, sid);
+			Xfire::SIDAttribute *sid = usid->elements().at(i).sid;
+			m_account->updateContactSID(uid->elements().at(i).int32, sid);
 		}
 
 		break;
@@ -373,7 +373,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 			!peermsg || peermsg->type() != Xfire::Attribute::ParentString ||
 			!msgtype || msgtype->type() != Xfire::Attribute::Int32)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
@@ -390,7 +390,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 				if(!imindex || imindex->type() != Xfire::Attribute::Int32 ||
 					!im || im->type() != Xfire::Attribute::String)
 				{
-					kDebug() << "Invalid packet received, ignoring.";
+					kDebug() << "Invalid packet received, ignoring";
 					break;
 				}
 
@@ -405,7 +405,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 				const Xfire::Int32AttributeS *imindex = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("imindex"));
 				if (!imindex || imindex->type() != Xfire::Attribute::Int32)
 				{
-					kDebug() << "Invalid packet received, ignoring.";
+					kDebug() << "Invalid packet received, ignoring";
 					break;
 				}
 
@@ -484,7 +484,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 		const Xfire::ListAttributeS *version = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("version"));
 		if(!version || version->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			break;
 		}
 
@@ -507,10 +507,10 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 		const Xfire::ListAttributeS *gameid = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("gameid"));
 		const Xfire::ListAttributeS *gip = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("gip"));
 		const Xfire::ListAttributeS *gport = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("gport"));
-		if (!sid || sid->type() != Xfire::Attribute::List || !gameid || gameid->type() != Xfire::Attribute::List ||
-			!gip || gip->type() != Xfire::Attribute::List || !gport || gport->type() != Xfire::Attribute::List)
+		
+		if (!sid || sid->type() != Xfire::Attribute::List || !gameid || gameid->type() != Xfire::Attribute::List || !gip || gip->type() != Xfire::Attribute::List || !gport || gport->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
@@ -552,11 +552,9 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 		const Xfire::ListAttributeS *nick = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("nick"));
 		const Xfire::ListAttributeS *msg = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("msg"));
 
-		if (!name || name->type() != Xfire::Attribute::List ||
-			!nick || nick->type() != Xfire::Attribute::List ||
-			!msg || msg->type() != Xfire::Attribute::List)
+		if(!name || name->type() != Xfire::Attribute::List || !nick || nick->type() != Xfire::Attribute::List || !msg || msg->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
@@ -598,10 +596,10 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 	{
 		const Xfire::ListAttributeS *sid = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("sid"));
 		const Xfire::ListAttributeS *msg = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("msg"));
-		if(!sid || sid->type() != Xfire::Attribute::List ||
-			!msg || msg->type() != Xfire::Attribute::List)
+		
+		if(!sid || sid->type() != Xfire::Attribute::List || !msg || msg->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
@@ -622,7 +620,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 			!clanShortName || clanShortName->type() != Xfire::Attribute::List ||
 			!clanType || clanType->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
@@ -652,13 +650,13 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 			!nickname || nickname->type() != Xfire::Attribute::List ||
 			!clanNickname || clanNickname->type() != Xfire::Attribute::List)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 
 		for (int i = 0; i < userID->elements().size(); i++)
 		{
-			kDebug() << "Clan friend:" << username->elements().at(i).string->string();
+			kDebug() << "Clan friend: " + username->elements().at(i).string->string();
 
 			// Add the contact and update the ID
 			uint cid = Kopete::ContactList::self()->group(clanID->value())->groupId();
@@ -677,7 +675,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
 		if (!sid || sid->type() != Xfire::Attribute::Int32 ||
 			!avatarNumber || avatarNumber->type() != Xfire::Attribute::Int32)
 		{
-			kDebug() << "Invalid packet received, ignoring.";
+			kDebug() << "Invalid packet received, ignoring";
 			return;
 		}
 

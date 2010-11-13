@@ -28,26 +28,26 @@
 #include "xf_account.h"
 #include "xf_game_detection.h"
 
-XfireGameDetection::XfireGameDetection(XfireAccount *pAccount)
+XfireGameDetection::XfireGameDetection(XfireAccount *p_account)
 {
-	mAccount = pAccount;
+	m_account = p_account;
 
 	// Initialize and start game detection timer
-	mTimer = new QTimer(this);
-	connect(mTimer, SIGNAL(timeout()), this, SLOT(slotUpdateRunningProcesses()));
-	mTimer->start(8000);
+	m_timer = new QTimer(this);
+	connect(m_timer, SIGNAL(timeout()), this, SLOT(slotUpdateRunningProcesses()));
+	m_timer->start(8000);
 }
 
 XfireGameDetection::~XfireGameDetection()
 {
 }
 
-quint32 XfireGameDetection::isGameRunning(QString pExecutable)
+quint32 XfireGameDetection::isGameRunning(QString p_executable)
 {
-	for(int i = 0; i < mProcessesList.size(); i++)
+	for(int i = 0; i < m_processesList.size(); i++)
 	{
-		processInfo proc = mProcessesList.at(i);
-		if(proc.executable == pExecutable)
+		processInfo proc = m_processesList.at(i);
+		if(proc.executable == p_executable)
 			return proc.pid;
 	}
 
@@ -58,10 +58,10 @@ void XfireGameDetection::checkRunningGames()
 {
 	quint32 detectedGameID = 0;
 	
-	QDomNodeList configuredGames = mAccount->mGamesList->mConfiguredGamesList->elementsByTagName("game");
+	QDomNodeList configuredGames = m_account->m_gamesList->mConfiguredGamesList->elementsByTagName("game");
 	for(int i = 0; i < configuredGames.count(); i++)
 	{
-		quint32 gameID = mAccount->mGamesList->getGameIDFromName(configuredGames.at(i).attributes().namedItem("name").nodeValue());
+		quint32 gameID = m_account->m_gamesList->getGameIDFromName(configuredGames.at(i).attributes().namedItem("name").nodeValue());
 		QString executable = configuredGames.at(i).firstChildElement("command").firstChildElement("detect").text();
 
 		quint32 running = isGameRunning(executable);
@@ -72,25 +72,24 @@ void XfireGameDetection::checkRunningGames()
 		}
 	}
 
-	if(detectedGameID != mCurrentGame.id)
+	if(detectedGameID != m_currentGame.id)
 	{
-		mCurrentGame.id = detectedGameID;
-		mCurrentGame.ip = 0;
-		mCurrentGame.port = 0;
+		m_currentGame.id = detectedGameID;
+		m_currentGame.ip = 0;
+		m_currentGame.port = 0;
 
 		emit gameRunning();
 	}
 }
 
-QString
-XfireGameDetection::getWinePath(QStringList pEnviron, QString pPath)
+QString XfireGameDetection::getWinePath(QStringList p_environ, QString p_path)
 {
 	QStringList args;
 	args.append("-u");
-	args.append(pPath);
+	args.append(p_path);
 
 	QProcess *proc = new QProcess(this);
-	proc->setEnvironment(pEnviron);
+	proc->setEnvironment(p_environ);
 	proc->start("winepath", args);
 	proc->waitForFinished(1000);
 
@@ -100,12 +99,11 @@ XfireGameDetection::getWinePath(QStringList pEnviron, QString pPath)
 	return "";
 }
 
-QHash<QString, QString>
-XfireGameDetection::getProcessEnviron(QString pProcessPath)
+QHash<QString, QString> XfireGameDetection::getProcessEnviron(QString p_processPath)
 {
 	QHash<QString, QString> environ;
 
-	QFile file(pProcessPath + "/environ");
+	QFile file(p_processPath + "/environ");
 	if(!file.open(QIODevice::ReadOnly))
 		return environ;
 
@@ -127,12 +125,11 @@ XfireGameDetection::getProcessEnviron(QString pProcessPath)
 	return environ;
 }
 
-void
-XfireGameDetection::slotUpdateRunningProcesses()
+void XfireGameDetection::slotUpdateRunningProcesses()
 {
-	kDebug() << "Updating running processes.";
+	kDebug() << "Updating running processes";
 
-	mProcessesList.clear(); // Clear processes list
+	m_processesList.clear(); // Clear processes list
 
 	QDir dir("/proc");
 	QFileInfoList processes = dir.entryInfoList();
@@ -222,7 +219,7 @@ XfireGameDetection::slotUpdateRunningProcesses()
 		proc.cmdline = cmdline;
 		proc.executable = executable;
 
-		mProcessesList.append(proc); // Add the process to the process list
+		m_processesList.append(proc); // Add the process to the process list
 	}
 
 	checkRunningGames(); // Check for running games

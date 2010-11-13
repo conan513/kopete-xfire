@@ -20,6 +20,7 @@
 #define XF_P2P_SESSION_H
 
 #include <QString>
+
 #include <XfireAttribute.h>
 
 class XfireContact;
@@ -27,29 +28,25 @@ class XfireContact;
 class XfireP2PSession
 {
 public:
-	// Constructor and destructor
-
-	XfireP2PSession(XfireContact *pContact, QString pSalt);
+	// Constructor & destructor
+	XfireP2PSession(XfireContact *p_contact, QString p_salt);
 	~XfireP2PSession();
 
-	XfireContact *mContact;
+	XfireContact *m_contact;
+	QByteArray m_moniker;
 
-	QByteArray monikerSelf;
+	// Peer local/remote IP & port
+	quint32 m_localIp;
+	quint16 m_localPort;
+	quint32 m_remoteIp;
+	quint16 m_remotePort;
 
-	// Peer remote IP & port
-	quint32 remoteIP;
-	quint16 remotePort;
+	void setLocalAddress(quint32 p_ip, quint16 p_port);
+	void setRemoteAddress(quint32 p_ip, quint16 p_port);
 
-	// Peer local IP & port
-	quint32 localIP;
-	quint16 localPort;
-
-	void setRemoteAddress(quint32 pIP, quint16 pPort);
-	void setLocalAddress(quint32 pIP, quint16 pPort);
-
-	quint32 sessid;
-	quint32 seqid;
-	quint32 msgid;
+	quint32 m_sessionId;
+	quint32 m_sequenceId;
+	quint32 m_messageId;
 };
 
 #endif // XF_P2P_SESSION_H

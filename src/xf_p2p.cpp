@@ -15,65 +15,58 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
+
 #include <KDebug>
+
 #include "xf_p2p.h"
+#include "xf_p2p_natcheck.h"
 
-#include <QSysInfo>
-
-XfireP2P::XfireP2P(XfireAccount *pAccount)
+XfireP2P::XfireP2P(XfireAccount *p_account)
 {
-	mAccount = pAccount;
+	m_account = p_account;
 
-	mConnection = new QUdpSocket(this);
-	mConnection->bind();
-
-	connect(mConnection, SIGNAL(readyRead()), this, SLOT(slotSocketRead()));
-
-	kDebug() << "Connection open on port" << mConnection->localPort();
+	// Start NAT type check
+	m_natCheck = new XfireP2PNatcheck(this);
+	connect(m_natCheck, SIGNAL(ready()), this, SLOT(slotNatCheckReady()));
 }
 
 XfireP2P::~XfireP2P()
 {
 }
 
-bool
-XfireP2P::isConnected()
+bool XfireP2P::isConnected()
 {
-	return (mConnection->isOpen());
+	return (m_connection->isOpen());
 }
 
-void
-XfireP2P::addSession(XfireP2PSession *pSession)
+void XfireP2P::addSession(XfireP2PSession *p_session)
 {
-	mSessions.append(pSession);
+	m_sessions.append(p_session);
 }
 
-void
-XfireP2P::slotSocketRead()
+void XfireP2P::slotSocketRead()
 {
-	kDebug() << "Received P2P packet.";
-
 	QByteArray datagram;
-	datagram.resize(mConnection->pendingDatagramSize());
+	datagram.resize(m_connection->pendingDatagramSize());
 
 	QHostAddress sender;
-	quint16 senderPort;
+	quint16 port; // FIXME: Not needed?
 
-	mConnection->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+	m_connection->readDatagram(datagram.data(), datagram.size(), &sender, &port);
 
 	if(datagram.size() < 44)
 	{
-		kDebug() << "Bad P2P packet received, ignoring.";
+		kDebug() << "Bad P2P packet received, ignoring";
 		return;
 	}
 
 	// Get moniker
 	QByteArray moniker = datagram.mid(4, 20);
-	XfireP2PSession *session = mAccount->p2pSessionByMoniker(moniker);
+	XfireP2PSession *session = m_account->p2pSessionByMoniker(moniker);
 
 	if(!session)
 	{
-		kDebug() << "Unknown P2P session, ignoring.";
+		kDebug() << "Unknown P2P session, ignoring";
 		return;
 	}
 
@@ -82,48 +75,77 @@ XfireP2P::slotSocketRead()
 
 	switch(type)
 	{
+	case XFIRE_P2P_TYPE_DATA32:
+		{
+			kDebug() << "Received data32 packet";
+			break;
+		}
 	case XFIRE_P2P_TYPE_PING:
 		{
-			kDebug() << "Received P2P ping packet.";
+			kDebug() << "Received ping packet";
 			sendPing(session);
 			break;
 		}
 	case XFIRE_P2P_TYPE_PONG:
 		{
-			kDebug() << "Received P2P pong packet.";
+			kDebug() << "Received pong packet";
+			break;
+		}
+	case XFIRE_P2P_TYPE_ACK:
+		{
+			kDebug() << "Received ack packet";
+			break;
+		}
+	case XFIRE_P2P_TYPE_BADCRC:
+		{
+			kDebug() << "Received badcrc packet";
+			break;
+		}
+	case XFIRE_P2P_TYPE_DATA16:
+		{
+			kDebug() << "Received data16 packet";
+			break;
+		}
+	case XFIRE_P2P_TYPE_KEEP_ALIVE_REQ:
+		{
+			kDebug() << "Received keep alive request packet";
+			break;
+		}
+	case XFIRE_P2P_TYPE_KEEP_ALIVE_REP:
+		{
+			kDebug() << "Received keep alive reply packet";
 			break;
 		}
 	default:
 		{
-			kDebug() << "Unkown P2P packet type.";
+			kDebug() << "Received unknown packet type";
 			break;
 		}
 	}
 }
 
-QByteArray
-XfireP2P::createHeader(quint8 pEncoding, QByteArray pMoniker, quint32 pType, quint32 pMsgID, quint32 pSeqID, quint32 pDataLen)
+QByteArray XfireP2P::createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen)
 {
 	QByteArray ret;
 
-	ret.append(pEncoding); // Encoding
+	ret.append(p_encoding); // Encoding
 	ret.append(QByteArray().fill((char )0, 3)); // 3 unknown bytes
-	ret.append(pMoniker); // Moniker
+	ret.append(p_moniker); // Moniker
 
 	// Type
-	ret.append(pType);
+	ret.append(p_type);
 	ret.append(QByteArray().fill((char )0, 3));
 
 	// Message ID
-	ret.append(QByteArray::number(pMsgID));
+	ret.append(QByteArray::number(p_messageId));
 	ret.append(QByteArray().fill((char )0, 3));
 
 	// Sequence ID
-	ret.append(pSeqID);
+	ret.append(p_sequenceId);
 	ret.append(QByteArray().fill((char )0, 3));
 
 	// Data length
-	ret.append(pDataLen);
+	ret.append(p_dataLen);
 	ret.append(QByteArray().fill((char )0, 3));
 
 	ret.append(QByteArray().fill((char )0, 4)); // 3 unknown bytes
@@ -133,10 +155,18 @@ XfireP2P::createHeader(quint8 pEncoding, QByteArray pMoniker, quint32 pType, qui
 	return ret;
 }
 
-void
-XfireP2P::sendPing(XfireP2PSession *pSession)
+void XfireP2P::sendPing(XfireP2PSession *p_session)
 {
-	QByteArray foo = createHeader(0, pSession->monikerSelf, XFIRE_P2P_TYPE_PING, (pSession->sessid > 0) ? pSession->sessid : pSession->msgid, 0, 0);
-	mConnection->writeDatagram(foo, QHostAddress(pSession->remoteIP), pSession->remotePort);
+	QByteArray foo = createHeader(0, p_session->m_moniker, XFIRE_P2P_TYPE_PING, (p_session->m_sessionId > 0) ? p_session->m_sessionId : p_session->m_messageId, 0, 0);
+	m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
 }
 
+
+void XfireP2P::slotNatCheckReady()
+{
+	m_connection = new QUdpSocket(this);
+	m_connection->bind();
+
+	connect(m_connection, SIGNAL(readyRead()), this, SLOT(slotSocketRead()));
+	kDebug() << "Peer to peer connection started on port" << m_connection->localPort();
+}

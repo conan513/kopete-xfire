@@ -36,7 +36,7 @@ public:
 	void updateConfiguredGame(QString pName, QString pLaunchExe, QString pDetectExe);
 	bool gameIsConfigured(QString pName);
 
-	QString getGameNameFromID(quint32 pGameID);
+	QString getGameNameFromID(quint32 p_gameId);
 
 	QList<QString> getGamesList();
 	QDomElement getConfiguredGame(QString pName);

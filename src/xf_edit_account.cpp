@@ -61,12 +61,12 @@ XfireEditAccountWidget::~XfireEditAccountWidget()
 	delete mWidget;
 }
 
-void
-XfireEditAccountWidget::updatePreferences()
+void XfireEditAccountWidget::updatePreferences()
 {
 	mWidget->prefGameDetection->setChecked(account()->configGroup()->readEntry("GameDetection", true));
 	mWidget->prefInformAccounts->setChecked(account()->configGroup()->readEntry("InformAccounts", false));
 	mWidget->prefFriendsOfFriends->setChecked(account()->configGroup()->readEntry("FriendsOfFriends", true));
+	mWidget->prefPeerToPeer->setChecked(account()->configGroup()->readEntry("PeerToPeer", false));
 
 	if(account()->configGroup()->readEntry("CustomServer", false))
 		mWidget->prefOverrideServer->animateClick(); // FIXME: Best way to trigger the clicked() slot?
@@ -80,14 +80,10 @@ XfireEditAccountWidget::updatePreferences()
 
 bool XfireEditAccountWidget::validateData()
 {
-	if(!account())
+	if(!account() && mWidget->prefUsername->text().isEmpty())
 	{
-		if(mWidget->prefUsername->text().isEmpty())
-		{
-			KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(), KMessageBox::Sorry,
-										  i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n( "Xfire Protocol Plugin"));
-			return false;
-		}
+		KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(), KMessageBox::Sorry, i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n( "Xfire Protocol Plugin"));
+		return false;
 	}
 
 	return true;
@@ -111,6 +107,7 @@ Kopete::Account* XfireEditAccountWidget::apply()
 	account()->configGroup()->writeEntry("ServerPort", mWidget->prefPort->value());
 	account()->configGroup()->writeEntry("UpdateVersion", mWidget->prefUpdateVersion->isChecked());
 	account()->configGroup()->writeEntry("ProtocolVersion", mWidget->prefVersion->value());
+	account()->configGroup()->writeEntry("PeerToPeer", mWidget->prefPeerToPeer->isChecked());
 
 	return account();
 }

@@ -40,15 +40,15 @@ class XfireProtocol : public Kopete::Protocol
 	Q_OBJECT
 
 public:
-	// Constructor and destructor
+	// Constructor & destructor
 	XfireProtocol(QObject *parent, const QVariantList &args);
 	~XfireProtocol();
 
-	// Creates a new protocol account
+	// Creates new protocol account
 	virtual Kopete::Account *createNewAccount(const QString &accountID);
 	virtual Kopete::Contact *deserializeContact(Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData, const QMap<QString, QString> &);
 
-	// Creates the add contact and edit account widget
+	// Creates add contact & edit account widget
 	virtual AddContactPage *createAddContactWidget(QWidget *parent, Kopete::Account *account);
 	virtual KopeteEditAccountWidget *createEditAccountWidget(Kopete::Account *account, QWidget *parent);
 
@@ -62,7 +62,7 @@ public:
 
 private:
 	// Protocol instance
-	static XfireProtocol *mProtocol;
+	static XfireProtocol *m_protocol;
 };
 
 #endif // XF_PROTOCOL_H

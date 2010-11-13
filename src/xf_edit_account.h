@@ -29,7 +29,6 @@ class QVBoxLayout;
 namespace Kopete { class Account; }
 namespace Ui { class XfireAccountPreferences; }
 
-/** Widget to edit Xfire accounts */
 class XfireEditAccountWidget : public QWidget, public KopeteEditAccountWidget
 {
 	Q_OBJECT
@@ -39,8 +38,8 @@ public:
 	XfireEditAccountWidget(QWidget *parent,	Kopete::Account *account);
 	~XfireEditAccountWidget();
 
-	virtual Kopete::Account *apply(); // Creates new Kopete account based on entered data
-	virtual bool validateData(); // Validates entered data
+	virtual Kopete::Account *apply();
+	virtual bool validateData();
 
 protected:
 	Ui::XfireEditAccount *mWidget;
@@ -50,7 +49,7 @@ private:
 	void updatePreferences();
 
 private slots:
-	void slotOpenRegister(); // Opens internet browser to register on Xfire
+	void slotOpenRegister();
 };
 
 #endif // XF_EDIT_ACCOUNT_H

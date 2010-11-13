@@ -5,17 +5,17 @@ X-Kopete-Version=1000900
 Icon=xfire_protocol
 
 X-KDE-ServiceTypes=Kopete/Protocol
-X-KDE-Library=kopete-xfire
+X-KDE-Library=kopete_xfire
 X-Kopete-Messaging-Protocol=messaging/xfire
 X-KDE-PluginInfo-Author=Warren Dumortier
 X-KDE-PluginInfo-Email=nwarrenfl@gmail.com
-X-KDE-PluginInfo-Name=kopete-xfire
+X-KDE-PluginInfo-Name=kopete_xfire
 X-KDE-PluginInfo-Version=0.0.6
 X-KDE-PluginInfo-Website=http://code.google.com/p/kopete-xfire/
 X-KDE-PluginInfo-Category=Protocols
 X-KDE-PluginInfo-Depends=
 X-KDE-PluginInfo-License=GPL
-X-KDE-PluginInfo-EnabledByDefault=true
+X-KDE-PluginInfo-EnabledByDefault=false
 
 Name=Xfire
 Comment=Xfire Gaming Network

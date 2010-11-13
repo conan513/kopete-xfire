@@ -16,21 +16,20 @@
 *
 */
 
-#include "xf_add_contact.h"
-
 #include <QLayout>
-#include <QRadioButton>
 #include <QLineEdit>
+#include <QRadioButton>
 
 #include <kdebug.h>
 #include <kmessagebox.h>
 
-#include "kopeteuiglobal.h"
-#include "kopeteaccount.h"
-#include "kopetemetacontact.h"
+#include <kopeteaccount.h>
+#include <kopetemetacontact.h>
+#include <kopeteuiglobal.h>
 
-#include "xf_protocol.h"
 #include "xf_account.h"
+#include "xf_add_contact.h"
+#include "xf_protocol.h"
 #include "xf_server.h"
 #include "ui_add_contact.h"
 
@@ -66,8 +65,7 @@ bool XfireAddContactPage::validateData ()
 
 	if (mWidget->prefUsername->text().isEmpty())
 	{
-		KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(),
-									  KMessageBox::Sorry, i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n("Xfire protocol plugin"));
+		KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(), KMessageBox::Sorry, i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n("Xfire protocol plugin"));
 		return false;
 	}
 

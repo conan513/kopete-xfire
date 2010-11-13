@@ -1,14 +1,14 @@
 /********************************************************************************
-** Form generated from reading UI file 'edit_accountAT8436.ui'
+** Form generated from reading UI file 'edit_accountB14638.ui'
 **
-** Created: Thu Jun 10 19:26:19 2010
-**      by: Qt User Interface Compiler version 4.6.2
+** Created: Wed Nov 3 14:16:49 2010
+**      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef EDIT_ACCOUNTAT8436_H
-#define EDIT_ACCOUNTAT8436_H
+#ifndef EDIT_ACCOUNTB14638_H
+#define EDIT_ACCOUNTB14638_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
@@ -59,6 +59,7 @@ public:
     QCheckBox *prefGameDetection;
     QCheckBox *prefInformAccounts;
     QCheckBox *prefFriendsOfFriends;
+    QCheckBox *prefPeerToPeer;
     QSpacerItem *vspGeneral;
     QWidget *tabConnection;
     QVBoxLayout *verticalLayout_3;
@@ -222,6 +223,11 @@ public:
 
         verticalLayout_4->addWidget(prefFriendsOfFriends);
 
+        prefPeerToPeer = new QCheckBox(gpbGeneral);
+        prefPeerToPeer->setObjectName(QString::fromUtf8("prefPeerToPeer"));
+
+        verticalLayout_4->addWidget(prefPeerToPeer);
+
         vspGeneral = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout_4->addItem(vspGeneral);
@@ -349,7 +355,7 @@ public:
 
         retranslateUi(XfireEditAccount);
 
-        tabPreferences->setCurrentIndex(0);
+        tabPreferences->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(XfireEditAccount);
@@ -378,6 +384,7 @@ public:
         prefGameDetection->setText(QApplication::translate("XfireEditAccount", "Use game detection", 0, QApplication::UnicodeUTF8));
         prefInformAccounts->setText(QApplication::translate("XfireEditAccount", "Inform other accounts about ingame status", 0, QApplication::UnicodeUTF8));
         prefFriendsOfFriends->setText(QApplication::translate("XfireEditAccount", "Show friends of friends", 0, QApplication::UnicodeUTF8));
+        prefPeerToPeer->setText(QApplication::translate("XfireEditAccount", "Use peer to peer capabilities", 0, QApplication::UnicodeUTF8));
         tabPreferences->setTabText(tabPreferences->indexOf(tabGeneral), QApplication::translate("XfireEditAccount", "&General", 0, QApplication::UnicodeUTF8));
         gpbConnection->setTitle(QApplication::translate("XfireEditAccount", "Connection preferences", 0, QApplication::UnicodeUTF8));
         prefOverrideServer->setText(QApplication::translate("XfireEditAccount", "Override default server information", 0, QApplication::UnicodeUTF8));
@@ -409,4 +416,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // EDIT_ACCOUNTAT8436_H
+#endif // EDIT_ACCOUNTB14638_H
