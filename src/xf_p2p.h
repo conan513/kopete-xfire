@@ -19,13 +19,6 @@
 #ifndef XF_P2P_H
 #define XF_P2P_H
 
-#include <QObject>
-
-#include "xf_account.h"
-#include "xf_p2p_session.h"
-#include "xf_p2p_natcheck.h"
-
-// P2P packet types
 #define XFIRE_P2P_TYPE_DATA32			0x0000
 #define XFIRE_P2P_TYPE_PING				0x0010
 #define XFIRE_P2P_TYPE_PONG				0x0020
@@ -34,6 +27,12 @@
 #define XFIRE_P2P_TYPE_DATA16			0x0300
 #define XFIRE_P2P_TYPE_KEEP_ALIVE_REQ	0x0800
 #define XFIRE_P2P_TYPE_KEEP_ALIVE_REP	0x1000
+
+#include <QUdpSocket>
+
+class XfireAccount;
+class XfireP2PSession;
+class XfireP2PNatcheck;
 
 class XfireP2P : public QObject
 {
@@ -45,6 +44,7 @@ class XfireP2P : public QObject
 		~XfireP2P();
 
 		XfireAccount *m_account;
+        quint32 m_messageId;
 
 		QUdpSocket *m_connection;
 		QList<XfireP2PSession *> m_sessions;
@@ -55,6 +55,7 @@ class XfireP2P : public QObject
 
 		QByteArray createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen);
 		void sendPing(XfireP2PSession *p_session);
+        void sendPong(XfireP2PSession *p_session);
 
 	public slots:
 		void slotSocketRead();

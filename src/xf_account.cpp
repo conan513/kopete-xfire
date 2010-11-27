@@ -402,7 +402,7 @@ XfireP2PSession* XfireAccount::p2pSessionByMoniker(QByteArray p_moniker)
 			return m_p2pConnection->m_sessions.at(i);
 	}
 
-	return 0; // Not found
+	return 0;
 }
 
 void XfireAccount::slotOpenGamesManager()

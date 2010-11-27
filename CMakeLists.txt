@@ -41,6 +41,7 @@ set(kopete_xfire_PART_SRCS
 	src/xf_games_manager.cpp
 	src/xf_p2p.cpp
 	src/xf_p2p_session.cpp
+	src/xf_p2p_natcheck.cpp
 
 	libxfire/XfireAttribute.cpp
 	libxfire/XfirePacket.cpp

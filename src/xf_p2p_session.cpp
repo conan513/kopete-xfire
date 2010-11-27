@@ -20,20 +20,23 @@
 
 #include "xf_contact.h"
 #include "xf_p2p_session.h"
+#include "xf_server.h"
 
-XfireP2PSession::XfireP2PSession(XfireContact* p_contact, QString p_salt)
+XfireP2PSession::XfireP2PSession(XfireContact* p_contact, const QString &p_salt) : m_contact(p_contact)
 {
-	m_contact = p_contact;
+    // Generate moniker
+    QCryptographicHash hasher(QCryptographicHash::Sha1);
 
-	// Generate moniker
-	QCryptographicHash hasher(QCryptographicHash::Sha1);
+    hasher.addData(p_contact->m_session.raw().toHex());
+    hasher.addData(p_salt.toAscii());
+    m_moniker = hasher.result();
+    kDebug() << p_contact->m_username + ": moniker generated: " + m_moniker.toHex();
 
-	QByteArray hash;
-	hasher.addData(p_contact->m_session.raw().toHex());
-	hasher.addData(p_salt.toAscii());
-
-	m_moniker = hasher.result();
-	kDebug() << "Moniker generated:" << p_contact->contactId() << "->" << m_moniker << m_moniker.toHex();
+    hasher.reset();
+    hasher.addData(p_contact->m_account->m_sid.raw());
+    hasher.addData(p_salt.toAscii());
+    m_monikerSelf = hasher.result();
+    kDebug() << "Moniker generated: " + m_monikerSelf.toHex();
 }
 
 XfireP2PSession::~XfireP2PSession()
@@ -42,12 +45,12 @@ XfireP2PSession::~XfireP2PSession()
 
 void XfireP2PSession::setLocalAddress(quint32 p_ip, quint16 p_port)
 {
-	m_localIp = p_ip;
-	m_localPort = p_port;
+    m_localIp = p_ip;
+    m_localPort = p_port;
 }
 
 void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
 {
-	m_remoteIp = p_ip;
-	m_remotePort = p_port;
+    m_remoteIp = p_ip;
+    m_remotePort = p_port;
 }

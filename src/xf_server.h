@@ -63,13 +63,14 @@ public:
 
 	QTcpSocket *m_connection;
 
+    QString m_salt; // FIXME: Private or public?
+
 private:
 	XfireAccount *m_account;
 	
 	// Login information
 	QString m_username;
 	QString m_password;
-	QString m_salt;
 
 	// Connection
 	QByteArray m_buffer;

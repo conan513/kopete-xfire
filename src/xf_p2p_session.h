@@ -28,25 +28,28 @@ class XfireContact;
 class XfireP2PSession
 {
 public:
-	// Constructor & destructor
-	XfireP2PSession(XfireContact *p_contact, QString p_salt);
-	~XfireP2PSession();
+    // Constructor & destructor
+    XfireP2PSession(XfireContact* p_contact, const QString& p_salt);
+    ~XfireP2PSession();
 
-	XfireContact *m_contact;
-	QByteArray m_moniker;
+    XfireContact *m_contact;
+    QByteArray m_moniker;
+    QByteArray m_monikerSelf;
 
-	// Peer local/remote IP & port
-	quint32 m_localIp;
-	quint16 m_localPort;
-	quint32 m_remoteIp;
-	quint16 m_remotePort;
+    // Peer local/remote IP & port
+    quint32 m_localIp;
+    quint16 m_localPort;
+    quint32 m_remoteIp;
+    quint16 m_remotePort;
 
-	void setLocalAddress(quint32 p_ip, quint16 p_port);
-	void setRemoteAddress(quint32 p_ip, quint16 p_port);
+    void setLocalAddress(quint32 p_ip, quint16 p_port);
+    void setRemoteAddress(quint32 p_ip, quint16 p_port);
 
-	quint32 m_sessionId;
-	quint32 m_sequenceId;
-	quint32 m_messageId;
+    bool m_pongNeeded;
+    bool m_pingNeeded;
+
+    quint32 m_sessionId;
+    quint32 m_sequenceId;
 };
 
 #endif // XF_P2P_SESSION_H
