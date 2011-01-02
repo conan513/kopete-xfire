@@ -50,7 +50,7 @@ XfireGamesManager::XfireGamesManager(XfireAccount *pAccount) : QDialog()
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget *)0, QStringList(QString(list.at(i))));
 
-        if (configured.contains(list.at(i)) == true)
+        if(configured.contains(list.at(i)) == true)
             configuredItem->addChild(item);
         else
             notConfiguredItem->addChild(item);
@@ -73,7 +73,7 @@ XfireGamesManager::~XfireGamesManager()
 
 void XfireGamesManager::slotGameDetectionStatusChanged(int pStatus)
 {
-    if (pStatus == 0)
+    if(pStatus == 0)
     {
         mDialog->label->setEnabled(false);
         mDialog->label_2->setEnabled(false);
@@ -98,7 +98,7 @@ void XfireGamesManager::slotConfiguringGameChanged(QTreeWidgetItem *p_current, Q
 {
     Q_UNUSED(p_previous);
 
-    if (p_current->parent() == configuredItem)
+    if(p_current->parent() == configuredItem)
     {
         mDialog->enableCheckBox->setChecked(true);
 
@@ -132,9 +132,9 @@ void XfireGamesManager::slotApplyGameConfiguration()
 {
     QTreeWidgetItem *item = mDialog->treeWidget->currentItem();
 
-    if (mDialog->enableCheckBox->isChecked())
+    if(mDialog->enableCheckBox->isChecked())
     {
-        if (mAccount->m_gamesList->gameIsConfigured(item->text(0)) == false)
+        if(mAccount->m_gamesList->gameIsConfigured(item->text(0)) == false)
         {
             QDomElement root = mAccount->m_gamesList->mConfiguredGamesList->firstChildElement("game_config");
             QDomElement game = mAccount->m_gamesList->mConfiguredGamesList->createElement("game");

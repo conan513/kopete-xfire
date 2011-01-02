@@ -108,6 +108,8 @@ void XfireGamesList::slotReceivedGamesList(QNetworkReply *pReply)
             mManager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_games.xml"))); // Download games list file
         else
             emit gamesListReady();
+
+        delete version;
     }
     else if (pReply->url().toString().contains("gfire_games.xml"))
     {

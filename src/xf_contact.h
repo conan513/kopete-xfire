@@ -84,6 +84,7 @@ public:
 
 protected:
     Kopete::ChatSession *m_chatSession;
+    QNetworkAccessManager *m_avatarManager;
 
 public slots:
     void updateAvatar();
