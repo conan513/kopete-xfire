@@ -56,7 +56,7 @@ XfireAccount::~XfireAccount()
 {
     delete m_gamesManager;
 
-    if (m_gamesDetection)
+    if(m_gamesDetection)
         delete m_gamesDetection;
 }
 
@@ -72,14 +72,14 @@ void XfireAccount::fillActionMenu(KActionMenu *p_actionMenu)
 void XfireAccount::connectWithPassword(const QString &p_password)
 {
     // Cancel connection if no password has been supplied
-    if (p_password.isEmpty())
+    if(p_password.isEmpty())
     {
         emit slotGoOffline();
         return;
     }
 
     // Don't attempt to connect when already online
-    if (myself()->onlineStatus() != XfireProtocol::protocol()->XfireOffline)
+    if(myself()->onlineStatus() != XfireProtocol::protocol()->XfireOffline)
         return;
 
     m_password = p_password;
@@ -99,14 +99,14 @@ void XfireAccount::slotContinueConnecting()
     m_gamesManager = new XfireGamesManager(this); // Initialize games manager
 
     // Initialize game detection if enabled
-    if (isGameDetectionEnabled())
+    if(isGameDetectionEnabled())
     {
         m_gamesDetection = new XfireGameDetection(this);
         QObject::connect(m_gamesDetection, SIGNAL(gameRunning()), this, SLOT(slotSendIngameStatus()));
     }
 
     // Initialize peer to peer if enabled
-    if (isPeerToPeerEnabled())
+    if(isPeerToPeerEnabled())
         m_p2pConnection = new XfireP2P(this);
 }
 
@@ -115,16 +115,16 @@ void XfireAccount::slotSendIngameStatus()
     m_server->sendIngameStatus(m_gamesDetection->m_currentGame.id, m_gamesDetection->m_currentGame.ip, m_gamesDetection->m_currentGame.port);
 
     // Inform other Kopete accounts (Xfire: Game)
-    if (isInformAccountsEnabled())
+    if(isInformAccountsEnabled())
     {
         QList<Kopete::Account*> accounts = Kopete::AccountManager::self()->accounts();
         foreach(Kopete::Account *a, accounts)
         {
-            if (a->protocol() == myself()->protocol())
+            if(a->protocol() == myself()->protocol())
                 continue;
 
             Kopete::StatusMessage message;
-            if (m_gamesDetection->m_currentGame.id == 0)
+            if(m_gamesDetection->m_currentGame.id == 0)
                 message.setMessage("");
             else
                 message.setMessage("Xfire: " + m_gamesList->getGameNameFromID(m_gamesDetection->m_currentGame.id));
@@ -141,7 +141,7 @@ void XfireAccount::logOff(Kopete::Account::DisconnectReason p_reason)
     m_server->closeConnection();
     myself()->setOnlineStatus(XfireProtocol::protocol()->XfireOffline);
 
-    if (p_reason == Kopete::Account::OtherClient)
+    if(p_reason == Kopete::Account::OtherClient)
         kDebug() << "Logged in somewhere else";
 
     disconnected(p_reason);
@@ -161,7 +161,7 @@ bool XfireAccount::createContact(const QString &p_contactId, Kopete::MetaContact
 
 void XfireAccount::setStatusMessage(const Kopete::StatusMessage &p_statusMessage)
 {
-    if (isConnected())
+    if(isConnected())
     {
         kDebug() << "Setting status message:" + p_statusMessage.message();
         m_server->sendStatusMessage(p_statusMessage.message());
@@ -170,7 +170,7 @@ void XfireAccount::setStatusMessage(const Kopete::StatusMessage &p_statusMessage
 
 void XfireAccount::slotGoOnline()
 {
-    if (!isConnected())
+    if(!isConnected())
         connect(XfireProtocol::protocol()->XfireConnecting);
     else
         myself()->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
@@ -178,7 +178,7 @@ void XfireAccount::slotGoOnline()
 
 void XfireAccount::slotGoAway()
 {
-    if (!isConnected())
+    if(!isConnected())
         connect(XfireProtocol::protocol()->XfireConnecting);
 
     myself()->setOnlineStatus(XfireProtocol::protocol()->XfireAway);
@@ -187,20 +187,20 @@ void XfireAccount::slotGoAway()
 
 void XfireAccount::slotGoOffline()
 {
-    if (isConnected() || myself()->onlineStatus().status() == Kopete::OnlineStatus::Connecting)
+    if(isConnected() || myself()->onlineStatus().status() == Kopete::OnlineStatus::Connecting)
         disconnect();
 }
 
 void XfireAccount::newContact(const QString &p_contactId, const QString &p_name, int p_groupId)
 {
     Kopete::Group *group;
-    if (p_groupId != -1)
+    if(p_groupId != -1)
         group = Kopete::ContactList::self()->group(p_groupId);
     else
         group = Kopete::ContactList::self()->findGroup("Xfire");
 
     XfireContact *contact = static_cast<XfireContact *>(contacts().value(p_contactId));
-    if (!contact)
+    if(!contact)
         addContact(p_contactId, p_name, group);
     else
         contact->metaContact()->addToGroup(group);
@@ -209,22 +209,22 @@ void XfireAccount::newContact(const QString &p_contactId, const QString &p_name,
 void XfireAccount::updateContactID(const QString &p_contactId, Xfire::Int32Attribute *p_id)
 {
     XfireContact *c = static_cast<XfireContact*>(contacts().value(p_contactId));
-    if (c)
+    if(c)
         c->setId(p_id);
 }
 
 void XfireAccount::updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttribute *p_sid)
 {
     XfireContact *c = (XfireContact*)findContact(p_id->value());
-    if (c != 0)
+    if(c != 0)
     {
-        if (c->m_id == p_id->value())
+        if(c->m_id == p_id->value())
         {
             // Update the SID of the contact
             c->m_session = p_sid->sid();
 
             // Set the online status of the contact
-            if (p_sid->sid().isValid())
+            if(p_sid->sid().isValid())
                 c->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
             else
                 c->setOnlineStatus(XfireProtocol::protocol()->XfireOffline);
@@ -235,14 +235,14 @@ void XfireAccount::updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttri
 void XfireAccount::updateContactGameInformation(const Xfire::SessionID &p_sid, quint32 p_gameId)
 {
     XfireContact *c = static_cast<XfireContact*>(findContact(p_sid));
-    if (c != 0)
+    if(c != 0)
     {
         QString message;
         QString gameName = m_gamesList->getGameNameFromID(p_gameId);
 
-        if (p_gameId == 0)
+        if(p_gameId == 0)
             message = "";
-        else if (gameName == 0L)
+        else if(gameName == 0L)
             message = "Playing " + QString::number(p_gameId);
         else
             message = "Playing " + gameName;
@@ -255,14 +255,14 @@ void XfireAccount::updateContactGameInformation(const Xfire::SessionID &p_sid, q
 void XfireAccount::setStatus(const Xfire::SessionID &p_sid, const QString &p_statusMessage)
 {
     XfireContact *c = static_cast<XfireContact*>(findContact(p_sid));
-    if (c != 0)
+    if(c != 0)
     {
         Kopete::StatusMessage status(p_statusMessage);
         c->setStatusMessage(status);
 
-        if (p_statusMessage.contains("(AFK)"))
+        if(p_statusMessage.contains("(AFK)"))
             c->setOnlineStatus(XfireProtocol::protocol()->XfireAway);
-        else if (c->Away)
+        else if(c->Away)
             c->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
     }
 }
@@ -276,7 +276,7 @@ Kopete::Contact* XfireAccount::findContact(quint32 p_id)
     for (i = hash.begin(); i != hash.end(); ++i)
     {
         XfireContact *contact = static_cast<XfireContact*>(i.value());
-        if (contact->m_id == p_id)
+        if(contact->m_id == p_id)
             return i.value();
     }
 
@@ -293,7 +293,7 @@ Kopete::Contact* XfireAccount::findContact(const Xfire::SessionID &p_sid)
     for (i = hash.begin(); i != hash.end(); ++i)
     {
         XfireContact *contact = static_cast<XfireContact*>(i.value());
-        if (contact->m_session == p_sid)
+        if(contact->m_session == p_sid)
             return i.value();
     }
 
@@ -309,7 +309,7 @@ Kopete::Contact* XfireAccount::findContact(QString p_contactId)
     for (i = hash.begin(); i != hash.end(); ++i)
     {
         XfireContact *contact = static_cast<XfireContact*>(i.value());
-        if (contact->contactId() == p_contactId)
+        if(contact->contactId() == p_contactId)
             return i.value();
     }
 
@@ -318,7 +318,7 @@ Kopete::Contact* XfireAccount::findContact(QString p_contactId)
 
 QString XfireAccount::serverName() const
 {
-    if (configGroup()->readEntry("Custom_server", false))
+    if(configGroup()->readEntry("Custom_server", false))
         return configGroup()->readEntry("ServerIP", "cs.xfire.com");
     else
         return "cs.xfire.com";
@@ -327,7 +327,7 @@ QString XfireAccount::serverName() const
 uint XfireAccount::serverPort() const
 {
 
-    if (configGroup()->readEntry("Custom_server", false))
+    if(configGroup()->readEntry("Custom_server", false))
         return configGroup()->readEntry("ServerPort", 25999);
     else
         return 25999;
@@ -335,7 +335,7 @@ uint XfireAccount::serverPort() const
 
 uint XfireAccount::protocolVersion() const
 {
-    if (configGroup()->readEntry("ProtocolVersion", false))
+    if(configGroup()->readEntry("ProtocolVersion", false))
         return configGroup()->readEntry("ProtocolVersion", XFIRE_PROTO_VERSION);
     else
         return XFIRE_PROTO_VERSION;
@@ -365,7 +365,7 @@ void XfireAccount::setOnlineStatus(const Kopete::OnlineStatus &p_status, const K
 {
     Q_UNUSED(p_options);
 
-    if (isConnected())
+    if(isConnected())
     {
         kDebug() << "Setting status message to:" << p_reason.message();
         m_server->sendStatusMessage(p_reason.message());
@@ -373,13 +373,13 @@ void XfireAccount::setOnlineStatus(const Kopete::OnlineStatus &p_status, const K
 
     kDebug() << "Setting online status to:" << p_status.description();
 
-    if (p_status == XfireProtocol::protocol()->XfireConnecting && myself()->onlineStatus() == XfireProtocol::protocol()->XfireOffline)
+    if(p_status == XfireProtocol::protocol()->XfireConnecting && myself()->onlineStatus() == XfireProtocol::protocol()->XfireOffline)
         slotGoOnline();
-    else if (p_status == XfireProtocol::protocol()->XfireOnline || p_status.status() == Kopete::OnlineStatus::Online)
+    else if(p_status == XfireProtocol::protocol()->XfireOnline || p_status.status() == Kopete::OnlineStatus::Online)
         slotGoOnline();
-    else if (p_status == XfireProtocol::protocol()->XfireOffline)
+    else if(p_status == XfireProtocol::protocol()->XfireOffline)
         slotGoOffline();
-    else if (p_status.status() == Kopete::OnlineStatus::Away)
+    else if(p_status.status() == Kopete::OnlineStatus::Away)
         slotGoAway();
 }
 
@@ -387,7 +387,7 @@ void XfireAccount::changeOurStatus(const Kopete::OnlineStatus &p_status)
 {
     kDebug() << "Changing status to:" << p_status.description();
 
-    if (p_status == XfireProtocol::protocol()->XfireOnline)
+    if(p_status == XfireProtocol::protocol()->XfireOnline)
         myself()->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
 }
 
@@ -400,7 +400,7 @@ XfireP2PSession* XfireAccount::p2pSessionByMoniker(QByteArray p_moniker)
 {
     for (int i = 0; i < m_p2pConnection->m_sessions.size(); i++)
     {
-        if (m_p2pConnection->m_sessions.at(i)->m_moniker == p_moniker)
+        if(m_p2pConnection->m_sessions.at(i)->m_moniker == p_moniker)
             return m_p2pConnection->m_sessions.at(i);
     }
 
