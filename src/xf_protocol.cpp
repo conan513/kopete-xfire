@@ -18,6 +18,8 @@
 
 #include <KGenericFactory>
 
+#include "kopeteappearancesettings.h"
+
 #include "xf_account.h"
 #include "xf_add_contact.h"
 #include "xf_edit_account.h"
@@ -32,7 +34,9 @@ XfireProtocol::XfireProtocol(QObject *parent, const QVariantList &) : Kopete::Pr
 XfireOffline(Kopete::OnlineStatus::Offline, 0, this, 0, QStringList(), i18n("Offline"), i18n("Offline"), Kopete::OnlineStatusManager::Offline),
 XfireConnecting(Kopete::OnlineStatus::Connecting, 1, this, 2, QStringList(QString::fromUtf8("xfire_connecting")), i18n("Connecting"), i18n("Connecting"), 0, Kopete::OnlineStatusManager::HideFromMenu),
 XfireOnline(Kopete::OnlineStatus::Online, 2, this, 1, QStringList(), i18n("Online"), i18n("Online"), Kopete::OnlineStatusManager::Online, Kopete::OnlineStatusManager::HasStatusMessage),
-XfireAway(Kopete::OnlineStatus::Away, 3, this, 1, QStringList(), i18n("Away"), i18n("Away"), Kopete::OnlineStatusManager::Away, Kopete::OnlineStatusManager::HasStatusMessage)
+XfireAway(Kopete::OnlineStatus::Away, 3, this, 1, QStringList(), i18n("Away"), i18n("Away"), Kopete::OnlineStatusManager::Away, Kopete::OnlineStatusManager::HasStatusMessage),
+propGame("currentGame", i18n("Game"), QString(), Kopete::PropertyTmpl::PersistentProperty  | Kopete::PropertyTmpl::PrivateProperty),
+propServer("currentServer", i18n("Server"), QString(), Kopete::PropertyTmpl::PersistentProperty  | Kopete::PropertyTmpl::PrivateProperty)
 {
 	// Load protocol only once
 	if(m_protocol)
@@ -45,6 +49,16 @@ XfireAway(Kopete::OnlineStatus::Away, 3, this, 1, QStringList(), i18n("Away"), i
 	m_protocol = this;
 
 	addAddressBookField("messaging/xfire", Kopete::Plugin::MakeIndexField);
+	
+	// Contact properties
+	QStringList shownProps = Kopete::AppearanceSettings::self()->toolTipContents();
+	if (!shownProps.contains("currentGame"))
+		shownProps << QString::fromLatin1("currentGame");
+
+	if (!shownProps.contains("currentServer"))
+		shownProps << QString::fromLatin1("currentServer");
+
+	Kopete::AppearanceSettings::self()->setToolTipContents(shownProps);
 }
 
 XfireProtocol::~XfireProtocol()

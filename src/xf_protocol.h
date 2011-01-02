@@ -58,6 +58,10 @@ public:
 	const Kopete::OnlineStatus XfireOffline;
 	const Kopete::OnlineStatus XfireOnline;
 
+	// Properties
+	const Kopete::PropertyTmpl propGame;
+	const Kopete::PropertyTmpl propServer;
+
 	static XfireProtocol *protocol();
 
 private:

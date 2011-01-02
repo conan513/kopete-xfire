@@ -531,23 +531,19 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
         QList<Xfire::SIDAttribute*> fofs;
         for(int i = 0; i < sid->elements().size(); i++)
         {
-            Xfire::Int32Attribute *id = gameid->elements().at(i).int32;
-            quint32 gid = id->value();
+		Xfire::SIDAttribute *sdid = sid->elements().at(i).sid;
+		Xfire::Int32Attribute *id = gameid->elements().at(i).int32;
+		Xfire::Int32Attribute *ip = gip->elements().at(i).int32;
+		quint32 gid = id->value();
 
-            Xfire::SIDAttribute *sdid = sid->elements().at(i).sid;
+		XfireContact *c = static_cast<XfireContact*>(m_account->findContact(sid->elements().at(i).sid->sid()));
+		if(c)
+		{
+			c->setProperty(XfireProtocol::protocol()->propServer, QHostAddress(ip->value()).toString());
+		}
 
-            // Request friend network information for friends of friends
-            if(m_account->findContact(sdid->sid()) == 0)
-            {
-                fofs.append(sdid);
-                continue;
-            }
-
-            m_account->updateContactGameInformation(sdid->sid(), gid);
-        }
-
-        if(!fofs.isEmpty())
-            sendFriendNetworkRequest(fofs);
+		m_account->updateContactGameInformation(sdid->sid(), gid);
+	}
 
         break;
     }
