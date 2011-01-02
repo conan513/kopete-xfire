@@ -44,14 +44,14 @@ XfireGameDetection::~XfireGameDetection()
 
 quint32 XfireGameDetection::isGameRunning(QString p_executable)
 {
-    for(int i = 0; i < m_processesList.size(); i++)
+    for (int i = 0; i < m_processesList.size(); i++)
     {
         processInfo proc = m_processesList.at(i);
-        if(proc.executable == p_executable)
+        if (proc.executable == p_executable)
             return proc.pid;
     }
 
-    return -1;
+    return 0;
 }
 
 void XfireGameDetection::checkRunningGames()
@@ -59,20 +59,20 @@ void XfireGameDetection::checkRunningGames()
     quint32 detectedGameID = 0;
 
     QDomNodeList configuredGames = m_account->m_gamesList->mConfiguredGamesList->elementsByTagName("game");
-    for(int i = 0; i < configuredGames.count(); i++)
+    for (int i = 0; i < configuredGames.count(); i++)
     {
         quint32 gameID = m_account->m_gamesList->getGameIDFromName(configuredGames.at(i).attributes().namedItem("name").nodeValue());
         QString executable = configuredGames.at(i).firstChildElement("command").firstChildElement("detect").text();
 
         quint32 running = isGameRunning(executable);
-        if(running != -1)
+        if (running != 0)
         {
-            detectedGameID = (quint32)gameID;
+            detectedGameID = (quint32 )gameID;
             break;
         }
     }
 
-    if(detectedGameID != m_currentGame.id)
+    if (detectedGameID != m_currentGame.id)
     {
         m_currentGame.id = detectedGameID;
         m_currentGame.ip = 0;
@@ -93,7 +93,7 @@ QString XfireGameDetection::getWinePath(QStringList p_environ, QString p_path)
     proc->start("winepath", args);
     proc->waitForFinished(1000);
 
-    if(proc->exitStatus() == QProcess::NormalExit)
+    if (proc->exitStatus() == QProcess::NormalExit)
         return QString(proc->readAllStandardOutput()).trimmed();
 
     return "";
@@ -104,19 +104,19 @@ QHash<QString, QString> XfireGameDetection::getProcessEnviron(QString p_processP
     QHash<QString, QString> environ;
 
     QFile file(p_processPath + "/environ");
-    if(!file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly))
         return environ;
 
     QByteArray content = file.readAll();
     QList<QByteArray> split = content.split('\0');
     file.close();
 
-    for(int i = 0; i < split.size(); i++)
+    for (int i = 0; i < split.size(); i++)
     {
         QString element = QString(split.at(i));
         QStringList elementSplit = element.split("=");
 
-        if(elementSplit.size() != 2)
+        if (elementSplit.size() != 2)
             continue;
         else
             environ.insert(elementSplit.at(0), elementSplit.at(1));
@@ -135,44 +135,44 @@ void XfireGameDetection::slotUpdateRunningProcesses()
     QFileInfoList processes = dir.entryInfoList();
 
     // Iterate through running processes
-    for(int i = 0; i < processes.size(); ++i)
+    for (int i = 0; i < processes.size(); ++i)
     {
         QFileInfo process = processes.at(i);
 
         // Check process name
         foreach(QChar c, process.fileName().toAscii())
         {
-            if(!c.isDigit())
+            if (!c.isDigit())
                 continue;
         }
 
         // Check process ownership
-        if(process.ownerId() != geteuid())
+        if (process.ownerId() != geteuid())
             continue;
 
         processInfo proc; // Create process info
 
         // Get process pid
         uint pid = process.fileName().toUInt();
-        if(pid == 0)
+        if (pid == 0)
             continue;
 
         // Get process cmdline
         QStringList cmdline;
 
         QFile file(process.filePath() + "/cmdline");
-        if(file.open(QIODevice::ReadOnly))
+        if (file.open(QIODevice::ReadOnly))
         {
             QByteArray content = file.readAll();
             QList<QByteArray> contentSplit =  content.split('\0');
 
             file.close();
 
-            for(int i = 0; i < contentSplit.size(); ++i)
+            for (int i = 0; i < contentSplit.size(); ++i)
                 cmdline.append(contentSplit.at(i));
         }
 
-        if(cmdline.size() < 1)
+        if (cmdline.size() < 1)
             continue;
 
         // Set the process executable (canonicalized)
@@ -181,7 +181,7 @@ void XfireGameDetection::slotUpdateRunningProcesses()
         QFileInfo exe(process.filePath() + "/exe");
         QString exeCanonicalized = exe.canonicalFilePath();
 
-        if(exeCanonicalized == "/usr/bin/wine-preloader") // Wine support
+        if (exeCanonicalized == "/usr/bin/wine-preloader") // Wine support
         {
             QHash<QString, QString> environ = getProcessEnviron(process.filePath()); // Get environ
 
@@ -189,22 +189,22 @@ void XfireGameDetection::slotUpdateRunningProcesses()
             QStringList foo;
 
             QString prefix = environ.value("WINEPREFIX", "");
-            if(prefix != "")
+            if (prefix != "")
                 foo.append("WINEPREFIX=" + prefix);
 
             // Get unix path using winepath
             QString unixPath = getWinePath(foo, cmdline.at(0)).trimmed();
             QFileInfo unixPathTest(unixPath);
 
-            if(unixPathTest.canonicalFilePath() == "") // We have only the executable name
+            if (unixPathTest.canonicalFilePath() == "") // We have only the executable name
             {
                 // Guess using CWD
                 unixPathTest.setFile(process.filePath() + "/cwd");
-                if(unixPathTest.canonicalFilePath() == "")
+                if (unixPathTest.canonicalFilePath() == "")
                     continue;
 
                 unixPathTest.setFile(unixPathTest.canonicalFilePath() + "/" + cmdline.at(0));
-                if(unixPathTest.canonicalFilePath() == "")
+                if (unixPathTest.canonicalFilePath() == "")
                     continue;
 
                 executable = unixPathTest.filePath();

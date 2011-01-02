@@ -56,7 +56,9 @@ XfireContact::XfireContact(Kopete::Account *pAccount, const QString &uniqueName,
     m_p2pCapable = XF_P2P_UNKNOWN;
     m_p2pSession = NULL;
     m_p2pRequested = FALSE;
+
     m_avatarManager = new QNetworkAccessManager(this);
+    connect(m_avatarManager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotGotAvatar(QNetworkReply *)));
 
     // Get and/or set the avatar
     QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + m_username + ".jpg"));
@@ -84,6 +86,7 @@ void XfireContact::slotGotAvatar(QNetworkReply *pReply)
     image.save(imageLocation, "JPG", -1);
 
     Kopete::Contact::setPhoto(imageLocation);
+    pReply->deleteLater();
 }
 
 XfireContact::~XfireContact()
@@ -97,7 +100,6 @@ void XfireContact::updateAvatar()
 
 void XfireContact::updateAvatar(quint32 pNumber)
 {
-    connect(m_avatarManager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotGotAvatar(QNetworkReply *)));
     m_avatarManager->get(QNetworkRequest(QUrl("http://screenshot.xfire.com/avatar/" + m_username + ".jpg?" + QString(pNumber))));
 }
 
