@@ -69,7 +69,7 @@ void XfireP2PNatcheck::slotSocketRead()
 
     // Check for eventually unknown server
     int i;
-    for(i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++)
     {
         if(sender.toString() == m_servers[i])
             break;

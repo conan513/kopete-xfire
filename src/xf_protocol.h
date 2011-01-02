@@ -37,36 +37,36 @@ class MetaContact;
 
 class XfireProtocol : public Kopete::Protocol
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	// Constructor & destructor
-	XfireProtocol(QObject *parent, const QVariantList &args);
-	~XfireProtocol();
+    // Constructor & destructor
+    XfireProtocol(QObject *parent, const QVariantList &args);
+    ~XfireProtocol();
 
-	// Creates new protocol account
-	virtual Kopete::Account *createNewAccount(const QString &accountID);
-	virtual Kopete::Contact *deserializeContact(Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData, const QMap<QString, QString> &);
+    // Creates new protocol account
+    virtual Kopete::Account *createNewAccount(const QString &accountID);
+    virtual Kopete::Contact *deserializeContact(Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData, const QMap<QString, QString> &);
 
-	// Creates add contact & edit account widget
-	virtual AddContactPage *createAddContactWidget(QWidget *parent, Kopete::Account *account);
-	virtual KopeteEditAccountWidget *createEditAccountWidget(Kopete::Account *account, QWidget *parent);
+    // Creates add contact & edit account widget
+    virtual AddContactPage *createAddContactWidget(QWidget *parent, Kopete::Account *account);
+    virtual KopeteEditAccountWidget *createEditAccountWidget(Kopete::Account *account, QWidget *parent);
 
-	// Statuses
-	const Kopete::OnlineStatus XfireAway;
-	const Kopete::OnlineStatus XfireConnecting;
-	const Kopete::OnlineStatus XfireOffline;
-	const Kopete::OnlineStatus XfireOnline;
+    // Statuses
+    const Kopete::OnlineStatus XfireAway;
+    const Kopete::OnlineStatus XfireConnecting;
+    const Kopete::OnlineStatus XfireOffline;
+    const Kopete::OnlineStatus XfireOnline;
 
-	// Properties
-	const Kopete::PropertyTmpl propGame;
-	const Kopete::PropertyTmpl propServer;
+    // Properties
+    const Kopete::PropertyTmpl propGame;
+    const Kopete::PropertyTmpl propServer;
 
-	static XfireProtocol *protocol();
+    static XfireProtocol *protocol();
 
 private:
-	// Protocol instance
-	static XfireProtocol *m_protocol;
+    // Protocol instance
+    static XfireProtocol *m_protocol;
 };
 
 #endif // XF_PROTOCOL_H

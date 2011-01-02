@@ -28,45 +28,45 @@ class XfireAccount;
 
 class XfireGameDetection : public QObject
 {
-	Q_OBJECT;
+    Q_OBJECT;
 
-	struct processInfo
-	{
-		quint32 pid;
-		QString executable;
-		QStringList cmdline;
-	};
+    struct processInfo
+    {
+        quint32 pid;
+        QString executable;
+        QStringList cmdline;
+    };
 
-	struct gameInfo
-	{
-		quint32 id;
-		quint32 ip;
-		quint32 port;
-	};
+    struct gameInfo
+    {
+        quint32 id;
+        quint32 ip;
+        quint32 port;
+    };
 
 public:
-	// Constructor & destructor
-	XfireGameDetection(XfireAccount *p_account);
-	~XfireGameDetection();
+    // Constructor & destructor
+    XfireGameDetection(XfireAccount *p_account);
+    ~XfireGameDetection();
 
-	quint32 isGameRunning(QString p_executable);
-	gameInfo m_currentGame;
+    quint32 isGameRunning(QString p_executable);
+    gameInfo m_currentGame;
 
 private:
-	XfireAccount *m_account;
-	QList <processInfo> m_processesList;
-	QTimer *m_timer;
+    XfireAccount *m_account;
+    QList <processInfo> m_processesList;
+    QTimer *m_timer;
 
-	QString getWinePath(QStringList pEnviron, QString p_path);
-	void checkRunningGames();
+    QString getWinePath(QStringList pEnviron, QString p_path);
+    void checkRunningGames();
 
-	QHash<QString, QString> getProcessEnviron(QString p_processPath);
+    QHash<QString, QString> getProcessEnviron(QString p_processPath);
 
 private slots:
-	void slotUpdateRunningProcesses();
+    void slotUpdateRunningProcesses();
 
 signals:
-	void gameRunning();
+    void gameRunning();
 };
 
 

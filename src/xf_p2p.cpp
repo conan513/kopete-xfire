@@ -58,7 +58,7 @@ void XfireP2P::slotSocketRead()
 
     m_connection->readDatagram(datagram.data(), datagram.size(), &sender, &port);
 
-    if(datagram.size() < 44)
+    if (datagram.size() < 44)
     {
         kDebug() << "Bad P2P packet received, ignoring";
         return;
@@ -68,7 +68,7 @@ void XfireP2P::slotSocketRead()
     QByteArray moniker = datagram.mid(4, 20);
     XfireP2PSession *session = m_account->p2pSessionByMoniker(moniker);
 
-    if(!session)
+    if (!session)
     {
         kDebug() << "Unknown P2P session, ignoring";
         return;
@@ -77,54 +77,54 @@ void XfireP2P::slotSocketRead()
     quint32 type;
     memcpy(&type, datagram.data() + 24, 4);
 
-    switch(type)
+    switch (type)
     {
     case XFIRE_P2P_TYPE_DATA32:
-        {
-            kDebug() << "Received data32 packet";
-            break;
-        }
+    {
+        kDebug() << "Received data32 packet";
+        break;
+    }
     case XFIRE_P2P_TYPE_PING:
-        {
-            kDebug() << "Received ping packet";
-            sendPong(session);
-            break;
-        }
+    {
+        kDebug() << "Received ping packet";
+        sendPong(session);
+        break;
+    }
     case XFIRE_P2P_TYPE_PONG:
-        {
-            kDebug() << "Received pong packet";
-            break;
-        }
+    {
+        kDebug() << "Received pong packet";
+        break;
+    }
     case XFIRE_P2P_TYPE_ACK:
-        {
-            kDebug() << "Received ack packet";
-            break;
-        }
+    {
+        kDebug() << "Received ack packet";
+        break;
+    }
     case XFIRE_P2P_TYPE_BADCRC:
-        {
-            kDebug() << "Received badcrc packet";
-            break;
-        }
+    {
+        kDebug() << "Received badcrc packet";
+        break;
+    }
     case XFIRE_P2P_TYPE_DATA16:
-        {
-            kDebug() << "Received data16 packet";
-            break;
-        }
+    {
+        kDebug() << "Received data16 packet";
+        break;
+    }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REQ:
-        {
-            kDebug() << "Received keep alive request packet";
-            break;
-        }
+    {
+        kDebug() << "Received keep alive request packet";
+        break;
+    }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REP:
-        {
-            kDebug() << "Received keep alive reply packet";
-            break;
-        }
+    {
+        kDebug() << "Received keep alive reply packet";
+        break;
+    }
     default:
-        {
-            kDebug() << "Received unknown packet type";
-            break;
-        }
+    {
+        kDebug() << "Received unknown packet type";
+        break;
+    }
     }
 }
 

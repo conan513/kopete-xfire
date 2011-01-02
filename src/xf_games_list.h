@@ -24,47 +24,47 @@
 
 class XfireGamesList : public QObject
 {
-	Q_OBJECT;
+    Q_OBJECT;
 
 public:
-	// Constructor and destructor
-	XfireGamesList();
-	~XfireGamesList();
+    // Constructor and destructor
+    XfireGamesList();
+    ~XfireGamesList();
 
-	// Configured games list
-	QList<QString> configuredGames();
-	void updateConfiguredGame(QString pName, QString pLaunchExe, QString pDetectExe);
-	bool gameIsConfigured(QString pName);
+    // Configured games list
+    QList<QString> configuredGames();
+    void updateConfiguredGame(QString pName, QString pLaunchExe, QString pDetectExe);
+    bool gameIsConfigured(QString pName);
 
-	QString getGameNameFromID(quint32 p_gameId);
+    QString getGameNameFromID(quint32 p_gameId);
 
-	QList<QString> getGamesList();
-	QDomElement getConfiguredGame(QString pName);
+    QList<QString> getGamesList();
+    QDomElement getConfiguredGame(QString pName);
 
-	void removeConfiguredGame(QString pName);
+    void removeConfiguredGame(QString pName);
 
-	QDomDocument *mConfiguredGamesList; // FIXME: Make private
-	void saveConfiguredGamesList();
-	void saveGamesList();
+    QDomDocument *mConfiguredGamesList; // FIXME: Make private
+    void saveConfiguredGamesList();
+    void saveGamesList();
 
-	QDomDocument *mGamesList;
-	quint32 getGameIDFromName(QString pName);
+    QDomDocument *mGamesList;
+    quint32 getGameIDFromName(QString pName);
 
 private:
-	
-	QNetworkAccessManager *mManager;
-	void initConfiguredGamesList();
-	void initGamesList();
 
-	quint32 mLocalGamesListVersion;
-	quint32 mRemoteGamesListVersion;
+    QNetworkAccessManager *mManager;
+    void initConfiguredGamesList();
+    void initGamesList();
+
+    quint32 mLocalGamesListVersion;
+    quint32 mRemoteGamesListVersion;
 
 private slots:
-	void slotReceivedGamesList(QNetworkReply *pReply);
-	void slotGamesListUpdated();
+    void slotReceivedGamesList(QNetworkReply *pReply);
+    void slotGamesListUpdated();
 
 signals:
-	void gamesListReady();
+    void gamesListReady();
 };
 
 #endif // XF_GAMES_LIST_H

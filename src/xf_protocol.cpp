@@ -31,84 +31,84 @@ K_PLUGIN_FACTORY(XfireProtocolFactory, registerPlugin<XfireProtocol>(););
 K_EXPORT_PLUGIN(XfireProtocolFactory("kopete_xfire"));
 
 XfireProtocol::XfireProtocol(QObject *parent, const QVariantList &) : Kopete::Protocol(XfireProtocolFactory::componentData(), parent, true),
-XfireOffline(Kopete::OnlineStatus::Offline, 0, this, 0, QStringList(), i18n("Offline"), i18n("Offline"), Kopete::OnlineStatusManager::Offline),
-XfireConnecting(Kopete::OnlineStatus::Connecting, 1, this, 2, QStringList(QString::fromUtf8("xfire_connecting")), i18n("Connecting"), i18n("Connecting"), 0, Kopete::OnlineStatusManager::HideFromMenu),
-XfireOnline(Kopete::OnlineStatus::Online, 2, this, 1, QStringList(), i18n("Online"), i18n("Online"), Kopete::OnlineStatusManager::Online, Kopete::OnlineStatusManager::HasStatusMessage),
-XfireAway(Kopete::OnlineStatus::Away, 3, this, 1, QStringList(), i18n("Away"), i18n("Away"), Kopete::OnlineStatusManager::Away, Kopete::OnlineStatusManager::HasStatusMessage),
-propGame("currentGame", i18n("Game"), QString(), Kopete::PropertyTmpl::PersistentProperty  | Kopete::PropertyTmpl::PrivateProperty),
-propServer("currentServer", i18n("Server"), QString(), Kopete::PropertyTmpl::PersistentProperty  | Kopete::PropertyTmpl::PrivateProperty)
+        XfireOffline(Kopete::OnlineStatus::Offline, 0, this, 0, QStringList(), i18n("Offline"), i18n("Offline"), Kopete::OnlineStatusManager::Offline),
+        XfireConnecting(Kopete::OnlineStatus::Connecting, 1, this, 2, QStringList(QString::fromUtf8("xfire_connecting")), i18n("Connecting"), i18n("Connecting"), 0, Kopete::OnlineStatusManager::HideFromMenu),
+        XfireOnline(Kopete::OnlineStatus::Online, 2, this, 1, QStringList(), i18n("Online"), i18n("Online"), Kopete::OnlineStatusManager::Online, Kopete::OnlineStatusManager::HasStatusMessage),
+        XfireAway(Kopete::OnlineStatus::Away, 3, this, 1, QStringList(), i18n("Away"), i18n("Away"), Kopete::OnlineStatusManager::Away, Kopete::OnlineStatusManager::HasStatusMessage),
+        propGame("currentGame", i18n("Game"), QString(), Kopete::PropertyTmpl::PersistentProperty  | Kopete::PropertyTmpl::PrivateProperty),
+        propServer("currentServer", i18n("Server"), QString(), Kopete::PropertyTmpl::PersistentProperty  | Kopete::PropertyTmpl::PrivateProperty)
 {
-	// Load protocol only once
-	if(m_protocol)
-	{
-		kDebug() << "Warning: Protocol already loaded, aborting initialization.";
-		return;
-	}
+    // Load protocol only once
+    if (m_protocol)
+    {
+        kDebug() << "Warning: Protocol already loaded, aborting initialization.";
+        return;
+    }
 
-	kDebug() << "Protocol loaded";
-	m_protocol = this;
+    kDebug() << "Protocol loaded";
+    m_protocol = this;
 
-	addAddressBookField("messaging/xfire", Kopete::Plugin::MakeIndexField);
-	
-	// Contact properties
-	QStringList shownProps = Kopete::AppearanceSettings::self()->toolTipContents();
-	if (!shownProps.contains("currentGame"))
-		shownProps << QString::fromLatin1("currentGame");
+    addAddressBookField("messaging/xfire", Kopete::Plugin::MakeIndexField);
 
-	if (!shownProps.contains("currentServer"))
-		shownProps << QString::fromLatin1("currentServer");
+    // Contact properties
+    QStringList shownProps = Kopete::AppearanceSettings::self()->toolTipContents();
+    if (!shownProps.contains("currentGame"))
+        shownProps << QString::fromLatin1("currentGame");
 
-	Kopete::AppearanceSettings::self()->setToolTipContents(shownProps);
+    if (!shownProps.contains("currentServer"))
+        shownProps << QString::fromLatin1("currentServer");
+
+    Kopete::AppearanceSettings::self()->setToolTipContents(shownProps);
 }
 
 XfireProtocol::~XfireProtocol()
 {
-	m_protocol = 0;
+    m_protocol = 0;
 }
 
 AddContactPage *XfireProtocol::createAddContactWidget(QWidget *parent, Kopete::Account *account)
 {
-	kDebug() << "Creating add contact widget";
-	return new XfireAddContactPage(account, parent);
+    kDebug() << "Creating add contact widget";
+    return new XfireAddContactPage(account, parent);
 }
 
 KopeteEditAccountWidget *XfireProtocol::createEditAccountWidget(Kopete::Account *account, QWidget *parent)
 {
-	kDebug() << "Creating edit account widget";
-	return new XfireEditAccountWidget(parent, account);
+    kDebug() << "Creating edit account widget";
+    return new XfireEditAccountWidget(parent, account);
 }
 
 Kopete::Account* XfireProtocol::createNewAccount(const QString &accountId)
 {
-	kDebug() << "Creating new account:" << accountId;
+    kDebug() << "Creating new account:" << accountId;
 
-	// Don't create an account twice
-	if(Kopete::AccountManager::self()->findAccount(pluginId(), accountId))
-		return 0;
+    // Don't create an account twice
+    if (Kopete::AccountManager::self()->findAccount(pluginId(), accountId))
+        return 0;
 
-	return new XfireAccount(this, accountId);
+    return new XfireAccount(this, accountId);
 }
 
 XfireProtocol* XfireProtocol::protocol()
 {
-	return m_protocol;
+    return m_protocol;
 }
 
 Kopete::Contact* XfireProtocol::deserializeContact(Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData, const QMap<QString, QString> &)
 {
-	QString contactId = serializedData["contactId"];
-	QString accountId = serializedData["accountId"];
+    QString contactId = serializedData["contactId"];
+    QString accountId = serializedData["accountId"];
 
-	XfireAccount *thisAccount = static_cast<XfireAccount*>(Kopete::AccountManager::self()->findAccount(pluginId(), accountId));
-	if(!thisAccount)
-		return 0;
+    XfireAccount *thisAccount = static_cast<XfireAccount*>(Kopete::AccountManager::self()->findAccount(pluginId(), accountId));
+    if (!thisAccount)
+        return 0;
 
-	if(thisAccount->findContact(contactId))
-	{
-		kDebug() << "User " << contactId << " already in contacts map";
-		return 0;
-	}
+    if (thisAccount->findContact(contactId))
+    {
+        kDebug() << "User " << contactId << " already in contacts map";
+        return 0;
+    }
 
-	thisAccount->addContact(contactId, metaContact, Kopete::Account::DontChangeKABC);
-	return thisAccount->contacts().value(contactId);
+    thisAccount->addContact(contactId, metaContact, Kopete::Account::DontChangeKABC);
+    return thisAccount->contacts().value(contactId);
 }

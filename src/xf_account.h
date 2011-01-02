@@ -39,78 +39,78 @@ class XfireServer;
 
 class XfireAccount : public Kopete::PasswordedAccount
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	// Constructor and destructor
-	XfireAccount(XfireProtocol *parent, const QString &accountID);
-	~XfireAccount();
+    // Constructor and destructor
+    XfireAccount(XfireProtocol *parent, const QString &accountID);
+    ~XfireAccount();
 
-	Xfire::SessionID m_sid;
+    Xfire::SessionID m_sid;
 
-	virtual bool createContact(const QString &p_contactId, Kopete::MetaContact *p_parentContact);
-	virtual void fillActionMenu(KActionMenu *p_actionMenu);
+    virtual bool createContact(const QString &p_contactId, Kopete::MetaContact *p_parentContact);
+    virtual void fillActionMenu(KActionMenu *p_actionMenu);
 
-	// Xfire server and port
-	QString serverName() const;
-	uint serverPort() const;
-	uint protocolVersion() const;
+    // Xfire server and port
+    QString serverName() const;
+    uint serverPort() const;
+    uint protocolVersion() const;
 
-	XfireServer *server();
+    XfireServer *server();
 
-	// Games list
-	XfireGamesList *m_gamesList;
-	XfireGameDetection *m_gamesDetection;
+    // Games list
+    XfireGamesList *m_gamesList;
+    XfireGameDetection *m_gamesDetection;
 
-	void updateContactID(const QString &p_contactId, Xfire::Int32Attribute *p_id);
-	void updateContactGameInformation(const Xfire::SessionID &p_sid, quint32 p_gameId);
-	void setStatus(const Xfire::SessionID &p_sid, const QString &p_statusMessage);
-	void newContact(const QString &p_contactId, const QString &p_name, int p_groupId);
+    void updateContactID(const QString &p_contactId, Xfire::Int32Attribute *p_id);
+    void updateContactGameInformation(const Xfire::SessionID &p_sid, quint32 p_gameId);
+    void setStatus(const Xfire::SessionID &p_sid, const QString &p_statusMessage);
+    void newContact(const QString &p_contactId, const QString &p_name, int p_groupId);
 
-	Kopete::Contact *findContact(QString p_contactId);
-	Kopete::Contact *findContact(const Xfire::SessionID &p_sid);
-	Kopete::Contact *findContact(quint32 p_id);
+    Kopete::Contact *findContact(QString p_contactId);
+    Kopete::Contact *findContact(const Xfire::SessionID &p_sid);
+    Kopete::Contact *findContact(quint32 p_id);
 
-	bool isGameDetectionEnabled();
-	bool isInformAccountsEnabled();
-	bool isFriendsOfFriendsEnabled();
-	bool isPeerToPeerEnabled();
+    bool isGameDetectionEnabled();
+    bool isInformAccountsEnabled();
+    bool isFriendsOfFriendsEnabled();
+    bool isPeerToPeerEnabled();
 
-	void logOff(Kopete::Account::DisconnectReason p_reason);
+    void logOff(Kopete::Account::DisconnectReason p_reason);
 
-	// P2P
-	XfireP2P *m_p2pConnection;
-	XfireP2PSession *p2pSessionByMoniker(QByteArray p_moniker);
+    // P2P
+    XfireP2P *m_p2pConnection;
+    XfireP2PSession *p2pSessionByMoniker(QByteArray p_moniker);
 
 private:
-	XfireServer *m_server;
-	KAction *m_openGamesManager;
-	XfireGamesManager *m_gamesManager;
+    XfireServer *m_server;
+    KAction *m_openGamesManager;
+    XfireGamesManager *m_gamesManager;
 
 protected:
-	QString m_password;
+    QString m_password;
 
 public slots:
-	virtual void connectWithPassword(const QString &p_password);
-	virtual void disconnect();
+    virtual void connectWithPassword(const QString &p_password);
+    virtual void disconnect();
 
-	virtual void setOnlineStatus(const Kopete::OnlineStatus& p_status , const Kopete::StatusMessage &p_reason = Kopete::StatusMessage(), const OnlineStatusOptions &p_options = None);
-	virtual void setStatusMessage(const Kopete::StatusMessage &p_statusMessage);
+    virtual void setOnlineStatus(const Kopete::OnlineStatus& p_status , const Kopete::StatusMessage &p_reason = Kopete::StatusMessage(), const OnlineStatusOptions &p_options = None);
+    virtual void setStatusMessage(const Kopete::StatusMessage &p_statusMessage);
 
-	void changeOurStatus(const Kopete::OnlineStatus &p_status);
-	void updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttribute *p_sid);
+    void changeOurStatus(const Kopete::OnlineStatus &p_status);
+    void updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttribute *p_sid);
 
-	void slotOpenGamesManager();
+    void slotOpenGamesManager();
 
-	void slotGoOffline();
-	void slotGoOnline();
-	void slotGoAway();
+    void slotGoOffline();
+    void slotGoOnline();
+    void slotGoAway();
 
-	void slotVersionUpdated();
+    void slotVersionUpdated();
 
 protected slots:
-	void slotContinueConnecting();
-	void slotSendIngameStatus();
+    void slotContinueConnecting();
+    void slotSendIngameStatus();
 };
 
 #endif // XF_ACCOUNT_H

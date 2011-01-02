@@ -36,30 +36,30 @@ class XfireP2PNatcheck;
 
 class XfireP2P : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		// Constructor & destructor
-		XfireP2P(XfireAccount *p_account);
-		~XfireP2P();
+public:
+    // Constructor & destructor
+    XfireP2P(XfireAccount *p_account);
+    ~XfireP2P();
 
-		XfireAccount *m_account;
-        quint32 m_messageId;
+    XfireAccount *m_account;
+    quint32 m_messageId;
 
-		QUdpSocket *m_connection;
-		QList<XfireP2PSession *> m_sessions;
-		XfireP2PNatcheck *m_natCheck;
+    QUdpSocket *m_connection;
+    QList<XfireP2PSession *> m_sessions;
+    XfireP2PNatcheck *m_natCheck;
 
-		bool isConnected();
-		void addSession(XfireP2PSession *p_session);
+    bool isConnected();
+    void addSession(XfireP2PSession *p_session);
 
-		QByteArray createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen);
-		void sendPing(XfireP2PSession *p_session);
-        void sendPong(XfireP2PSession *p_session);
+    QByteArray createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen);
+    void sendPing(XfireP2PSession *p_session);
+    void sendPong(XfireP2PSession *p_session);
 
-	public slots:
-		void slotSocketRead();
-		void slotNatCheckReady();
+public slots:
+    void slotSocketRead();
+    void slotNatCheckReady();
 };
 
 #endif // XF_P2P_H

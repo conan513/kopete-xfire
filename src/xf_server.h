@@ -37,64 +37,64 @@
 
 class XfireServer : public QObject
 {
-	Q_OBJECT;
+    Q_OBJECT;
 
 public:
-	// Constructor and destructor
-	XfireServer(XfireAccount *parent, const QString accountId, const QString accountPass, const QString serverName, const uint serverPort);
-	~XfireServer();
+    // Constructor and destructor
+    XfireServer(XfireAccount *parent, const QString accountId, const QString accountPass, const QString serverName, const uint serverPort);
+    ~XfireServer();
 
-	// Xfire server and port
-	QString serverName() const;
-	uint serverPort() const;
+    // Xfire server and port
+    QString serverName() const;
+    uint serverPort() const;
 
-	// Packets sent to the server
-	void sendAskFriendExtendedInformation(quint32 p_uid);
-	void sendChat(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, const QString &p_message);
-	void sendChatConfirmation(const Xfire::SessionID &p_sid, quint32 p_messageIndex);
-	void sendFriendInvitation(QString &p_username, QString &p_message);
-	void sendFriendInvitationResponse(QString p_username, bool p_response);
-	void sendFriendNetworkRequest(QList<Xfire::SIDAttribute*> fofs);
-	void sendIngameStatus(quint32 p_gameId, quint32 p_ip, quint32 p_port);
-	void sendNickname(const QString &p_nickname);
-	void sendP2pSession(const Xfire::SessionID &p_sid, quint32 p_ip, quint16 p_port, quint32 p_localIp, quint16 p_localPort, quint32 p_natType, const QString &p_salt);
-	void sendStatusMessage(const QString &p_message);
-	void sendTypingStatus(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, bool p_isTyping);
+    // Packets sent to the server
+    void sendAskFriendExtendedInformation(quint32 p_uid);
+    void sendChat(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, const QString &p_message);
+    void sendChatConfirmation(const Xfire::SessionID &p_sid, quint32 p_messageIndex);
+    void sendFriendInvitation(QString &p_username, QString &p_message);
+    void sendFriendInvitationResponse(QString p_username, bool p_response);
+    void sendFriendNetworkRequest(QList<Xfire::SIDAttribute*> fofs);
+    void sendIngameStatus(quint32 p_gameId, quint32 p_ip, quint32 p_port);
+    void sendNickname(const QString &p_nickname);
+    void sendP2pSession(const Xfire::SessionID &p_sid, quint32 p_ip, quint16 p_port, quint32 p_localIp, quint16 p_localPort, quint32 p_natType, const QString &p_salt);
+    void sendStatusMessage(const QString &p_message);
+    void sendTypingStatus(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, bool p_isTyping);
 
-	QTcpSocket *m_connection;
+    QTcpSocket *m_connection;
 
     QString m_salt; // FIXME: Private or public?
 
 private:
-	XfireAccount *m_account;
-	
-	// Login information
-	QString m_username;
-	QString m_password;
+    XfireAccount *m_account;
 
-	// Connection
-	QByteArray m_buffer;
-	QTimer *m_heartBeat;
-	QTimer *m_connectionTimeout;
+    // Login information
+    QString m_username;
+    QString m_password;
+
+    // Connection
+    QByteArray m_buffer;
+    QTimer *m_heartBeat;
+    QTimer *m_connectionTimeout;
 
 public slots:
-	void closeConnection();
+    void closeConnection();
 
 private slots:
-	void slotConnected();
-	void socketRead();
-	void login(const QString &p_salt);
-	void handlePacket(const Xfire::Packet *p_packet);
-	void slotSendHeartBeat();
-	void slotConnectionTimedOut();
-	void slotAddedInfoEventActionActivated(uint p_actionId);
+    void slotConnected();
+    void socketRead();
+    void login(const QString &p_salt);
+    void handlePacket(const Xfire::Packet *p_packet);
+    void slotSendHeartBeat();
+    void slotConnectionTimedOut();
+    void slotAddedInfoEventActionActivated(uint p_actionId);
 
 signals:
-	void goOffline();
-	void goOnline();
+    void goOffline();
+    void goOnline();
 
-	void addUser(const QString &p_contactId, const QString &p_displayName, int p_groupId);
-	void ourStatusChanged(const Kopete::OnlineStatus &p_status);
+    void addUser(const QString &p_contactId, const QString &p_displayName, int p_groupId);
+    void ourStatusChanged(const Kopete::OnlineStatus &p_status);
 };
 
 #endif // XF_SERVER_H

@@ -26,30 +26,30 @@
 
 namespace Kopete
 {
-    class Account;
+class Account;
 }
 namespace Kopete
 {
-    class MetaContact;
+class MetaContact;
 }
 namespace Ui
 {
-    class WlmAddUI;
+class WlmAddUI;
 }
 
 class XfireAddContactPage : public AddContactPage
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	XfireAddContactPage(Kopete::Account *account, QWidget *parent = 0);
-	~XfireAddContactPage();
+    XfireAddContactPage(Kopete::Account *account, QWidget *parent = 0);
+    ~XfireAddContactPage();
 
-	virtual bool apply(Kopete::Account *a, Kopete::MetaContact *m);
-	virtual bool validateData();
+    virtual bool apply(Kopete::Account *a, Kopete::MetaContact *m);
+    virtual bool validateData();
 
 protected:
-	Ui::XfireAddContact *mWidget;
-	Kopete::Account * mAccount;
+    Ui::XfireAddContact *mWidget;
+    Kopete::Account * mAccount;
 };
 
 #endif // XF_ADD_CONTACT_H

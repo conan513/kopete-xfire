@@ -61,7 +61,7 @@ XfireContact::XfireContact(Kopete::Account *pAccount, const QString &uniqueName,
     QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + m_username + ".jpg"));
     QFileInfo file(imageLocation);
 
-    if(file.exists())
+    if (file.exists())
         Kopete::Contact::setPhoto(imageLocation);
     else
         updateAvatar();
@@ -69,13 +69,13 @@ XfireContact::XfireContact(Kopete::Account *pAccount, const QString &uniqueName,
 
 void XfireContact::slotGotAvatar(QNetworkReply *pReply)
 {
-    if(pReply->error() == QNetworkReply::ContentNotFoundError)
+    if (pReply->error() == QNetworkReply::ContentNotFoundError)
         return;
 
     QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + m_username + ".jpg"));
     QByteArray rawImage = pReply->readAll();
 
-    if(rawImage.isEmpty())
+    if (rawImage.isEmpty())
         return;
 
     QImage image;
@@ -115,7 +115,7 @@ void XfireContact::slotChatSessionDestroyed()
 
 Kopete::ChatSession* XfireContact::manager(CanCreateFlags canCreateFlags)
 {
-    if(m_chatSession != 0L || canCreateFlags == Kopete::Contact::CannotCreate)
+    if (m_chatSession != 0L || canCreateFlags == Kopete::Contact::CannotCreate)
         return m_chatSession;
 
     QList<Kopete::Contact *>contacts;
@@ -140,13 +140,13 @@ void XfireContact::slotSendTyping(bool p_isTyping)
 void XfireContact::sendMessage(Kopete::Message &p_message)
 {
     // Request P2P information if not known yet
-    if(m_p2pCapable == XF_P2P_UNKNOWN)
+    if (m_p2pCapable == XF_P2P_UNKNOWN)
         requestP2P();
 
     XfireAccount *acc = static_cast<XfireAccount *>(account());
 
     // Send IM through P2P
-    if(m_p2pCapable == XF_P2P_YES)
+    if (m_p2pCapable == XF_P2P_YES)
     {
         kDebug() << "Sending P2P IM to:" << m_username;
         // FIXME: Not implemented yet
@@ -160,7 +160,7 @@ void XfireContact::sendMessage(Kopete::Message &p_message)
 
 void XfireContact::requestP2P()
 {
-    if(!m_p2pSession)
+    if (!m_p2pSession)
     {
         // Generate random salt
         /*QCryptographicHash hasher(QCryptographicHash::Sha1);
@@ -200,11 +200,11 @@ void XfireContact::receivedMessage(const QString &pMessage)
 
 void XfireContact::setOnlineStatus(const Kopete::OnlineStatus &status)
 {
-    if(status == XfireProtocol::protocol()->XfireOnline)
+    if (status == XfireProtocol::protocol()->XfireOnline)
         Kopete::Contact::setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
-    else if(status == XfireProtocol::protocol()->XfireAway)
+    else if (status == XfireProtocol::protocol()->XfireAway)
         Kopete::Contact::setOnlineStatus(XfireProtocol::protocol()->XfireAway);
-    else if(status == XfireProtocol::protocol()->XfireOffline)
+    else if (status == XfireProtocol::protocol()->XfireOffline)
         Kopete::Contact::setOnlineStatus(XfireProtocol::protocol()->XfireOffline);
 }
 

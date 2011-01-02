@@ -35,39 +35,39 @@
 
 XfireAddContactPage::XfireAddContactPage(Kopete::Account *account, QWidget *parent): AddContactPage(parent), mAccount(account)
 {
-	mWidget = new Ui::XfireAddContact();
-	mWidget->setupUi(this);
-	mWidget->prefUsername->setFocus();
+    mWidget = new Ui::XfireAddContact();
+    mWidget->setupUi(this);
+    mWidget->prefUsername->setFocus();
 }
 
 XfireAddContactPage::~XfireAddContactPage()
 {
-	delete mWidget;
+    delete mWidget;
 }
 
 bool XfireAddContactPage::apply(Kopete::Account *account, Kopete::MetaContact *metaContact)
 {
-	QString contactId = mWidget->prefUsername->text().trimmed();
-	QString message = mWidget->prefMessage->toPlainText();
+    QString contactId = mWidget->prefUsername->text().trimmed();
+    QString message = mWidget->prefMessage->toPlainText();
 
-	XfireAccount *acc = static_cast<XfireAccount *>(account);
-	acc->server()->sendFriendInvitation(contactId, message);
-	return account->addContact(contactId, metaContact, Kopete::Account::Temporary);
+    XfireAccount *acc = static_cast<XfireAccount *>(account);
+    acc->server()->sendFriendInvitation(contactId, message);
+    return account->addContact(contactId, metaContact, Kopete::Account::Temporary);
 }
 
 bool XfireAddContactPage::validateData ()
 {
-	if (!mAccount->isConnected())
-	{
-		KMessageBox::sorry(this, i18n("You need to be connected in order to add contacts."), i18n("Not connected"), QFlags<KMessageBox::Option>());
-		return false;
-	}
+    if(!mAccount->isConnected())
+    {
+        KMessageBox::sorry(this, i18n("You need to be connected in order to add contacts."), i18n("Not connected"), QFlags<KMessageBox::Option>());
+        return false;
+    }
 
-	if (mWidget->prefUsername->text().isEmpty())
-	{
-		KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(), KMessageBox::Sorry, i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n("Xfire protocol plugin"));
-		return false;
-	}
+    if(mWidget->prefUsername->text().isEmpty())
+    {
+        KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(), KMessageBox::Sorry, i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n("Xfire protocol plugin"));
+        return false;
+    }
 
-	return true;
+    return true;
 }

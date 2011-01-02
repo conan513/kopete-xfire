@@ -26,30 +26,34 @@
 #include "ui_edit_account.h"
 
 class QVBoxLayout;
-namespace Kopete { class Account; }
-namespace Ui { class XfireAccountPreferences; }
+namespace Kopete {
+class Account;
+}
+namespace Ui {
+class XfireAccountPreferences;
+}
 
 class XfireEditAccountWidget : public QWidget, public KopeteEditAccountWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	// Constructor and destructor
-	XfireEditAccountWidget(QWidget *parent,	Kopete::Account *account);
-	~XfireEditAccountWidget();
+    // Constructor and destructor
+    XfireEditAccountWidget(QWidget *parent,	Kopete::Account *account);
+    ~XfireEditAccountWidget();
 
-	virtual Kopete::Account *apply();
-	virtual bool validateData();
+    virtual Kopete::Account *apply();
+    virtual bool validateData();
 
 protected:
-	Ui::XfireEditAccount *mWidget;
+    Ui::XfireEditAccount *mWidget;
 
 private:
-	XfireAccount *mAccount;
-	void updatePreferences();
+    XfireAccount *mAccount;
+    void updatePreferences();
 
 private slots:
-	void slotOpenRegister();
+    void slotOpenRegister();
 };
 
 #endif // XF_EDIT_ACCOUNT_H
