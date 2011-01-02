@@ -219,8 +219,7 @@ void XfireAccount::updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttri
     {
         if (c->m_id == p_id->value())
         {
-            // Update the SID of the contact
-            c->m_session = p_sid->sid();
+            c->m_session = p_sid->sid(); // Update the SID of the contact
 
             // Set the online status of the contact
             if (p_sid->sid().isValid())
