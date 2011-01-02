@@ -28,7 +28,7 @@
 #include <kopeteproperty.h>
 #include <kopeteprotocol.h>
 
-#define XFIRE_PROTO_VERSION 126
+#define XFIRE_PROTO_VERSION 127
 
 namespace Kopete {
 class Contact;
