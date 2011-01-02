@@ -425,38 +425,45 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet)
                 {
                     if(from->m_p2pCapable == XfireContact::XF_P2P_YES || from->m_p2pCapable == XfireContact::XF_P2P_UNKNOWN)
                     {
-                        if(natType == 1 ||(( natType == 2 || natType == 3) && m_account->m_p2pConnection->m_natCheck->m_type == 1) ||
-                               (natType == 4 &&(m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4)))
+                        if(m_account->m_p2pConnection)
                         {
-                            if(!from->m_p2pSession)
+                            if(natType == 1 ||(( natType == 2 || natType == 3) && m_account->m_p2pConnection->m_natCheck->m_type == 1) ||
+                                   (natType == 4 &&(m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4)))
                             {
-                                kDebug() << from->m_username + ": creating session";
-                                from->m_p2pSession = new XfireP2PSession(from, salt->string());
-                                m_account->m_p2pConnection->addSession(from->m_p2pSession);
+                                if(!from->m_p2pSession)
+                                {
+                                    kDebug() << from->m_username + ": creating session";
+                                    from->m_p2pSession = new XfireP2PSession(from, salt->string());
+                                    m_account->m_p2pConnection->addSession(from->m_p2pSession);
+                                }
+
+                                from->m_p2pCapable = XfireContact::XF_P2P_YES;
+                                kDebug() << from->m_username + ": compatible buddy";
+
+                                from->m_p2pSession->setRemoteAddress(ip->value(), port->value());
+                                from->m_p2pSession->setLocalAddress(localip->value(), localport->value());
+                            }
+                            else
+                            {
+                                from->m_p2pCapable = XfireContact::XF_P2P_NO;
+                                kDebug() << from->m_username + ": incompatible buddy";
+                                // FIXME: Remove session
                             }
 
-                            from->m_p2pCapable = XfireContact::XF_P2P_YES;
-                            kDebug() << from->m_username + ": compatible buddy";
+                            /*if(from->m_p2pRequested == FALSE)
+                            {*/
+                            sendP2pSession(from->m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
+                                           m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
+                                           m_account->m_p2pConnection->m_natCheck->m_type, salt->string());
 
-                            from->m_p2pSession->setRemoteAddress(ip->value(), port->value());
-                            from->m_p2pSession->setLocalAddress(localip->value(), localport->value());
+                                // from->m_p2pRequested = TRUE;
+                                kDebug() << from->m_username + ": peer to peer request received, sent own data";
+                            //}
                         }
                         else
                         {
-                            from->m_p2pCapable = XfireContact::XF_P2P_NO;
-                            kDebug() << from->m_username + ": incompatible buddy";
-                            // FIXME: Remove session
+                            kDebug() << from->m_username + ":ignoring p2p information as p2p capabilities are disabled";
                         }
-
-                        /*if(from->m_p2pRequested == FALSE)
-                        {*/
-                        sendP2pSession(from->m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
-                                       m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                       m_account->m_p2pConnection->m_natCheck->m_type, salt->string());
-
-                            // from->m_p2pRequested = TRUE;
-                            kDebug() << from->m_username + ": peer to peer request received, sent own data";
-                        //}
                     }
                     else
                     {

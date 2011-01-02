@@ -40,7 +40,9 @@
 #include "xf_protocol.h"
 #include "xf_server.h"
 
-XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId) : Kopete::PasswordedAccount(parent, accountId)
+XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId)
+	: Kopete::PasswordedAccount(parent, accountId)
+	, m_gamesDetection(0)
 {
 	kDebug() << "Instantiating account:" << accountId;
 
@@ -55,7 +57,11 @@ XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId) : Ko
 XfireAccount::~XfireAccount()
 {
 	delete m_gamesManager;
-	delete m_gamesDetection;
+	
+	if (m_gamesDetection)
+	{
+		delete m_gamesDetection;
+	}
 }
 
 void XfireAccount::fillActionMenu(KActionMenu *p_actionMenu)
