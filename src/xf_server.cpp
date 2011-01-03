@@ -28,10 +28,8 @@
 #include "xf_p2p_natcheck.h"
 #include "xf_server.h"
 
-XfireServer::XfireServer ( XfireAccount *parent, const QString accountId, const QString accountPass, const QString serverName, const uint serverPort ) : QObject ( parent )
+XfireServer::XfireServer ( XfireAccount *parent, const QString accountId, const QString accountPass, const QString serverName, const uint serverPort ) : QObject ( parent ), m_account(parent)
 {
-    m_account = parent;
-
     // Set account & password
     m_username = accountId;
     m_password = accountPass;

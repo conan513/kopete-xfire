@@ -32,32 +32,26 @@ class XfireGamesManager : public QDialog
     Q_OBJECT;
 
 public:
-    XfireGamesManager ( XfireAccount *pAccount );
+    XfireGamesManager ( XfireAccount *p_account );
     ~XfireGamesManager();
 
 private:
-    XfireAccount *mAccount;
-    Ui::Dialog *mDialog;
+    XfireAccount *m_account;
+    Ui::Dialog *m_dialog;
 
-    QTreeWidgetItem *configuredItem;
-    QTreeWidgetItem *notConfiguredItem;
+    QTreeWidgetItem *m_configuredItem;
+    QTreeWidgetItem *m_notConfiguredItem;
 
 
 public slots:
-	void slotUpdate();
+    void slotUpdate();
 
 private slots:
-    void slotGameDetectionStatusChanged ( int pStatus );
-    void slotConfiguringGameChanged ( QTreeWidgetItem *current, QTreeWidgetItem *previous );
+    void slotGameDetectionStatusChanged ( int p_status );
+    void slotConfiguringGameChanged ( QTreeWidgetItem *p_current, QTreeWidgetItem *p_previous );
     void slotApplyGameConfiguration();
     void slotResetGameConfiguration();
     void slotDetectGames();
-};
-
-class MyThread : public QThread
-{
-public:
-    void run();
 };
 
 #endif // XF_GAMES_MANAGER_H

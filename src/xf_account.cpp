@@ -88,7 +88,6 @@ void XfireAccount::connectWithPassword ( const QString &p_password )
         return;
 
     m_password = p_password;
-
     m_gamesList->slotUpdate();
 }
 

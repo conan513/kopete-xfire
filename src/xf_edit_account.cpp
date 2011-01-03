@@ -41,7 +41,7 @@ XfireEditAccountWidget::XfireEditAccountWidget(QWidget *parent, Kopete::Account 
     connect(mWidget->pbtRegister, SIGNAL(clicked()), this, SLOT(slotOpenRegister()));
 
     // Set values if edting already-added account
-    if(account)
+    if (account)
     {
         mAccount = static_cast<XfireAccount*>(account);
         mWidget->prefUsername->setText(mAccount->accountId());
@@ -68,7 +68,7 @@ void XfireEditAccountWidget::updatePreferences()
     mWidget->prefFriendsOfFriends->setChecked(account()->configGroup()->readEntry("FriendsOfFriends", true));
     mWidget->prefPeerToPeer->setChecked(account()->configGroup()->readEntry("PeerToPeer", false));
 
-    if(account()->configGroup()->readEntry("CustomServer", false))
+    if (account()->configGroup()->readEntry("CustomServer", false))
         mWidget->prefOverrideServer->animateClick(); // FIXME: Best way to trigger the clicked() slot?
 
     mWidget->prefServer->setText(account()->configGroup()->readEntry("ServerIP", "cs.xfire.com"));
@@ -80,7 +80,7 @@ void XfireEditAccountWidget::updatePreferences()
 
 bool XfireEditAccountWidget::validateData()
 {
-    if(!account() && mWidget->prefUsername->text().isEmpty())
+    if (!account() && mWidget->prefUsername->text().isEmpty())
     {
         KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(), KMessageBox::Sorry, i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n( "Xfire Protocol Plugin"));
         return false;
@@ -91,7 +91,7 @@ bool XfireEditAccountWidget::validateData()
 
 Kopete::Account* XfireEditAccountWidget::apply()
 {
-    if(!account())
+    if (!account())
         setAccount(new XfireAccount(XfireProtocol::protocol(), mWidget->prefUsername->text().trimmed()));
 
     XfireAccount *acc = static_cast<XfireAccount*>(account());

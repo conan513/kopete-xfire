@@ -33,28 +33,28 @@ public:
 
     // Configured games list
     QList<QString> configuredGames();
-    void updateConfiguredGame(QString pName, QString pLaunchExe, QString pDetectExe);
-    bool gameIsConfigured(QString pName);
+    void updateConfiguredGame(QString p_name, QString pLaunchExe, QString p_detectExe);
+    bool gameIsConfigured(QString p_name);
 
     QString getGameNameFromID(quint32 p_gameId);
 
     QList<QString> getGamesList();
-    QDomElement getConfiguredGame(QString pName);
+    QDomElement getConfiguredGame(QString p_name);
 
-    void removeConfiguredGame(QString pName);
+    void removeConfiguredGame(QString p_name);
 
     QDomDocument *mConfiguredGamesList; // FIXME: Make private
     void saveConfiguredGamesList();
     void saveGamesList();
 
     QDomDocument *mGamesList;
-    quint32 getGameIDFromName(QString pName);
+    quint32 getGameIDFromName(QString p_name);
 
     void slotUpdate();
 
 private:
 
-    QNetworkAccessManager *mManager;
+    QNetworkAccessManager *m_manager;
     void initConfiguredGamesList();
     void initGamesList();
 
@@ -62,7 +62,7 @@ private:
     quint32 mRemoteGamesListVersion;
 
 private slots:
-    void slotReceivedGamesList(QNetworkReply *pReply);
+    void slotReceivedGamesList(QNetworkReply *p_reply);
     void slotGamesListUpdated();
 
 signals:

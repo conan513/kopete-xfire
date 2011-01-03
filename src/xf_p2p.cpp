@@ -25,10 +25,8 @@
 #include "xf_contact.h"
 #include "xf_server.h"
 
-XfireP2P::XfireP2P(XfireAccount *p_account)
+XfireP2P::XfireP2P(XfireAccount *p_account) : m_account(p_account)
 {
-    m_account = p_account;
-
     // Start NAT type check
     m_natCheck = new XfireP2PNatcheck(this);
     connect(m_natCheck, SIGNAL(ready()), this, SLOT(slotNatCheckReady()));
@@ -58,7 +56,7 @@ void XfireP2P::slotSocketRead()
 
     m_connection->readDatagram(datagram.data(), datagram.size(), &sender, &port);
 
-    if(datagram.size() < 44)
+    if (datagram.size() < 44)
     {
         kDebug() << "Bad P2P packet received, ignoring";
         return;
@@ -68,7 +66,7 @@ void XfireP2P::slotSocketRead()
     QByteArray moniker = datagram.mid(4, 20);
     XfireP2PSession *session = m_account->p2pSessionByMoniker(moniker);
 
-    if(!session)
+    if (!session)
     {
         kDebug() << "Unknown P2P session, ignoring";
         return;

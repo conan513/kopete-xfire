@@ -30,11 +30,11 @@
 
 XfireGamesList::XfireGamesList()
 {
-    mManager = new QNetworkAccessManager(this);
+    m_manager = new QNetworkAccessManager(this);
     mConfiguredGamesList = new QDomDocument();
     mGamesList = new QDomDocument();
 
-    connect(mManager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotReceivedGamesList(QNetworkReply *)));
+    connect(m_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotReceivedGamesList(QNetworkReply *)));
 }
 
 XfireGamesList::~XfireGamesList()
@@ -100,7 +100,7 @@ void XfireGamesList::slotReceivedGamesList(QNetworkReply *pReply)
         mRemoteGamesListVersion = version->firstChildElement("gfire").attributes().namedItem("games_list_version").nodeValue().toInt();
 
         if (mRemoteGamesListVersion != mLocalGamesListVersion)
-            mManager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_games.xml"))); // Download games list file
+            m_manager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_games.xml"))); // Download games list file
         else
             emit gamesListReady();
 
@@ -133,27 +133,27 @@ QString XfireGamesList::getGameNameFromID(quint32 p_gameId)
     return 0L;
 }
 
-quint32 XfireGamesList::getGameIDFromName(QString pName)
+quint32 XfireGamesList::getGameIDFromName(QString p_name)
 {
     QDomNodeList domGames = mGamesList->elementsByTagName("game");
     for (int i = 0; i < domGames.count(); i++)
     {
         QString gameName = domGames.at(i).attributes().namedItem("name").nodeValue();
-        if (gameName == pName)
+        if (gameName == p_name)
             return domGames.at(i).attributes().namedItem("id").nodeValue().toInt();
     }
 
     return -1;
 }
 
-QDomElement XfireGamesList::getConfiguredGame(QString pName)
+QDomElement XfireGamesList::getConfiguredGame(QString p_name)
 {
     QDomElement ret;
 
     QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
     for (int i = 0; i < games.count(); i++)
     {
-        if (games.at(i).attributes().namedItem("name").nodeValue() == pName)
+        if (games.at(i).attributes().namedItem("name").nodeValue() == p_name)
             ret = games.at(i).toElement();
     }
 
@@ -182,22 +182,22 @@ QList<QString> XfireGamesList::configuredGames()
     return ret;
 }
 
-void XfireGamesList::removeConfiguredGame(QString pName)
+void XfireGamesList::removeConfiguredGame(QString p_name)
 {
-    QDomNode game = getConfiguredGame(pName);
+    QDomNode game = getConfiguredGame(p_name);
     qDebug() << game.toDocument().toString();
     game.parentNode().removeChild(game);
 }
 
-void XfireGamesList::updateConfiguredGame(QString pName, QString pLaunchExe, QString pDetectExe)
+void XfireGamesList::updateConfiguredGame(QString p_name, QString p_launchExe, QString p_detectExe)
 {
-    QDomElement game = getConfiguredGame(pName);
+    QDomElement game = getConfiguredGame(p_name);
     QDomElement command = game.firstChildElement("command");
     QDomElement launch = command.firstChildElement("launch");
     QDomElement detect = command.firstChildElement("detect");
 
-    launch.firstChild().toText().setNodeValue(pLaunchExe);
-    detect.firstChild().toText().setNodeValue(pDetectExe);
+    launch.firstChild().toText().setNodeValue(p_launchExe);
+    detect.firstChild().toText().setNodeValue(p_detectExe);
 }
 
 void XfireGamesList::saveConfiguredGamesList()
@@ -220,14 +220,14 @@ void XfireGamesList::saveGamesList()
     file.close();
 }
 
-bool XfireGamesList::gameIsConfigured(QString pName)
+bool XfireGamesList::gameIsConfigured(QString p_name)
 {
     bool ret = false;
 
     QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
     for (int i = 0; i < games.count(); i++)
     {
-        if (games.at(i).attributes().namedItem("name").nodeValue() == pName)
+        if (games.at(i).attributes().namedItem("name").nodeValue() == p_name)
         {
             ret = true;
             break;
@@ -248,7 +248,7 @@ void XfireGamesList::slotGamesListUpdated()
 void XfireGamesList::slotUpdate()
 {
     // Download versions file and initialize both lists
-    mManager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_version.xml")));
+    m_manager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_version.xml")));
 
     initGamesList();
     initConfiguredGamesList();

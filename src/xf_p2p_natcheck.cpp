@@ -53,7 +53,7 @@ XfireP2PNatcheck::~XfireP2PNatcheck()
 void XfireP2PNatcheck::slotSocketRead()
 {
     qint64 size = m_connection->pendingDatagramSize();
-    if(size != 10)
+    if (size != 10)
     {
         kDebug() << "Invalid packet received, ignoring.";
         return;
@@ -71,24 +71,24 @@ void XfireP2PNatcheck::slotSocketRead()
     int i;
     for (i = 0; i < 3; i++)
     {
-        if(sender.toString() == m_servers[i])
+        if (sender.toString() == m_servers[i])
             break;
     }
 
-    if(i == 3)
+    if (i == 3)
     {
         kDebug() << "Received packet from unknown server, aborting.";
         return;
     }
 
     // Check magic
-    if(datagram.mid(0, 4) != "CK01")
+    if (datagram.mid(0, 4) != "CK01")
     {
         kDebug() << "Received packet with bad magic, aborting.";
         return;
     }
 
-    if(senderPort != XFIRE_NAT_PORT)
+    if (senderPort != XFIRE_NAT_PORT)
         m_multiplePorts = TRUE;
 
     quint32 ip = *((quint32*)(datagram.constData() + 4));
@@ -100,16 +100,16 @@ void XfireP2PNatcheck::slotSocketRead()
     m_ports[i] = port;
 
     //Determine NAT type when stage reached
-    if(++m_stage == 4)
+    if (++m_stage == 4)
     {
-        if(m_ips[0] == m_ips[1] && m_ports[0] == m_ports[1])
+        if (m_ips[0] == m_ips[1] && m_ports[0] == m_ports[1])
         {
             m_type = 4;
 
-            if(m_multiplePorts || m_ips[2] == m_ips[0] || m_ips[2] == m_ips[1])
+            if (m_multiplePorts || m_ips[2] == m_ips[0] || m_ips[2] == m_ips[1])
                 m_type = 1;
         }
-        else if(m_ips[0] == m_ips[1])
+        else if (m_ips[0] == m_ips[1])
             m_type = 2;
         else
             m_type = 0;

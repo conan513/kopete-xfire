@@ -57,13 +57,13 @@ bool XfireAddContactPage::apply(Kopete::Account *account, Kopete::MetaContact *m
 
 bool XfireAddContactPage::validateData ()
 {
-    if(!mAccount->isConnected())
+    if (!mAccount->isConnected())
     {
         KMessageBox::sorry(this, i18n("You need to be connected in order to add contacts."), i18n("Not connected"), QFlags<KMessageBox::Option>());
         return false;
     }
 
-    if(mWidget->prefUsername->text().isEmpty())
+    if (mWidget->prefUsername->text().isEmpty())
     {
         KMessageBox::queuedMessageBox(Kopete::UI::Global::mainWidget(), KMessageBox::Sorry, i18n("<qt>You must enter a valid Xfire username.</qt>"), i18n("Xfire protocol plugin"));
         return false;

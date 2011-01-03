@@ -30,25 +30,25 @@
 #include "xf_games_list.h"
 #include "xf_games_manager.h"
 
-XfireGamesManager::XfireGamesManager ( XfireAccount *pAccount ) : QDialog()
+XfireGamesManager::XfireGamesManager ( XfireAccount *p_account ) : QDialog()
 {
-    mAccount = pAccount;
+    m_account = p_account;
 
-    mDialog = new Ui::Dialog();
-    mDialog->setupUi ( this );
+    m_dialog = new Ui::Dialog();
+    m_dialog->setupUi ( this );
 
-    configuredItem = new QTreeWidgetItem ( ( QTreeWidget * ) 0, QStringList ( QString ( "Configured games" ) ) );
-    notConfiguredItem = new QTreeWidgetItem ( ( QTreeWidget * ) 0, QStringList ( QString ( "Not configured games" ) ) );
+    m_configuredItem = new QTreeWidgetItem ( ( QTreeWidget * ) 0, QStringList ( QString ( "Configured games" ) ) );
+    m_notConfiguredItem = new QTreeWidgetItem ( ( QTreeWidget * ) 0, QStringList ( QString ( "Not configured games" ) ) );
 
-    mDialog->treeWidget->insertTopLevelItem ( 0, configuredItem );
-    mDialog->treeWidget->insertTopLevelItem ( 1, notConfiguredItem );
+    m_dialog->treeWidget->insertTopLevelItem ( 0, m_configuredItem );
+    m_dialog->treeWidget->insertTopLevelItem ( 1, m_notConfiguredItem );
 
     // Signals
-    connect ( mDialog->btnConfigureAutomaitcally, SIGNAL ( clicked() ), this, SLOT ( slotDetectGames() ) );
-    connect ( mDialog->enableCheckBox, SIGNAL ( stateChanged ( int ) ), this, SLOT ( slotGameDetectionStatusChanged ( int ) ) );
-    connect ( mDialog->treeWidget, SIGNAL ( currentItemChanged ( QTreeWidgetItem *,QTreeWidgetItem * ) ), this, SLOT ( slotConfiguringGameChanged ( QTreeWidgetItem*,QTreeWidgetItem* ) ) );
-    connect ( mDialog->buttonBox->button ( QDialogButtonBox::Reset ), SIGNAL ( clicked() ), this, SLOT ( slotResetGameConfiguration() ) );
-    connect ( mDialog->buttonBox->button ( QDialogButtonBox::Apply ), SIGNAL ( clicked() ), this, SLOT ( slotApplyGameConfiguration() ) );
+    connect ( m_dialog->btnConfigureAutomaitcally, SIGNAL ( clicked() ), this, SLOT ( slotDetectGames() ) );
+    connect ( m_dialog->enableCheckBox, SIGNAL ( stateChanged ( int ) ), this, SLOT ( slotGameDetectionStatusChanged ( int ) ) );
+    connect ( m_dialog->treeWidget, SIGNAL ( currentItemChanged ( QTreeWidgetItem *,QTreeWidgetItem * ) ), this, SLOT ( slotConfiguringGameChanged ( QTreeWidgetItem*,QTreeWidgetItem* ) ) );
+    connect ( m_dialog->buttonBox->button ( QDialogButtonBox::Reset ), SIGNAL ( clicked() ), this, SLOT ( slotResetGameConfiguration() ) );
+    connect ( m_dialog->buttonBox->button ( QDialogButtonBox::Apply ), SIGNAL ( clicked() ), this, SLOT ( slotApplyGameConfiguration() ) );
 }
 
 XfireGamesManager::~XfireGamesManager()
@@ -59,17 +59,17 @@ void XfireGamesManager::slotGameDetectionStatusChanged ( int pStatus )
 {
     if ( pStatus == 0 )
     {
-        mDialog->label->setEnabled ( false );
-        mDialog->label_2->setEnabled ( false );
-        mDialog->launchRequester->setEnabled ( false );
-        mDialog->detectionRequester->setEnabled ( false );
+        m_dialog->label->setEnabled ( false );
+        m_dialog->label_2->setEnabled ( false );
+        m_dialog->launchRequester->setEnabled ( false );
+        m_dialog->detectionRequester->setEnabled ( false );
     }
     else
     {
-        mDialog->label->setEnabled ( true );
-        mDialog->label_2->setEnabled ( true );
-        mDialog->launchRequester->setEnabled ( true );
-        mDialog->detectionRequester->setEnabled ( true );
+        m_dialog->label->setEnabled ( true );
+        m_dialog->label_2->setEnabled ( true );
+        m_dialog->launchRequester->setEnabled ( true );
+        m_dialog->detectionRequester->setEnabled ( true );
     }
 }
 
@@ -82,52 +82,52 @@ void XfireGamesManager::slotConfiguringGameChanged ( QTreeWidgetItem *p_current,
 {
     Q_UNUSED ( p_previous );
 
-    if ( p_current->parent() == configuredItem )
+    if ( p_current->parent() == m_configuredItem )
     {
-        mDialog->enableCheckBox->setChecked ( true );
+        m_dialog->enableCheckBox->setChecked ( true );
 
-        QDomNode game = mAccount->m_gamesList->getConfiguredGame ( p_current->text ( 0 ) );
+        QDomNode game = m_account->m_gamesList->getConfiguredGame ( p_current->text ( 0 ) );
         QDomNode command = game.firstChild();
 
-        mDialog->launchRequester->setText ( command.firstChildElement ( "launch" ).text() );
-        mDialog->detectionRequester->setText ( command.firstChildElement ( "detect" ).text() );
+        m_dialog->launchRequester->setText ( command.firstChildElement ( "launch" ).text() );
+        m_dialog->detectionRequester->setText ( command.firstChildElement ( "detect" ).text() );
     }
     else
     {
-        mDialog->enableCheckBox->setChecked ( false );
+        m_dialog->enableCheckBox->setChecked ( false );
 
-        mDialog->detectionRequester->clear();
-        mDialog->launchRequester->clear();
+        m_dialog->detectionRequester->clear();
+        m_dialog->launchRequester->clear();
     }
 }
 
 void XfireGamesManager::slotResetGameConfiguration()
 {
-    QTreeWidgetItem *item = mDialog->treeWidget->currentItem();
+    QTreeWidgetItem *item = m_dialog->treeWidget->currentItem();
 
-    QDomNode game = mAccount->m_gamesList->getConfiguredGame ( item->text ( 0 ) );
+    QDomNode game = m_account->m_gamesList->getConfiguredGame ( item->text ( 0 ) );
     QDomNode command = game.firstChild();
 
-    mDialog->launchRequester->setText ( command.firstChildElement ( "launch" ).text() );
-    mDialog->detectionRequester->setText ( command.firstChildElement ( "detect" ).text() );
+    m_dialog->launchRequester->setText ( command.firstChildElement ( "launch" ).text() );
+    m_dialog->detectionRequester->setText ( command.firstChildElement ( "detect" ).text() );
 }
 
 void XfireGamesManager::slotApplyGameConfiguration()
 {
-    QTreeWidgetItem *item = mDialog->treeWidget->currentItem();
+    QTreeWidgetItem *item = m_dialog->treeWidget->currentItem();
 
-    if ( mDialog->enableCheckBox->isChecked() )
+    if ( m_dialog->enableCheckBox->isChecked() )
     {
-        if ( mAccount->m_gamesList->gameIsConfigured ( item->text ( 0 ) ) == false )
+        if ( m_account->m_gamesList->gameIsConfigured ( item->text ( 0 ) ) == false )
         {
-            QDomElement root = mAccount->m_gamesList->mConfiguredGamesList->firstChildElement ( "game_config" );
-            QDomElement game = mAccount->m_gamesList->mConfiguredGamesList->createElement ( "game" );
-            QDomElement command = mAccount->m_gamesList->mConfiguredGamesList->createElement ( "command" );
-            QDomElement launch = mAccount->m_gamesList->mConfiguredGamesList->createElement ( "launch" );
-            QDomElement detect = mAccount->m_gamesList->mConfiguredGamesList->createElement ( "detect" );
+            QDomElement root = m_account->m_gamesList->mConfiguredGamesList->firstChildElement ( "game_config" );
+            QDomElement game = m_account->m_gamesList->mConfiguredGamesList->createElement ( "game" );
+            QDomElement command = m_account->m_gamesList->mConfiguredGamesList->createElement ( "command" );
+            QDomElement launch = m_account->m_gamesList->mConfiguredGamesList->createElement ( "launch" );
+            QDomElement detect = m_account->m_gamesList->mConfiguredGamesList->createElement ( "detect" );
 
-            QDomText launchText = mAccount->m_gamesList->mConfiguredGamesList->createTextNode ( mDialog->launchRequester->text() );
-            QDomText detectText = mAccount->m_gamesList->mConfiguredGamesList->createTextNode ( mDialog->detectionRequester->text() );
+            QDomText launchText = m_account->m_gamesList->mConfiguredGamesList->createTextNode ( m_dialog->launchRequester->text() );
+            QDomText detectText = m_account->m_gamesList->mConfiguredGamesList->createTextNode ( m_dialog->detectionRequester->text() );
 
             root.appendChild ( game );
             game.setAttribute ( "name", item->text ( 0 ) );
@@ -138,49 +138,49 @@ void XfireGamesManager::slotApplyGameConfiguration()
             detect.appendChild ( detectText );
             command.appendChild ( detect );
 
-            configuredItem->addChild ( notConfiguredItem->takeChild ( notConfiguredItem->indexOfChild ( item ) ) );
-            mDialog->treeWidget->sortItems ( 0, Qt::AscendingOrder );
+            m_configuredItem->addChild ( m_notConfiguredItem->takeChild ( m_notConfiguredItem->indexOfChild ( item ) ) );
+            m_dialog->treeWidget->sortItems ( 0, Qt::AscendingOrder );
         }
         else
-            mAccount->m_gamesList->updateConfiguredGame ( item->text ( 0 ), mDialog->launchRequester->text(), mDialog->detectionRequester->text() );
+            m_account->m_gamesList->updateConfiguredGame ( item->text ( 0 ), m_dialog->launchRequester->text(), m_dialog->detectionRequester->text() );
     }
     else
     {
-        QDomElement game = mAccount->m_gamesList->getConfiguredGame ( item->text ( 0 ) );
+        QDomElement game = m_account->m_gamesList->getConfiguredGame ( item->text ( 0 ) );
         game.parentNode().removeChild ( game );
 
-        mAccount->m_gamesList->saveConfiguredGamesList();
-        notConfiguredItem->addChild ( configuredItem->takeChild ( configuredItem->indexOfChild ( item ) ) );
-        mDialog->treeWidget->sortItems ( 0, Qt::AscendingOrder );
+        m_account->m_gamesList->saveConfiguredGamesList();
+        m_notConfiguredItem->addChild ( m_configuredItem->takeChild ( m_configuredItem->indexOfChild ( item ) ) );
+        m_dialog->treeWidget->sortItems ( 0, Qt::AscendingOrder );
     }
 
-    mAccount->m_gamesList->saveConfiguredGamesList();
+    m_account->m_gamesList->saveConfiguredGamesList();
 }
 
 void XfireGamesManager::slotUpdate()
 {
     // Remove items
-    while ( int i = configuredItem->childCount() )
-        delete configuredItem->takeChild ( i - 1 );
+    while ( int i = m_configuredItem->childCount() )
+        delete m_configuredItem->takeChild ( i - 1 );
 
-    while ( int i = notConfiguredItem->childCount() )
-        delete notConfiguredItem->takeChild ( i - 1 );
+    while ( int i = m_notConfiguredItem->childCount() )
+        delete m_notConfiguredItem->takeChild ( i - 1 );
 
     // Get configured games
-    QList<QString> configured = mAccount->m_gamesList->configuredGames();
-    QList<QString> list = mAccount->m_gamesList->getGamesList();
+    QList<QString> configured = m_account->m_gamesList->configuredGames();
+    QList<QString> list = m_account->m_gamesList->getGamesList();
 
     for ( int i = 0; i < list.size(); i++ )
     {
         QTreeWidgetItem *item = new QTreeWidgetItem ( ( QTreeWidget * ) 0, QStringList ( QString ( list.at ( i ) ) ) );
         if ( configured.contains ( list.at ( i ) ) == true )
-            configuredItem->addChild ( item );
+            m_configuredItem->addChild ( item );
         else
-            notConfiguredItem->addChild ( item );
+            m_notConfiguredItem->addChild ( item );
     }
 
-    mDialog->treeWidget->sortItems ( 0, Qt::AscendingOrder );
-    configuredItem->setExpanded ( true );
+    m_dialog->treeWidget->sortItems ( 0, Qt::AscendingOrder );
+    m_configuredItem->setExpanded ( true );
 }
 
 #endif // XF_GAMES_MANAGER_CPP
