@@ -31,13 +31,10 @@
 XfireGamesList::XfireGamesList()
 {
     mManager = new QNetworkAccessManager(this);
+    mConfiguredGamesList = new QDomDocument();
+    mGamesList = new QDomDocument();
+
     connect(mManager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotReceivedGamesList(QNetworkReply *)));
-
-    // Download versions file and initialize both lists
-    mManager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_version.xml")));
-
-    initGamesList();
-    initConfiguredGamesList();
 }
 
 XfireGamesList::~XfireGamesList()
@@ -70,7 +67,6 @@ void XfireGamesList::initConfiguredGamesList()
         file.close();
     }
 
-    mConfiguredGamesList = new QDomDocument();
     mConfiguredGamesList->setContent(content);
 }
 
@@ -84,7 +80,6 @@ void XfireGamesList::initGamesList()
     {
         if (file.open(QIODevice::ReadWrite))
         {
-            mGamesList = new QDomDocument();
             mGamesList->setContent(file.readAll());
             mLocalGamesListVersion = mGamesList->firstChildElement("games").attributes().namedItem("version").nodeValue().toInt();
 
@@ -248,4 +243,13 @@ void XfireGamesList::slotGamesListUpdated()
     event->setTitle("Xfire games list update");
     event->setText("The Xfire games list has been updated to the latest version.");
     event->sendEvent();
+}
+
+void XfireGamesList::slotUpdate()
+{
+    // Download versions file and initialize both lists
+    mManager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_version.xml")));
+
+    initGamesList();
+    initConfiguredGamesList();
 }

@@ -30,7 +30,8 @@
 
 #define XFIRE_PROTO_VERSION 127
 
-namespace Kopete {
+namespace Kopete
+{
 class Contact;
 class MetaContact;
 }
@@ -41,16 +42,16 @@ class XfireProtocol : public Kopete::Protocol
 
 public:
     // Constructor & destructor
-    XfireProtocol(QObject *parent, const QVariantList &args);
+    XfireProtocol ( QObject *parent, const QVariantList &args );
     ~XfireProtocol();
 
     // Creates new protocol account
-    virtual Kopete::Account *createNewAccount(const QString &accountID);
-    virtual Kopete::Contact *deserializeContact(Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData, const QMap<QString, QString> &);
+    virtual Kopete::Account *createNewAccount ( const QString &accountID );
+    virtual Kopete::Contact *deserializeContact ( Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData, const QMap<QString, QString> & );
 
     // Creates add contact & edit account widget
-    virtual AddContactPage *createAddContactWidget(QWidget *parent, Kopete::Account *account);
-    virtual KopeteEditAccountWidget *createEditAccountWidget(Kopete::Account *account, QWidget *parent);
+    virtual AddContactPage *createAddContactWidget ( QWidget *parent, Kopete::Account *account );
+    virtual KopeteEditAccountWidget *createEditAccountWidget ( Kopete::Account *account, QWidget *parent );
 
     // Statuses
     const Kopete::OnlineStatus XfireAway;

@@ -50,6 +50,8 @@ public:
     QDomDocument *mGamesList;
     quint32 getGameIDFromName(QString pName);
 
+    void slotUpdate();
+
 private:
 
     QNetworkAccessManager *mManager;

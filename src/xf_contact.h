@@ -38,36 +38,39 @@ class XfireContact : public Kopete::Contact
     Q_OBJECT
 
 public:
-    typedef enum {
+    typedef enum
+    {
         XF_FRIEND = 0,
         XF_CLAN, XF_GROUPCHAT,
         XF_FRIEND_OF_FRIEND
     } ContactType;
 
-    typedef enum {
+    typedef enum
+    {
         XF_P2P_UNKNOWN,
         XF_P2P_YES,
         XF_P2P_NO
     } CanHandleP2P;
 
     // Constructor and destructor
-    XfireContact(Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent);
+    XfireContact ( Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent );
     ~XfireContact();
 
     XfireAccount *m_account;
 
-    void receivedMessage(const QString &p_message); // FIXME: Use slot instead
+    void receivedMessage ( const QString &p_message ); // FIXME: Use slot instead
 
-    virtual void serialize(QMap<QString, QString> &serializedData, QMap<QString, QString> &);
-    void setId(Xfire::Int32Attribute *p_id);
+    virtual void serialize ( QMap<QString, QString> &serializedData, QMap<QString, QString> & );
+    void setId ( Xfire::Int32Attribute *p_id );
     void setMessageSucceeded();
-    void setOnlineStatus(const Kopete::OnlineStatus &p_status);
-    void setTypingStatus(bool p_status);
+    void setOnlineStatus ( const Kopete::OnlineStatus &p_status );
+    void setTypingStatus ( bool p_status );
 
     // Xfire user data
     quint32 m_id;
     Xfire::SessionID m_session; // FIXME: Should be m_sid!
     QString m_username;
+    void removeProperties();
 
     // P2P
     CanHandleP2P m_p2pCapable;
@@ -76,7 +79,7 @@ public:
     void requestP2P();
 
     // Chatting
-    virtual Kopete::ChatSession *manager(CanCreateFlags p_canCreate = CannotCreate); // Returns the Kopete chat session associated with the contact
+    virtual Kopete::ChatSession *manager ( CanCreateFlags p_canCreate = CannotCreate ); // Returns the Kopete chat session associated with the contact
     quint32 m_chatMessageIndex;
 
     // Contact type
@@ -88,13 +91,13 @@ protected:
 
 public slots:
     void updateAvatar();
-    void updateAvatar(quint32 p_number);
-    void sendMessage(Kopete::Message &p_message);
+    void updateAvatar ( quint32 p_number );
+    void sendMessage ( Kopete::Message &p_message );
     void slotChatSessionDestroyed();
-    void slotSendTyping(bool p_isTyping);
+    void slotSendTyping ( bool p_isTyping );
 
 private slots:
-    void slotGotAvatar(QNetworkReply *p_reply);
+    void slotGotAvatar ( QNetworkReply *p_reply );
 
 };
 
