@@ -43,7 +43,7 @@ XfireServer::XfireServer ( XfireAccount *parent, const QString accountId, const 
     // Signals
     connect ( m_connection, SIGNAL ( connected() ), this, SLOT ( slotConnected() ) );
     connect ( m_connection, SIGNAL ( readyRead() ), this, SLOT ( socketRead() ) );
-    connect ( m_connection, SIGNAL ( disconnected() ), this, SLOT ( slotConnectionInterrupted() ) );
+    connect ( m_connection, SIGNAL ( error() ), this, SLOT ( slotConnectionInterrupted() ) );
 
     connect ( this, SIGNAL ( goOnline() ), m_account, SLOT ( slotGoOnline() ) );
     connect ( this, SIGNAL ( goOffline() ), m_account, SLOT ( slotGoOffline() ) );
@@ -415,61 +415,57 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
             // P2P information
             case 2:
             {
-                const Xfire::Int32AttributeS *ip = static_cast<const Xfire::Int32AttributeS*> ( peermsg->getAttribute ( "ip" ) );
-                const Xfire::Int32AttributeS *port = static_cast<const Xfire::Int32AttributeS*> ( peermsg->getAttribute ( "port" ) );
-                const Xfire::Int32AttributeS *localip = static_cast<const Xfire::Int32AttributeS*> ( peermsg->getAttribute ( "localip" ) );
-                const Xfire::Int32AttributeS *localport = static_cast<const Xfire::Int32AttributeS*> ( peermsg->getAttribute ( "localport" ) );
-                const Xfire::Int32AttributeS *status = static_cast<const Xfire::Int32AttributeS*> ( peermsg->getAttribute ( "status" ) );
-                const Xfire::StringAttributeS *salt = static_cast<const Xfire::StringAttributeS*> ( peermsg->getAttribute ( "salt" ) );
+                const Xfire::Int32AttributeS *ip = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("ip"));
+                const Xfire::Int32AttributeS *port = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("port"));
+                const Xfire::Int32AttributeS *localip = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("localip"));
+                const Xfire::Int32AttributeS *localport = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("localport"));
+                const Xfire::Int32AttributeS *status = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("status"));
+                const Xfire::StringAttributeS *salt = static_cast<const Xfire::StringAttributeS*>(peermsg->getAttribute("salt"));
 
                 int natType = status->Int32;
-                if ( natType > 0 )
+                if (natType > 0)
                 {
-                    if ( from->m_p2pCapable == XfireContact::XF_P2P_YES || from->m_p2pCapable == XfireContact::XF_P2P_UNKNOWN )
+                    if (from->m_p2pCapable == XfireContact::XF_P2P_YES || from->m_p2pCapable == XfireContact::XF_P2P_UNKNOWN)
                     {
-                        if ( m_account->m_p2pConnection )
+                        if ( !m_account->isPeerToPeerEnabled() )
+                            break;
+
+                        if ( natType == 1 ||(( natType == 2 || natType == 3) && m_account->m_p2pConnection->m_natCheck->m_type == 1) ||
+                                (natType == 4 && (m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4)))
                         {
-                            if ( natType == 1 || ( ( natType == 2 || natType == 3 ) && m_account->m_p2pConnection->m_natCheck->m_type == 1 ) ||
-                                    ( natType == 4 && ( m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4 ) ) )
+                            if (!from->m_p2pSession)
                             {
-                                if ( !from->m_p2pSession )
-                                {
-                                    kDebug() << from->m_username + ": creating session";
-                                    from->m_p2pSession = new XfireP2PSession ( from, salt->string() );
-                                    m_account->m_p2pConnection->addSession ( from->m_p2pSession );
-                                }
-
-                                from->m_p2pCapable = XfireContact::XF_P2P_YES;
-                                kDebug() << from->m_username + ": compatible buddy";
-
-                                from->m_p2pSession->setRemoteAddress ( ip->value(), port->value() );
-                                from->m_p2pSession->setLocalAddress ( localip->value(), localport->value() );
-                            }
-                            else
-                            {
-                                from->m_p2pCapable = XfireContact::XF_P2P_NO;
-                                kDebug() << from->m_username + ": incompatible buddy";
-                                // FIXME: Remove session
+                                kDebug() << from->m_username + ": creating session";
+                                from->m_p2pSession = new XfireP2PSession(from, salt->string());
+                                m_account->m_p2pConnection->addSession(from->m_p2pSession);
                             }
 
-                            /*if(from->m_p2pRequested == FALSE)
-                            {*/
-                            sendP2pSession ( from->m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
-                                             m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                             m_account->m_p2pConnection->m_natCheck->m_type, salt->string() );
+                            from->m_p2pCapable = XfireContact::XF_P2P_YES;
+                            kDebug() << from->m_username + ": compatible buddy";
 
-                            // from->m_p2pRequested = TRUE;
-                            kDebug() << from->m_username + ": peer to peer request received, sent own data";
-                            //}
+                            from->m_p2pSession->setRemoteAddress(ip->value(), port->value());
+                            from->m_p2pSession->setLocalAddress(localip->value(), localport->value());
                         }
                         else
                         {
-                            kDebug() << from->m_username + ":ignoring p2p information as p2p capabilities are disabled";
+                            from->m_p2pCapable = XfireContact::XF_P2P_NO;
+                            kDebug() << from->m_username + ": incompatible buddy";
+                            // FIXME: Remove session
                         }
+
+                        //if(from->m_p2pRequested == FALSE)
+                        //{
+                        sendP2pSession(from->m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
+                                       m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
+                                       m_account->m_p2pConnection->m_natCheck->m_type, salt->string());
+
+                        // from->m_p2pRequested = TRUE;
+                        kDebug() << from->m_username + ": peer to peer request received, sent own data";
+                        //}
                     }
                     else
                     {
-                        sendP2pSession ( from->m_session, 0, 0, 0, 0, 0, salt->string() );
+                        sendP2pSession(from->m_session, 0, 0, 0, 0, 0, salt->string());
                         kDebug() << from->m_username + ": peer to peer request denied";
                     }
                 }
@@ -524,7 +520,8 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
         const Xfire::ListAttributeS *gip = static_cast<const Xfire::ListAttributeS *> ( p_packet->getAttribute ( "gip" ) );
         const Xfire::ListAttributeS *gport = static_cast<const Xfire::ListAttributeS *> ( p_packet->getAttribute ( "gport" ) );
 
-        if ( !sid || sid->type() != Xfire::Attribute::List || !gameid || gameid->type() != Xfire::Attribute::List || !gip || gip->type() != Xfire::Attribute::List || !gport || gport->type() != Xfire::Attribute::List )
+        if ( !sid || sid->type() != Xfire::Attribute::List || !gameid || gameid->type() != Xfire::Attribute::List ||
+                !gip || gip->type() != Xfire::Attribute::List || !gport || gport->type() != Xfire::Attribute::List )
         {
             kDebug() << "Invalid packet received, ignoring";
             return;
