@@ -52,6 +52,7 @@ private slots:
     void slotApplyGameConfiguration();
     void slotResetGameConfiguration();
     void slotDetectGames();
+    void slotDetectionPathChanged(const KUrl &p_url);
 };
 
 #endif // XF_GAMES_MANAGER_H

@@ -49,10 +49,16 @@ XfireGamesManager::XfireGamesManager ( XfireAccount *p_account ) : QDialog()
     connect ( m_dialog->treeWidget, SIGNAL ( currentItemChanged ( QTreeWidgetItem *,QTreeWidgetItem * ) ), this, SLOT ( slotConfiguringGameChanged ( QTreeWidgetItem*,QTreeWidgetItem* ) ) );
     connect ( m_dialog->buttonBox->button ( QDialogButtonBox::Reset ), SIGNAL ( clicked() ), this, SLOT ( slotResetGameConfiguration() ) );
     connect ( m_dialog->buttonBox->button ( QDialogButtonBox::Apply ), SIGNAL ( clicked() ), this, SLOT ( slotApplyGameConfiguration() ) );
+    connect ( m_dialog->detectionRequester, SIGNAL ( urlSelected(const KUrl &) ), this, SLOT ( slotDetectionPathChanged(const KUrl &) ));
 }
 
 XfireGamesManager::~XfireGamesManager()
 {
+}
+
+void XfireGamesManager::slotDetectionPathChanged(const KUrl &p_url)
+{
+    m_dialog->launchRequester->setUrl(p_url);
 }
 
 void XfireGamesManager::slotGameDetectionStatusChanged ( int pStatus )
