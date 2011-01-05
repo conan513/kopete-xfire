@@ -50,16 +50,22 @@ public:
     QList<XfireP2PSession *> m_sessions;
     XfireP2PNatcheck *m_natCheck;
 
-    bool isConnected();
     void addSession(XfireP2PSession *p_session);
+	void removeSession(XfireP2PSession *p_session);
 
     QByteArray createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen);
+
     void sendPing(XfireP2PSession *p_session);
     void sendPong(XfireP2PSession *p_session);
+	void sendKeepAlive(XfireP2PSession *p_session);
+	void sendKeepAliveRequest(XfireP2PSession *p_session);
+
+private:
+	quint32 calculateCrc32(const void *p_data, quint32 p_len);
 
 public slots:
     void slotSocketRead();
-    void slotNatCheckReady();
+    void slotNatCheckReady(QUdpSocket *p_connection);
 };
 
 #endif // XF_P2P_H

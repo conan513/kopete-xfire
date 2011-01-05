@@ -21,16 +21,14 @@
 #include "xf_p2p.h"
 #include "xf_p2p_natcheck.h"
 
-XfireP2PNatcheck::XfireP2PNatcheck(XfireP2P *p_p2p)
+XfireP2PNatcheck::XfireP2PNatcheck(XfireP2P *p_p2p) : m_p2p(p_p2p)
 {
-    m_p2p = p_p2p;
-
     m_connection = new QUdpSocket(this);
     m_connection->bind();
 
     connect(m_connection, SIGNAL(readyRead()), this, SLOT(slotSocketRead()));
 
-    // Get servers
+    // Get NAT servers
     // FIXME: Use DNS instead of hard-coding
     m_servers[0] = "208.88.178.60";
     m_servers[1] = "208.88.178.61";
@@ -115,9 +113,10 @@ void XfireP2PNatcheck::slotSocketRead()
             m_type = 0;
 
         static const char *typeNames[] = { "NAT Error", "Full Cone or Restricted Cone NAT", "Symmetric NAT", "Symmetric NAT", "Port-Restricted Cone NAT" };
-        kDebug() << "NAT type: " << typeNames[m_type];
+        kDebug() << "NAT type:" << typeNames[m_type];
 
         // NAT check finished
-        emit ready();
+        emit ready(m_connection);
+		disconnect(m_connection, SIGNAL(readyRead()), this, SLOT(slotSocketRead()));
     }
 }

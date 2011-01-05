@@ -22,7 +22,7 @@
 #include "xf_p2p_session.h"
 #include "xf_server.h"
 
-XfireP2PSession::XfireP2PSession(XfireContact* p_contact, const QString &p_salt) : m_contact(p_contact)
+XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact), m_contact(p_contact), m_pingRetries(0)
 {
     // Generate moniker
     QCryptographicHash hasher(QCryptographicHash::Sha1);
@@ -53,4 +53,38 @@ void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
 {
     m_remoteIp = p_ip;
     m_remotePort = p_port;
+
+	m_timer = new QTimer(this);
+	m_timer->start(1000);
+	QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(slotCheckSession()));
+}
+
+void XfireP2PSession::slotCheckSession()
+{
+	// Check pong timeout
+	if(m_pongNeeded && m_lastPing->restart() >= 5000)
+	{
+		if(m_pingRetries++ < 5)
+		{
+			kDebug() << "Resending ping packet to:" << m_contact->m_username << "1/" << m_pingRetries;
+			m_contact->m_account->m_p2pConnection->sendPing(this); // FIXME: ugly
+			m_pongNeeded = TRUE;
+		}
+		else
+		{
+			kDebug() << m_contact->m_username + ": session timed out, removing session";
+			m_contact->m_account->m_p2pConnection->removeSession(this);
+			m_timer->stop();
+		}
+	}
+
+	// Check keep-alive timeout
+	// ...
+
+	// Request keep-alive
+	if(!m_keepAliveNeeded && m_lastKeepAlive->restart() >= 60)
+	{
+		kDebug() << "Send keep-alive request packet to:" << m_contact->m_username;
+		m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
+	}
 }

@@ -49,7 +49,7 @@ private slots:
     void slotSocketRead();
 
 signals:
-    void ready();
+    void ready(QUdpSocket *m_connection);
 };
 
 #endif // XF_P2P_NATCHECK_H

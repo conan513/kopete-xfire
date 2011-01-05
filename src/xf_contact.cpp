@@ -38,6 +38,7 @@
 #include "xf_account.h"
 #include "xf_contact.h"
 #include "xf_protocol.h"
+#include "xf_p2p_natcheck.h"
 #include "xf_server.h"
 
 #include <QCryptographicHash>
@@ -148,14 +149,16 @@ void XfireContact::sendMessage ( Kopete::Message &p_message )
 
     XfireAccount *acc = static_cast<XfireAccount *> ( account() );
 
-    // Send IM through P2P
-    if ( m_p2pCapable == XF_P2P_YES )
+    if ( m_p2pCapable == XF_P2P_YES ) // Send IM through P2P
     {
         kDebug() << "Sending P2P IM to:" << m_username;
         // FIXME: Not implemented yet
     }
     else // Send IM through TCP
-        acc->server()->sendChat ( m_session, m_chatMessageIndex, p_message.plainBody() );
+	{
+		kDebug() << "Sending IM to:" << m_username;
+		acc->server()->sendChat ( m_session, m_chatMessageIndex, p_message.plainBody() );
+	}
 
     m_chatSession->appendMessage ( p_message ); // Append it
     m_chatMessageIndex++; // Update chat message index
@@ -166,7 +169,7 @@ void XfireContact::requestP2P()
     if ( !m_p2pSession )
     {
         // Generate random salt
-        /*QCryptographicHash hasher(QCryptographicHash::Sha1);
+        QCryptographicHash hasher(QCryptographicHash::Sha1);
 
         int rnd = rand();
         QString rndStr = QString::number(rnd);
@@ -182,13 +185,10 @@ void XfireContact::requestP2P()
             m_p2pSession = new XfireP2PSession(this, randomHash);
             m_account->m_p2pConnection->addSession(m_p2pSession);
         }
-        */
 
-        /*m_account->server()->sendP2pSession(m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
+        m_account->server()->sendP2pSession(m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
                                             m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                            m_account->m_p2pConnection->m_natCheck->m_type, m_account->m_);*/
-
-        /*m_p2pRequested = TRUE;*/
+                                            m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
     }
 }
 

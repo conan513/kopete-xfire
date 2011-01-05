@@ -20,12 +20,14 @@
 #define XF_P2P_SESSION_H
 
 #include <QString>
+#include <QTime>
+#include <QTimer>
 
 #include <XfireAttribute.h>
 
 class XfireContact;
 
-class XfireP2PSession
+class XfireP2PSession : public QObject
 {
 public:
     // Constructor & destructor
@@ -46,10 +48,20 @@ public:
     void setRemoteAddress(quint32 p_ip, quint16 p_port);
 
     bool m_pongNeeded;
-    bool m_pingNeeded;
+    bool m_keepAliveNeeded;
 
     quint32 m_sessionId;
     quint32 m_sequenceId;
+
+private:
+	QTimer *m_timer;
+	QTime *m_lastKeepAlive;
+	QTime *m_lastPing;
+
+	int m_pingRetries;
+
+private slots:
+	void slotCheckSession();
 };
 
 #endif // XF_P2P_SESSION_H

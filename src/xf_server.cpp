@@ -443,8 +443,8 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
                             from->m_p2pCapable = XfireContact::XF_P2P_YES;
                             kDebug() << from->m_username + ": compatible buddy";
 
-                            from->m_p2pSession->setRemoteAddress(ip->value(), port->value());
                             from->m_p2pSession->setLocalAddress(localip->value(), localport->value());
+							from->m_p2pSession->setRemoteAddress(ip->value(), port->value());
                         }
                         else
                         {
@@ -453,15 +453,15 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
                             // FIXME: Remove session
                         }
 
-                        //if(from->m_p2pRequested == FALSE)
-                        //{
-                        sendP2pSession(from->m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
+                        if(from->m_p2pRequested == FALSE)
+                        {
+							sendP2pSession(from->m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
                                        m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
                                        m_account->m_p2pConnection->m_natCheck->m_type, salt->string());
 
-                        // from->m_p2pRequested = TRUE;
-                        kDebug() << from->m_username + ": peer to peer request received, sent own data";
-                        //}
+							from->m_p2pRequested = TRUE;
+							kDebug() << from->m_username + ": peer to peer request received, sent own data";
+                        }
                     }
                     else
                     {
