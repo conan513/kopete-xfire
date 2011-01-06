@@ -33,7 +33,7 @@ XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt)
     kDebug() << p_contact->m_username + ": moniker generated: " + m_moniker.toHex();
 
     hasher.reset();
-    hasher.addData(p_contact->m_account->m_sid.raw());
+    hasher.addData(p_contact->m_account->m_sid.raw().toHex());
     hasher.addData(p_salt.toAscii());
     m_monikerSelf = hasher.result();
     kDebug() << "Moniker generated: " + m_monikerSelf.toHex();

@@ -50,7 +50,6 @@ public:
     bool m_pongNeeded;
     bool m_keepAliveNeeded;
 
-    quint32 m_sessionId;
     quint32 m_sequenceId;
 
 private:

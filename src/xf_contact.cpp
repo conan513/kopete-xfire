@@ -170,11 +170,7 @@ void XfireContact::requestP2P()
     {
         // Generate random salt
         QCryptographicHash hasher(QCryptographicHash::Sha1);
-
-        int rnd = rand();
-        QString rndStr = QString::number(rnd);
-
-        kDebug() << rndStr;
+        QString rndStr = QString::number(rand());
 
         hasher.addData(rndStr.toAscii());
         QString randomHash = hasher.result().toHex();

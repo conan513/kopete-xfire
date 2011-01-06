@@ -44,7 +44,9 @@ public:
     ~XfireP2P();
 
     XfireAccount *m_account;
-    quint32 m_messageId;
+
+	quint32 m_messageId;
+	quint32 m_sessionId;
 
     QUdpSocket *m_connection;
     QList<XfireP2PSession *> m_sessions;
@@ -59,6 +61,7 @@ public:
     void sendPong(XfireP2PSession *p_session);
 	void sendKeepAlive(XfireP2PSession *p_session);
 	void sendKeepAliveRequest(XfireP2PSession *p_session);
+	void sendAck(XfireP2PSession *p_session);
 
 private:
 	quint32 calculateCrc32(const void *p_data, quint32 p_len);

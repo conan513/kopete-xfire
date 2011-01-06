@@ -28,7 +28,7 @@
 #include "xf_contact.h"
 #include "xf_server.h"
 
-XfireP2P::XfireP2P(XfireAccount *p_account) : m_account(p_account)
+XfireP2P::XfireP2P(XfireAccount *p_account) : m_account(p_account), m_messageId(0), m_sessionId(0)
 {
     // Start NAT type check
     m_natCheck = new XfireP2PNatcheck(this);
@@ -93,6 +93,10 @@ void XfireP2P::slotSocketRead()
     {
         kDebug() << "Received ping packet";
         sendPong(session);
+
+		/*m_messageId++;
+		session->m_sequenceId++;*/
+
         break;
     }
     case XFIRE_P2P_TYPE_PONG:
@@ -134,6 +138,7 @@ void XfireP2P::slotSocketRead()
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REQ:
     {
         kDebug() << "Received keep alive request packet";
+		sendKeepAlive(session);
         break;
     }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REP:
@@ -152,61 +157,68 @@ void XfireP2P::slotSocketRead()
 
 QByteArray XfireP2P::createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen)
 {
-    QByteArray ret;
+	QByteArray ret;
 
-    ret.append((char *)&p_encoding); // Encoding
-    ret.append(QByteArray().fill((char )0, 3)); // 3 unknown bytes
-    ret.append(p_moniker); // Moniker
+	ret.append((char )p_encoding); // Encoding
+	ret.append(QByteArray().fill(0, 3)); // 3 unknown bytes
+	ret.append(p_moniker); // Moniker
+	ret.append((char *)&p_type, 4); // Type
+	ret.append((char *)&p_messageId, 4); // Message ID
+	ret.append((char *)&p_sequenceId, 4); // Sequence ID
+	ret.append((char *)&p_dataLen, 4); // Data length
+	ret.append(QByteArray().fill(0, 4)); // 3 unknown bytes
 
-    // Type
-    ret.append((char *)&p_type);
-    ret.append(QByteArray().fill((char )0, 3));
-
-    // Message ID
-    ret.append(QByteArray::number(p_messageId));
-    ret.append(QByteArray().fill((char )0, 3));
-
-    // Sequence ID
-    ret.append((char *)&p_sequenceId);
-    ret.append(QByteArray().fill((char )0, 3));
-
-    // Data length
-    ret.append((char *)&p_dataLen);
-    ret.append(QByteArray().fill((char )0, 3));
-
-    ret.append(QByteArray().fill((char )0, 4)); // 3 unknown bytes
-
-    kDebug() << ret.toHex();
-
-    return ret;
+	kDebug() << ret.toHex();
+	return ret;
 }
 
 void XfireP2P::sendPing(XfireP2PSession *p_session)
 {
 	kDebug() << "Sending ping packet to: " << QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
-    QByteArray foo = createHeader(0, p_session->m_moniker, XFIRE_P2P_TYPE_PING, (p_session->m_sessionId > 0) ? p_session->m_sessionId : p_session->m_contact->m_account->m_p2pConnection->m_messageId, 0, 0);
+    QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_PING, (m_sessionId > 0) ? m_sessionId : m_messageId, 0, 0);
     m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+
+	if(m_sessionId == 0)
+	{
+		m_messageId++;
+		m_sessionId = m_messageId - 1;
+	}
+	else
+		m_sessionId++;
 }
 
 void XfireP2P::sendPong(XfireP2PSession *p_session)
 {
     kDebug() << "Sending pong packet to: " + QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
-    QByteArray foo = createHeader(0, p_session->m_moniker, XFIRE_P2P_TYPE_PONG, (p_session->m_sessionId > 0) ? p_session->m_sessionId : p_session->m_contact->m_account->m_p2pConnection->m_messageId, 0, 0);
+	QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_PONG, (m_sessionId > 0) ? m_sessionId : m_messageId, 0, 0);
     m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+
+	if(m_sessionId == 0)
+	{
+		m_messageId++;
+		m_sessionId = m_messageId - 1;
+	}
+	else
+		m_sessionId++;
 }
 
 void XfireP2P::sendKeepAlive(XfireP2PSession *p_session)
 {
     kDebug() << "Sending keep-alive packet to: " + QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
-    QByteArray foo = createHeader(0, p_session->m_moniker, XFIRE_P2P_TYPE_KEEP_ALIVE_REP, (p_session->m_sessionId > 0) ? p_session->m_sessionId : p_session->m_contact->m_account->m_p2pConnection->m_messageId, 0, 0);
+    QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_KEEP_ALIVE_REP, m_sessionId, 0, 0);
     m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
 }
 
 void XfireP2P::sendKeepAliveRequest(XfireP2PSession *p_session)
 {
-    kDebug() << "Sending keep-alive request packet to: " + QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
-    QByteArray foo = createHeader(0, p_session->m_moniker, XFIRE_P2P_TYPE_KEEP_ALIVE_REQ, (p_session->m_sessionId > 0) ? p_session->m_sessionId : p_session->m_contact->m_account->m_p2pConnection->m_messageId, 0, 0);
+	kDebug() << "Sending keep-alive request packet to: " + QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
+    QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_KEEP_ALIVE_REQ, m_sessionId, 0, 0);
     m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+}
+
+void XfireP2P::sendAck(XfireP2PSession *p_session)
+{
+	// FIXME: Not implemented yet
 }
 
 void XfireP2P::slotNatCheckReady(QUdpSocket *p_connection)
