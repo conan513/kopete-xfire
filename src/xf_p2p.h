@@ -61,7 +61,7 @@ public:
     void sendPong(XfireP2PSession *p_session);
 	void sendKeepAlive(XfireP2PSession *p_session);
 	void sendKeepAliveRequest(XfireP2PSession *p_session);
-	void sendAck(XfireP2PSession *p_session);
+	void sendAck(XfireP2PSession *p_session, quint32 p_sessionId, quint32 p_sequenceId);
 
 private:
 	quint32 calculateCrc32(const void *p_data, quint32 p_len);

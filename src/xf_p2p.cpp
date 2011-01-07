@@ -63,6 +63,8 @@ void XfireP2P::slotSocketRead()
         return;
     }
 
+    quint8 encoding = *datagram.data();
+
     // Get moniker
     QByteArray moniker = datagram.mid(4, 20);
     XfireP2PSession *session = m_account->p2pSessionByMoniker(moniker);
@@ -84,19 +86,10 @@ void XfireP2P::slotSocketRead()
 
     switch (type)
     {
-    case XFIRE_P2P_TYPE_DATA32:
-    {
-        kDebug() << "Received data32 packet";
-        break;
-    }
     case XFIRE_P2P_TYPE_PING:
     {
         kDebug() << "Received ping packet";
         sendPong(session);
-
-		/*m_messageId++;
-		session->m_sequenceId++;*/
-
         break;
     }
     case XFIRE_P2P_TYPE_PONG:
@@ -116,34 +109,62 @@ void XfireP2P::slotSocketRead()
         break;
     }
     case XFIRE_P2P_TYPE_DATA16:
+	case XFIRE_P2P_TYPE_DATA32:
     {
-        kDebug() << "Received data16 packet";
-
 		quint32 size;
 		memcpy(&size, datagram.data() + 36, 4);
 
+		kDebug() << "Received data packet (" << size << " bytes)";
+
 		if(datagram.size() < (68 + size))
 		{
-			kDebug() << "Received too short packet";
+			kDebug() << "Received too short data packet";
 			break;
 		}
 
-		// 8 unknown bytes
+		// quint8 *crc_data = datagram.data() + 44;
+
+		// Decode
+		if(encoding != 0x00)
+		{
+			kDebug() << "Decoding encoded packet, value:" << encoding;
+			// FIXME: Not implemented yet
+		}
+
+		// Get data into Xfire packet
+		Xfire::Packet *packet = Xfire::Packet::parseData(datagram.mid(40 + 8, size)); // 8 unknown bytes
+
+		// Category
 		char category[17];
 		category[16] = 0;
-		memcpy(category, datagram.data() + 40 + 8 + size, 16);
+		memcpy(category, datagram.data() + 48 + size, 16);
+
+		kDebug() << "Packet category:" << category;
+
+		// Handle data
+		if(!strcmp(category, "IM"))
+		{
+			if(packet && packet->isValid())
+			{
+				kDebug() << "GYEAH";
+				m_account->server()->handlePacket(packet, session);
+			}
+		}
+
+		// Acknowledge packet
+		sendAck(session, messageId, sequenceId);
 
         break;
     }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REQ:
     {
-        kDebug() << "Received keep alive request packet";
+        kDebug() << "Received keep-alive request packet";
 		sendKeepAlive(session);
         break;
     }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REP:
     {
-        kDebug() << "Received keep alive reply packet";
+        kDebug() << "Received keep-alive reply packet";
 		session->m_keepAliveNeeded = FALSE;
         break;
     }
@@ -216,9 +237,11 @@ void XfireP2P::sendKeepAliveRequest(XfireP2PSession *p_session)
     m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
 }
 
-void XfireP2P::sendAck(XfireP2PSession *p_session)
+void XfireP2P::sendAck(XfireP2PSession *p_session, quint32 p_sessionId, quint32 p_sequenceId)
 {
-	// FIXME: Not implemented yet
+	kDebug() << "Sending ack packet to: " + QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
+    QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_ACK, p_sessionId, p_sequenceId, 0);
+    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
 }
 
 void XfireP2P::slotNatCheckReady(QUdpSocket *p_connection)

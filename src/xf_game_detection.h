@@ -49,8 +49,8 @@ public:
     XfireGameDetection(XfireAccount *p_account);
     ~XfireGameDetection();
 
+	gameInfo m_currentGame;
     quint32 isGameRunning(QString p_executable);
-    gameInfo m_currentGame;
 
 private:
     XfireAccount *m_account;

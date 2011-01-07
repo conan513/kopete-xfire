@@ -79,12 +79,12 @@ private:
 
 public slots:
     void closeConnection();
+	void handlePacket ( const Xfire::Packet *p_packet, XfireP2PSession *p_session = 0 );
 
 private slots:
     void slotConnected();
     void socketRead();
     void login ( const QString &p_salt );
-    void handlePacket ( const Xfire::Packet *p_packet );
     void slotSendHeartBeat();
     void slotConnectionInterrupted();
     void slotAddedInfoEventActionActivated ( uint p_actionId );

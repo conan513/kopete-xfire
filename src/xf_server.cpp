@@ -264,11 +264,11 @@ void XfireServer::sendTypingStatus ( const Xfire::SessionID &p_sid, quint32 p_ch
     m_connection->write ( typing.toByteArray() );
 }
 
-void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
+void XfireServer::handlePacket ( const Xfire::Packet *p_packet, XfireP2PSession *p_session )
 {
     switch ( p_packet->id() )
     {
-        // Login salt
+    // Login salt
     case 0x0080:
     {
         const Xfire::StringAttributeS *attr = static_cast<const Xfire::StringAttributeS*> ( p_packet->getAttribute ( "salt" ) );
@@ -363,7 +363,8 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
     }
 
     // Received chat message
-    case 0x0085:
+	case 0x0085:
+	case 0x0002:
     {
         const Xfire::SIDAttributeS *sid = static_cast<const Xfire::SIDAttributeS*> ( p_packet->getAttribute ( "sid" ) );
         const Xfire::ParentStringAttributeS *peermsg = static_cast<const Xfire::ParentStringAttributeS*> ( p_packet->getAttribute ( "peermsg" ) );
@@ -382,7 +383,7 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
         {
             switch ( msgtype->value() )
             {
-                // Instant message
+            // Instant message
             case 0:
             {
                 const Xfire::Int32AttributeS *imindex = static_cast<const Xfire::Int32AttributeS*> ( peermsg->getAttribute ( "imindex" ) );
@@ -394,8 +395,16 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
                     break;
                 }
 
-                from->receivedMessage ( im->string() );
-                sendChatConfirmation ( sid->sid(), imindex->value() ); // Sending confirmation
+				if(p_packet->id() == 0x0085)
+				{
+					from->receivedMessage ( im->string() );
+					sendChatConfirmation ( sid->sid(), imindex->value() ); // Sending confirmation
+				}
+				else
+				{
+					p_session->m_contact->receivedMessage(im->string());
+					// FIXME: add ack!
+				}
 
                 break;
             }
@@ -427,8 +436,12 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
                 {
                     if (from->m_p2pCapable == XfireContact::XF_P2P_YES || from->m_p2pCapable == XfireContact::XF_P2P_UNKNOWN)
                     {
-                        if ( !m_account->isPeerToPeerEnabled() )
-                            break;
+                        if (!m_account->isPeerToPeerEnabled())
+						{
+							sendP2pSession(from->m_session, 0, 0, 0, 0, 0, salt->string());
+							kDebug() << from->m_username + ": peer to peer request denied";
+							break;
+						}
 
                         if ( natType == 1 ||(( natType == 2 || natType == 3) && m_account->m_p2pConnection->m_natCheck->m_type == 1) ||
                                 (natType == 4 && (m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4)))
@@ -453,7 +466,7 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
                             // FIXME: Remove session
                         }
 
-                        if(from->m_p2pRequested == FALSE)
+                        if(!from->m_p2pRequested)
                         {
 							sendP2pSession(from->m_session, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
                                        m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
@@ -478,7 +491,11 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
             // Typing notification
             case 3:
             {
-                from->setTypingStatus ( msgtype->value() );
+				if(p_packet->id() == 0x0085)
+					from->setTypingStatus ( msgtype->value() );
+				else
+					p_session->m_contact->setTypingStatus(msgtype->value());
+
                 break;
             }
 
@@ -533,7 +550,11 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
             Xfire::SIDAttribute *sdid = sid->elements().at ( i ).sid;
             Xfire::Int32Attribute *id = gameid->elements().at ( i ).int32;
             Xfire::Int32Attribute *ip = gip->elements().at ( i ).int32;
+			Xfire::Int32Attribute *port = gport->elements().at ( i ).int32;
             quint32 gid = id->value();
+			quint32 gport = port->value();
+
+			kDebug() << "POORT: " << gport;
 
             XfireContact *c = static_cast<XfireContact*> ( m_account->findContact ( sid->elements().at ( i ).sid->sid() ) );
             if ( c )
@@ -542,7 +563,7 @@ void XfireServer::handlePacket ( const Xfire::Packet *p_packet )
                 c->removeProperties();
 
                 if ( ip->value() )
-                    c->setProperty ( XfireProtocol::protocol()->propServer, QHostAddress ( ip->value() ).toString() );
+                    c->setProperty ( XfireProtocol::protocol()->propServer, QHostAddress(ip->value()).toString());
             }
 
             m_account->updateContactGameInformation ( sdid->sid(), gid );
