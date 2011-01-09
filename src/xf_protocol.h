@@ -54,10 +54,10 @@ public:
     virtual KopeteEditAccountWidget *createEditAccountWidget ( Kopete::Account *account, QWidget *parent );
 
     // Statuses
-    const Kopete::OnlineStatus XfireAway;
-    const Kopete::OnlineStatus XfireConnecting;
     const Kopete::OnlineStatus XfireOffline;
+    const Kopete::OnlineStatus XfireConnecting;
     const Kopete::OnlineStatus XfireOnline;
+    const Kopete::OnlineStatus XfireAway;
 
     // Properties
     const Kopete::PropertyTmpl propGame;

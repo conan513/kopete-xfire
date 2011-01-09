@@ -232,11 +232,16 @@ void XfireAccount::updateContactSID ( Xfire::Int32Attribute *p_id, Xfire::SIDAtt
     }
 }
 
-void XfireAccount::updateContactGameInformation ( const Xfire::SessionID &p_sid, quint32 p_gameId )
+void XfireAccount::updateContactGameInformation ( const Xfire::SessionID &p_sid, quint32 p_gameId, quint32 p_serverIp, quint32 p_serverPort )
 {
     XfireContact *c = static_cast<XfireContact*> ( findContact ( p_sid ) );
     if ( c != 0 )
     {
+        c->removeProperties();
+
+        if ( p_serverIp )
+            c->setProperty ( XfireProtocol::protocol()->propServer, QHostAddress ( p_serverIp ).toString() );
+
         QString message;
         QString gameName = m_gamesList->getGameNameFromID ( p_gameId );
 
@@ -422,3 +427,4 @@ void XfireAccount::slotVersionUpdated()
     event->setText ( "The Xfire version has been updated and you will be reconnected." );
     event->sendEvent();
 }
+// kate: indent-mode cstyle; space-indent on; indent-width 4;

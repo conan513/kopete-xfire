@@ -22,7 +22,7 @@
 #include "xf_p2p_session.h"
 #include "xf_server.h"
 
-XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact), m_contact(p_contact), m_pingRetries(0)
+XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact), m_contact(p_contact), m_pingRetries(0), m_natType(0)
 {
     // Generate moniker
     QCryptographicHash hasher(QCryptographicHash::Sha1);
@@ -87,4 +87,31 @@ void XfireP2PSession::slotCheckSession()
 		kDebug() << "Send keep-alive request packet to:" << m_contact->m_username;
 		m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
 	}
+}
+
+void XfireP2PSession::sendMessage( quint32 p_chatMessageIndex, const QString &p_message )
+{
+    Xfire::Packet foo ( 0x0002 );
+    foo.addAttribute ( new Xfire::SIDAttributeS ( "sid", m_contact->m_session ) );
+
+    Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS ( "peermsg" );
+    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "msgtype", 0 ) );
+    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "imindex", p_chatMessageIndex ) );
+    peermsg->addAttribute ( new Xfire::StringAttributeS ( "im", p_message ) );
+    foo.addAttribute ( peermsg );
+
+    m_contact->m_account->m_p2pConnection->sendData16(this, m_sequenceId, 0, foo.toByteArray(), "IM");
+}
+
+void XfireP2PSession::sendMessageConfirmation(quint32 p_chatMessageIndex)
+{
+    Xfire::Packet foo ( 0x0002 );
+    foo.addAttribute ( new Xfire::SIDAttributeS ( "sid", m_contact->m_session ) );
+
+    Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS ( "peermsg" );
+    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "msgtype", 1 ) );
+    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "imindex", p_chatMessageIndex ) );
+    foo.addAttribute ( peermsg );
+
+    m_contact->m_account->m_p2pConnection->sendData16(this, m_sequenceId, 0, foo.toByteArray(), "IM");
 }

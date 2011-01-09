@@ -63,7 +63,7 @@ public:
     XfireGameDetection *m_gamesDetection;
 
     void updateContactID ( const QString &p_contactId, Xfire::Int32Attribute *p_id );
-    void updateContactGameInformation ( const Xfire::SessionID &p_sid, quint32 p_gameId );
+    void updateContactGameInformation ( const Xfire::SessionID& p_sid, quint32 p_gameId, quint32 p_serverIp, quint32 p_serverPort );
     void setStatus ( const Xfire::SessionID &p_sid, const QString &p_statusMessage );
     void newContact ( const QString &p_contactId, const QString &p_name, int p_groupId );
 
@@ -71,6 +71,7 @@ public:
     Kopete::Contact *findContact ( const Xfire::SessionID &p_sid );
     Kopete::Contact *findContact ( quint32 p_id );
 
+    // Settings
     bool isGameDetectionEnabled();
     bool isInformAccountsEnabled();
     bool isFriendsOfFriendsEnabled();

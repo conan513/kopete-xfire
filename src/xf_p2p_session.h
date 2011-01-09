@@ -43,6 +43,7 @@ public:
     quint16 m_localPort;
     quint32 m_remoteIp;
     quint16 m_remotePort;
+    int m_natType;
 
     void setLocalAddress(quint32 p_ip, quint16 p_port);
     void setRemoteAddress(quint32 p_ip, quint16 p_port);
@@ -51,6 +52,9 @@ public:
     bool m_keepAliveNeeded;
 
     quint32 m_sequenceId;
+
+    void sendMessage( quint32 p_chatMessageIndex, const QString &p_message );
+    void sendMessageConfirmation(quint32 p_chatMessageIndex);
 
 private:
 	QTimer *m_timer;

@@ -144,23 +144,24 @@ void XfireContact::slotSendTyping ( bool p_isTyping )
 void XfireContact::sendMessage ( Kopete::Message &p_message )
 {
     // Request P2P information if not known yet
-    if ( m_p2pCapable == XF_P2P_UNKNOWN )
+    if (m_p2pCapable == XF_P2P_UNKNOWN && m_account->isPeerToPeerEnabled())
         requestP2P();
 
-    XfireAccount *acc = static_cast<XfireAccount *> ( account() );
+    XfireAccount *acc = static_cast<XfireAccount *>(account());
 
-    if ( m_p2pCapable == XF_P2P_YES ) // Send IM through P2P
+    // Send IM through P2P
+    if (m_p2pCapable == XF_P2P_YES)
     {
-        kDebug() << "Sending P2P IM to:" << m_username;
-        // FIXME: Not implemented yet
+        kDebug() << m_username + ": sending p2p im";
+        m_p2pSession->sendMessage( m_chatMessageIndex, p_message.plainBody() );
     }
     else // Send IM through TCP
-	{
-		kDebug() << "Sending IM to:" << m_username;
-		acc->server()->sendChat ( m_session, m_chatMessageIndex, p_message.plainBody() );
-	}
+    {
+        kDebug() << m_username + ": sending im";
+        acc->server()->sendChat(m_session, m_chatMessageIndex, p_message.plainBody());
+    }
 
-    m_chatSession->appendMessage ( p_message ); // Append it
+    m_chatSession->appendMessage(p_message); // Append it
     m_chatMessageIndex++; // Update chat message index
 }
 

@@ -41,7 +41,7 @@ XfireProtocol::XfireProtocol ( QObject *parent, const QVariantList & ) : Kopete:
     // Load protocol only once
     if ( m_protocol )
     {
-        kDebug() << "Warning: Protocol already loaded, aborting initialization.";
+        kDebug() << "Protocol already loaded, aborting initialization";
         return;
     }
 
@@ -105,7 +105,7 @@ Kopete::Contact* XfireProtocol::deserializeContact ( Kopete::MetaContact *metaCo
 
     if ( thisAccount->findContact ( contactId ) )
     {
-        kDebug() << "User " << contactId << " already in contacts map";
+        kDebug() << contactId << "already in contacts map";
         return 0;
     }
 
