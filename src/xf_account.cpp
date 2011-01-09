@@ -239,8 +239,8 @@ void XfireAccount::updateContactGameInformation(const Xfire::SessionID &p_sid, q
     {
         c->removeProperties();
 
-        if(p_serverIp)
-            c->setProperty(XfireProtocol::protocol()->propServer, QHostAddress(p_serverIp).toString());
+        if(p_serverIp && p_serverPort)
+            c->setProperty(XfireProtocol::protocol()->propServer, QHostAddress(p_serverIp).toString() + QString::number(p_serverPort));
 
         QString message;
         QString gameName = m_gamesList->getGameNameFromID(p_gameId);
@@ -423,7 +423,7 @@ void XfireAccount::slotOpenGamesManager()
 void XfireAccount::slotVersionUpdated()
 {
     Kopete::InfoEvent *event = new Kopete::InfoEvent();
-    event->setTitle("Xfire version update");
-    event->setText("The Xfire version has been updated and you will be reconnected.");
+    event->setTitle(i18n("Xfire version update"));
+    event->setText(i18n("The Xfire version has been updated and you will be reconnected."));
     event->sendEvent();
 }

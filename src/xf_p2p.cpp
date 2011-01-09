@@ -119,19 +119,19 @@ void XfireP2P::slotSocketRead()
     case XFIRE_P2P_TYPE_DATA32:
     {
         quint32 size;
-        memcpy(&size, datagram.data() + 36, 4);
+        memcpy(&size, datagram.constData() + 36, 4);
 
         kDebug() << "Received data packet (" << size << " bytes)";
 
-        if(datagram.size() <(68 + size))
+        if(datagram.size() < (68 + size))
         {
             kDebug() << "Received too short data packet";
             break;
         }
 
+        // Decode
         char *crc_data = datagram.data() + 44;
 
-        // Decode
         if(encoding != 0x00)
         {
             kDebug() << "Decoding encoded packet";
@@ -146,8 +146,20 @@ void XfireP2P::slotSocketRead()
         // Category
         char category[17];
         category[16] = 0;
-        memcpy(category, datagram.data() + 48 + size, 16);
+        memcpy(category, datagram.constData() + 48 + size, 16);
         kDebug() << "Packet category:" << category;
+
+        // CRC32 check
+        quint32 crc32;
+        memcpy(&crc32, datagram.constData() + 48 + size + 16, 4);
+
+        // FIXME: not tested
+        if(crc32 != calculateCrc32(crc_data, (48 + size + 16) - 44))
+        {
+            kDebug() << "Received packet with invalid CRC-32";
+            sendBadCrc32(session, session->m_sequenceId);
+            break;
+        }
 
         // Handle data
         if(!strcmp(category, "IM"))
@@ -264,12 +276,28 @@ void XfireP2P::sendData16(XfireP2PSession *p_session, quint32 p_sequenceId, quin
     quint32 crc32 = calculateCrc32(foo.constData() + offset, 4 + p_data.size() + 16);
     foo.append((const char*)&crc32, 4);
 
-    // FIXME: encode data
+    // Encode data
+    if(p_encoding != 0) // FIXME: not tested
+    {
+        char *checksumData = foo.data();
+        while(checksumData < (foo.data() + offset + 4))
+        {
+            *checksumData ^= p_encoding;
+            checksumData++;
+        }
+    }
 
     m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
 
     m_messageId++;
     p_session->m_sequenceId++;
+}
+
+void XfireP2P::sendBadCrc32(XfireP2PSession *p_session, quint32 p_sequenceId)
+{
+    kDebug() << "Sending badcrc to:" << p_session->m_contact->m_username;
+    QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_BADCRC, m_sessionId, m_messageId, p_sequenceId);
+    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
 }
 
 void XfireP2P::slotNatCheckReady(QUdpSocket *p_connection)
