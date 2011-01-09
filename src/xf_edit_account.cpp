@@ -29,7 +29,8 @@
 #include "xf_edit_account.h"
 #include "xf_protocol.h"
 
-XfireEditAccountWidget::XfireEditAccountWidget(QWidget *parent, Kopete::Account *account) : QWidget(parent), KopeteEditAccountWidget(account)
+XfireEditAccountWidget::XfireEditAccountWidget(QWidget *parent, Kopete::Account *account) :
+QWidget(parent),KopeteEditAccountWidget(account)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     QWidget *widget = new QWidget(this);

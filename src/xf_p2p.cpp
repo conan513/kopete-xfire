@@ -140,9 +140,6 @@ void XfireP2P::slotSocketRead()
                 *(crc_data + i) ^= encoding;
         }
 
-        // Get data into Xfire packet
-        Xfire::Packet *packet = Xfire::Packet::parseData(datagram.mid(40 + 8, size)); // 8 unknown bytes
-
         // Category
         char category[17];
         category[16] = 0;
@@ -162,10 +159,39 @@ void XfireP2P::slotSocketRead()
         }
 
         // Handle data
-        if(!strcmp(category, "IM"))
+        if(type == XFIRE_P2P_TYPE_DATA16)
         {
-            if(packet && packet->isValid())
-                m_account->server()->handlePacket(packet, session);
+            if(!strcmp(category, "IM"))
+            {
+                kDebug() << "Received im packet";
+
+                // Get data into Xfire packet
+                Xfire::Packet *packet = Xfire::Packet::parseData(datagram.mid(40 + 8, size)); // 8 unknown bytes
+                if(packet && packet->isValid())
+                    m_account->server()->handlePacket(packet, session);
+            }
+        }
+        else
+        {
+            if(!strcmp(category, "DL"))
+            {
+                kDebug() << "Received dl packet";
+
+                quint16 type;
+                memcpy(&type, datagram.constData() + 40 + 8 + 4, 2);
+
+                switch(type)
+                {
+                    case 0x3E87:
+                    {
+                        kDebug() << "Received file request";
+                        // FIXME: not implemented yet
+                        break;
+                    }
+                    default:
+                        kDebug() << "Invalid dl packet received"; // FIXME: don't send ack then
+                }
+            }
         }
 
         // Acknowledge packet

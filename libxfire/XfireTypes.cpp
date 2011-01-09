@@ -81,4 +81,4 @@ ChatID &ChatID::operator= ( const ChatID &p_chatID )
     return *this;
 }
 }
-// kate: indent-mode cstyle; space-indent on; indent-width 4; 
+// kate: indent-mode cstyle; space-indent on; indent-width 4;

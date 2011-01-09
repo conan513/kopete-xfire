@@ -22,7 +22,7 @@
 #include "xf_p2p_session.h"
 #include "xf_server.h"
 
-XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact), m_contact(p_contact), m_pingRetries(0), m_natType(0)
+XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact), m_contact(p_contact), m_pingRetries(0), m_natType(0), m_sequenceId(0)
 {
     // Generate monikers (self and peer)
     QCryptographicHash hasher(QCryptographicHash::Sha1);

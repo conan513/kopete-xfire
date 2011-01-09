@@ -43,20 +43,13 @@
 
 #include <QCryptographicHash>
 
-XfireContact::XfireContact(Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent) : Kopete::Contact(pAccount, uniqueName, parent)
+XfireContact::XfireContact(Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent) :
+Kopete::Contact(pAccount, uniqueName, parent), m_username(uniqueName), m_chatSession(0L), m_chatMessageIndex(0),
+m_contactType(XF_FRIEND), m_p2pCapable(XF_P2P_UNKNOWN), m_p2pSession(NULL), m_p2pRequested(false)
 {
     m_account = static_cast<XfireAccount *>(pAccount);
 
-    m_username = uniqueName;
-
-    m_chatSession = 0L; // Initialize message manager and account
-    m_chatMessageIndex = 0; // Initialize chat message index
     setOnlineStatus(XfireProtocol::protocol()->XfireOffline); // Set initial contact status to offline
-
-    m_contactType = XF_FRIEND;
-    m_p2pCapable = XF_P2P_UNKNOWN;
-    m_p2pSession = NULL;
-    m_p2pRequested = FALSE;
 
     m_avatarManager = new QNetworkAccessManager(this);
     connect(m_avatarManager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotGotAvatar(QNetworkReply *)));
@@ -163,8 +156,8 @@ void XfireContact::sendMessage(Kopete::Message &p_message)
         acc->server()->sendChat(m_sid, m_chatMessageIndex, p_message.plainBody());
     }
 
-    m_chatSession->appendMessage(p_message); // Append it
-    m_chatMessageIndex++; // Update chat message index
+    m_chatSession->appendMessage(p_message); // Append message
+    m_chatMessageIndex++; // Raise chat message index
 }
 
 void XfireContact::requestP2P()

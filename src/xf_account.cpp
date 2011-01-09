@@ -40,7 +40,8 @@
 #include "xf_protocol.h"
 #include "xf_server.h"
 
-XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId): Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManager(0)
+XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId) :
+Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManager(0)
 {
     kDebug() << "Instantiating account:" << accountId;
 
@@ -240,7 +241,7 @@ void XfireAccount::updateContactGameInformation(const Xfire::SessionID &p_sid, q
         c->removeProperties();
 
         if(p_serverIp && p_serverPort)
-            c->setProperty(XfireProtocol::protocol()->propServer, QHostAddress(p_serverIp).toString() + QString::number(p_serverPort));
+            c->setProperty(XfireProtocol::protocol()->propServer, QHostAddress(p_serverIp).toString() + ":" + QString::number(p_serverPort));
 
         QString message;
         QString gameName = m_gamesList->getGameNameFromID(p_gameId);
