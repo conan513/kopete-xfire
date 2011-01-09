@@ -233,7 +233,7 @@ void XfireAccount::updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttri
     }
 }
 
-void XfireAccount::updateContactGameInformation(const Xfire::SessionID &p_sid, quint32 p_gameId, quint32 p_serverIp, quint32 p_serverPort)
+void XfireAccount::updateContactGameInformation(const Xfire::SessionID &p_sid, quint32 p_gameId, quint32 p_serverIp, quint16 p_serverPort)
 {
     XfireContact *c = static_cast<XfireContact*>(findContact(p_sid));
     if(c)

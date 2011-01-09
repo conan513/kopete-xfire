@@ -63,7 +63,7 @@ public:
     XfireGameDetection *m_gamesDetection;
 
     void updateContactID ( const QString &p_contactId, Xfire::Int32Attribute *p_id );
-    void updateContactGameInformation ( const Xfire::SessionID& p_sid, quint32 p_gameId, quint32 p_serverIp, quint32 p_serverPort );
+    void updateContactGameInformation ( const Xfire::SessionID& p_sid, quint32 p_gameId, quint32 p_serverIp, quint16 p_serverPort );
     void setStatus ( const Xfire::SessionID &p_sid, const QString &p_statusMessage );
     void newContact ( const QString &p_contactId, const QString &p_name, int p_groupId );
 
