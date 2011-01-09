@@ -64,6 +64,9 @@ m_contactType(XF_FRIEND), m_p2pCapable(XF_P2P_UNKNOWN), m_p2pSession(NULL), m_p2
         updateAvatar();
 
     removeProperties(); // Remove old properties
+
+    // Request friends
+    // FIXME: not implemented
 }
 
 void XfireContact::slotGotAvatar(QNetworkReply *pReply)
