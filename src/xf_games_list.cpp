@@ -30,11 +30,11 @@
 
 XfireGamesList::XfireGamesList()
 {
-  m_manager = new QNetworkAccessManager ( this );
-  mConfiguredGamesList = new QDomDocument();
-  mGamesList = new QDomDocument();
+    m_manager = new QNetworkAccessManager(this);
+    mConfiguredGamesList = new QDomDocument();
+    mGamesList = new QDomDocument();
 
-  connect ( m_manager, SIGNAL ( finished ( QNetworkReply * ) ), this, SLOT ( slotReceivedGamesList ( QNetworkReply * ) ) );
+    connect(m_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotReceivedGamesList(QNetworkReply *)));
 }
 
 XfireGamesList::~XfireGamesList()
@@ -43,214 +43,213 @@ XfireGamesList::~XfireGamesList()
 
 void XfireGamesList::initConfiguredGamesList()
 {
-  QByteArray content;
-  QFile file ( KStandardDirs::locateLocal ( "appdata", "xfire/xfire_games_config.xml" ) );
+    QByteArray content;
+    QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games_config.xml"));
 
-  if ( file.exists() == false )
+    if (file.exists() == false)
     {
-      file.open ( QIODevice::ReadWrite );
-      QXmlStreamWriter stream ( &file );
+        file.open(QIODevice::ReadWrite);
+        QXmlStreamWriter stream(&file);
 
-      stream.setAutoFormatting ( true );
-      stream.writeStartDocument();
+        stream.setAutoFormatting(true);
+        stream.writeStartDocument();
 
-      stream.writeStartElement ( "game_config" );
-      stream.writeAttribute ( "version", "2" );
+        stream.writeStartElement("game_config");
+        stream.writeAttribute("version", "2");
 
-      stream.writeEndDocument();
-      file.close();
+        stream.writeEndDocument();
+        file.close();
     }
 
-  if ( file.open ( QIODevice::ReadWrite ) )
+    if (file.open(QIODevice::ReadWrite))
     {
-      content = file.readAll();
-      file.close();
+        content = file.readAll();
+        file.close();
     }
 
-  mConfiguredGamesList->setContent ( content );
+    mConfiguredGamesList->setContent(content);
 }
 
 void XfireGamesList::initGamesList()
 {
-  QFile file ( KStandardDirs::locateLocal ( "appdata", "xfire/xfire_games.xml" ) );
+    QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games.xml"));
 
-  if ( file.exists() == false )
-    mLocalGamesListVersion = -1;
-  else
+    if (file.exists() == false)
+        mLocalGamesListVersion = -1;
+    else
     {
-      if ( file.open ( QIODevice::ReadWrite ) )
+        if (file.open(QIODevice::ReadWrite))
         {
-          mGamesList->setContent ( file.readAll() );
-          mLocalGamesListVersion = mGamesList->firstChildElement ( "games" ).attributes().namedItem ( "version" ).nodeValue().toInt();
+            mGamesList->setContent(file.readAll());
+            mLocalGamesListVersion = mGamesList->firstChildElement("games").attributes().namedItem("version").nodeValue().toInt();
 
-          file.close();
+            file.close();
         }
     }
 }
 
-void XfireGamesList::slotReceivedGamesList ( QNetworkReply *pReply )
+void XfireGamesList::slotReceivedGamesList(QNetworkReply *p_reply)
 {
-  QByteArray reply = pReply->readAll();
+    QByteArray reply = p_reply->readAll();
 
-  if ( pReply->url().toString().contains ( "gfire_version.xml" ) )
+    if (p_reply->url().toString().contains("gfire_version.xml"))
     {
-      QDomDocument *version = new QDomDocument();
-      version->setContent ( reply );
+        QDomDocument *version = new QDomDocument();
+        version->setContent(reply);
 
-      mRemoteGamesListVersion = version->firstChildElement ( "gfire" ).attributes().namedItem ( "games_list_version" ).nodeValue().toInt();
+        mRemoteGamesListVersion = version->firstChildElement("gfire").attributes().namedItem("games_list_version").nodeValue().toInt();
 
-      if ( mRemoteGamesListVersion != mLocalGamesListVersion )
-        m_manager->get ( QNetworkRequest ( QUrl ( "http://gfireproject.org/files/gfire_games.xml" ) ) ); // Download games list file
-      else
+        if (mRemoteGamesListVersion != mLocalGamesListVersion)
+            m_manager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_games.xml"))); // Download games list file
+        else
+            emit gamesListReady();
+
+        delete version;
+    }
+    else if (p_reply->url().toString().contains("gfire_games.xml"))
+    {
+        kDebug() << "Received new games list.";
+
+        emit slotGamesListUpdated();
+
+        mGamesList = new QDomDocument();
+        mGamesList->setContent(reply);
+        saveGamesList();
+
         emit gamesListReady();
-
-      delete version;
-    }
-  else if ( pReply->url().toString().contains ( "gfire_games.xml" ) )
-    {
-      kDebug() << "Received new games list.";
-
-      emit slotGamesListUpdated();
-
-      mGamesList = new QDomDocument();
-      mGamesList->setContent ( reply );
-      saveGamesList();
-
-      emit gamesListReady();
     }
 }
 
-QString XfireGamesList::getGameNameFromID ( quint32 p_gameId )
+QString XfireGamesList::getGameNameFromID(quint32 p_gameId)
 {
-  QDomNodeList domGames = mGamesList->elementsByTagName ( "game" );
-  for ( int i = 0; i < domGames.count(); i++ )
+    QDomNodeList domGames = mGamesList->elementsByTagName("game");
+    for (int i = 0; i < domGames.count(); i++)
     {
-      quint32 gameID = domGames.at ( i ).attributes().namedItem ( "id" ).nodeValue().toInt();
-      if ( gameID == p_gameId )
-        return domGames.at ( i ).attributes().namedItem ( "name" ).nodeValue();
+        quint32 gameID = domGames.at(i).attributes().namedItem("id").nodeValue().toInt();
+        if (gameID == p_gameId)
+            return domGames.at(i).attributes().namedItem("name").nodeValue();
     }
 
-  return 0L;
+    return 0L;
 }
 
-quint32 XfireGamesList::getGameIDFromName ( QString p_name )
+quint32 XfireGamesList::getGameIDFromName(QString p_name)
 {
-  QDomNodeList domGames = mGamesList->elementsByTagName ( "game" );
-  for ( int i = 0; i < domGames.count(); i++ )
+    QDomNodeList domGames = mGamesList->elementsByTagName("game");
+    for (int i = 0; i < domGames.count(); i++)
     {
-      QString gameName = domGames.at ( i ).attributes().namedItem ( "name" ).nodeValue();
-      if ( gameName == p_name )
-        return domGames.at ( i ).attributes().namedItem ( "id" ).nodeValue().toInt();
+        QString gameName = domGames.at(i).attributes().namedItem("name").nodeValue();
+        if (gameName == p_name)
+            return domGames.at(i).attributes().namedItem("id").nodeValue().toInt();
     }
 
-  return -1;
+    return -1;
 }
 
-QDomElement XfireGamesList::getConfiguredGame ( QString p_name )
+QDomElement XfireGamesList::getConfiguredGame(QString p_name)
 {
-  QDomElement ret;
+    QDomElement ret;
 
-  QDomNodeList games = mConfiguredGamesList->elementsByTagName ( "game" );
-  for ( int i = 0; i < games.count(); i++ )
+    QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
+    for (int i = 0; i < games.count(); i++)
     {
-      if ( games.at ( i ).attributes().namedItem ( "name" ).nodeValue() == p_name )
-        ret = games.at ( i ).toElement();
+        if (games.at(i).attributes().namedItem("name").nodeValue() == p_name)
+            ret = games.at(i).toElement();
     }
 
-  return ret;
+    return ret;
 }
 
 QList<QString> XfireGamesList::getGamesList()
 {
-  QList<QString> list;
+    QList<QString> list;
 
-  QDomNodeList domGames = mGamesList->elementsByTagName ( "game" );
-  for ( int i = 0; i < domGames.count(); i++ )
-    list.append ( domGames.at ( i ).attributes().namedItem ( "name" ).nodeValue() );
+    QDomNodeList domGames = mGamesList->elementsByTagName("game");
+    for (int i = 0; i < domGames.count(); i++)
+        list.append(domGames.at(i).attributes().namedItem("name").nodeValue());
 
-  return list;
+    return list;
 }
 
 QList<QString> XfireGamesList::configuredGames()
 {
-  QList<QString> ret;
+    QList<QString> ret;
 
-  QDomNodeList games = mConfiguredGamesList->elementsByTagName ( "game" );
-  for ( int i = 0; i < games.count(); i++ )
-    ret.append ( games.at ( i ).attributes().namedItem ( "name" ).nodeValue() );
+    QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
+    for (int i = 0; i < games.count(); i++)
+        ret.append(games.at(i).attributes().namedItem("name").nodeValue());
 
-  return ret;
+    return ret;
 }
 
-void XfireGamesList::removeConfiguredGame ( QString p_name )
+void XfireGamesList::removeConfiguredGame(QString p_name)
 {
-  QDomNode game = getConfiguredGame ( p_name );
-  qDebug() << game.toDocument().toString();
-  game.parentNode().removeChild ( game );
+    QDomNode game = getConfiguredGame(p_name);
+    qDebug() << game.toDocument().toString();
+    game.parentNode().removeChild(game);
 }
 
-void XfireGamesList::updateConfiguredGame ( QString p_name, QString p_launchExe, QString p_detectExe )
+void XfireGamesList::updateConfiguredGame(QString p_name, QString p_launchExe, QString p_detectExe)
 {
-  QDomElement game = getConfiguredGame ( p_name );
-  QDomElement command = game.firstChildElement ( "command" );
-  QDomElement launch = command.firstChildElement ( "launch" );
-  QDomElement detect = command.firstChildElement ( "detect" );
+    QDomElement game = getConfiguredGame(p_name);
+    QDomElement command = game.firstChildElement("command");
+    QDomElement launch = command.firstChildElement("launch");
+    QDomElement detect = command.firstChildElement("detect");
 
-  launch.firstChild().toText().setNodeValue ( p_launchExe );
-  detect.firstChild().toText().setNodeValue ( p_detectExe );
+    launch.firstChild().toText().setNodeValue(p_launchExe);
+    detect.firstChild().toText().setNodeValue(p_detectExe);
 }
 
 void XfireGamesList::saveConfiguredGamesList()
 {
-  QFile file ( KStandardDirs::locateLocal ( "appdata", "xfire/xfire_games_config.xml" ) );
-  file.open ( QFile::WriteOnly | QFile::Truncate );
+    QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games_config.xml"));
+    file.open(QFile::WriteOnly | QFile::Truncate);
 
-  QTextStream stream ( &file );
-  stream << mConfiguredGamesList->toString();
-  file.close();
+    QTextStream stream(&file);
+    stream << mConfiguredGamesList->toString();
+    file.close();
 }
 
 void XfireGamesList::saveGamesList()
 {
-  QFile file ( KStandardDirs::locateLocal ( "appdata", "xfire/xfire_games.xml" ) );
-  file.open ( QFile::WriteOnly | QFile::Truncate );
+    QFile file(KStandardDirs::locateLocal("appdata", "xfire/xfire_games.xml"));
+    file.open(QFile::WriteOnly | QFile::Truncate);
 
-  QTextStream stream ( &file );
-  stream << mGamesList->toString();
-  file.close();
+    QTextStream stream(&file);
+    stream << mGamesList->toString();
+    file.close();
 }
 
-bool XfireGamesList::gameIsConfigured ( QString p_name )
+bool XfireGamesList::gameIsConfigured(QString p_name)
 {
-  bool ret = false;
+    bool ret = false;
 
-  QDomNodeList games = mConfiguredGamesList->elementsByTagName ( "game" );
-  for ( int i = 0; i < games.count(); i++ )
+    QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
+    for (int i = 0; i < games.count(); i++)
     {
-      if ( games.at ( i ).attributes().namedItem ( "name" ).nodeValue() == p_name )
+        if (games.at(i).attributes().namedItem("name").nodeValue() == p_name)
         {
-          ret = true;
-          break;
+            ret = true;
+            break;
         }
     }
 
-  return ret;
+    return ret;
 }
 
 void XfireGamesList::slotGamesListUpdated()
 {
-  Kopete::InfoEvent *event = new Kopete::InfoEvent();
-  event->setTitle ( "Xfire games list update" );
-  event->setText ( "The Xfire games list has been updated to the latest version." );
-  event->sendEvent();
+    Kopete::InfoEvent *event = new Kopete::InfoEvent();
+    event->setTitle("Xfire games list update");
+    event->setText("The Xfire games list has been updated to the latest version.");
+    event->sendEvent();
 }
 
 void XfireGamesList::slotUpdate()
 {
-  // Download versions file and initialize both lists
-  m_manager->get ( QNetworkRequest ( QUrl ( "http://gfireproject.org/files/gfire_version.xml" ) ) );
+    // Download versions file and initialize both lists
+    m_manager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_version.xml")));
 
-  initGamesList();
-  initConfiguredGamesList();
+    initGamesList();
+    initConfiguredGamesList();
 }
-// kate: indent-mode cstyle; space-indent on; indent-width 2;

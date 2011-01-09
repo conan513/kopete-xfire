@@ -24,19 +24,20 @@
 
 XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact), m_contact(p_contact), m_pingRetries(0), m_natType(0)
 {
-    // Generate moniker
+    // Generate monikers (self and peer)
     QCryptographicHash hasher(QCryptographicHash::Sha1);
 
-    hasher.addData(p_contact->m_session.raw().toHex());
+    hasher.addData(p_contact->m_sid.raw().toHex());
     hasher.addData(p_salt.toAscii());
     m_moniker = hasher.result();
-    kDebug() << p_contact->m_username + ": moniker generated: " + m_moniker.toHex();
 
     hasher.reset();
     hasher.addData(p_contact->m_account->m_sid.raw().toHex());
     hasher.addData(p_salt.toAscii());
     m_monikerSelf = hasher.result();
+
     kDebug() << "Moniker generated: " + m_monikerSelf.toHex();
+    kDebug() << "Peer moniker generated:" << p_contact->m_username + ": " << m_moniker.toHex();
 }
 
 XfireP2PSession::~XfireP2PSession()
@@ -89,29 +90,43 @@ void XfireP2PSession::slotCheckSession()
 	}
 }
 
-void XfireP2PSession::sendMessage( quint32 p_chatMessageIndex, const QString &p_message )
+void XfireP2PSession::sendMessage( quint32 p_chatMessageIndex, const QString &p_message)
 {
-    Xfire::Packet foo ( 0x0002 );
-    foo.addAttribute ( new Xfire::SIDAttributeS ( "sid", m_contact->m_session ) );
+    Xfire::Packet foo(0x0002);
+    foo.addAttribute(new Xfire::SIDAttributeS("sid", m_contact->m_sid));
 
-    Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS ( "peermsg" );
-    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "msgtype", 0 ) );
-    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "imindex", p_chatMessageIndex ) );
-    peermsg->addAttribute ( new Xfire::StringAttributeS ( "im", p_message ) );
-    foo.addAttribute ( peermsg );
+    Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS("peermsg");
+    peermsg->addAttribute(new Xfire::Int32AttributeS("msgtype", 0));
+    peermsg->addAttribute(new Xfire::Int32AttributeS("imindex", p_chatMessageIndex));
+    peermsg->addAttribute(new Xfire::StringAttributeS("im", p_message));
+    foo.addAttribute(peermsg);
 
     m_contact->m_account->m_p2pConnection->sendData16(this, m_sequenceId, 0, foo.toByteArray(), "IM");
 }
 
 void XfireP2PSession::sendMessageConfirmation(quint32 p_chatMessageIndex)
 {
-    Xfire::Packet foo ( 0x0002 );
-    foo.addAttribute ( new Xfire::SIDAttributeS ( "sid", m_contact->m_session ) );
+    Xfire::Packet foo(0x0002);
+    foo.addAttribute(new Xfire::SIDAttributeS("sid", m_contact->m_sid));
 
-    Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS ( "peermsg" );
-    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "msgtype", 1 ) );
-    peermsg->addAttribute ( new Xfire::Int32AttributeS ( "imindex", p_chatMessageIndex ) );
-    foo.addAttribute ( peermsg );
+    Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS("peermsg");
+    peermsg->addAttribute(new Xfire::Int32AttributeS("msgtype", 1));
+    peermsg->addAttribute(new Xfire::Int32AttributeS("imindex", p_chatMessageIndex));
+    foo.addAttribute(peermsg);
+
+    m_contact->m_account->m_p2pConnection->sendData16(this, m_sequenceId, 0, foo.toByteArray(), "IM");
+}
+
+void XfireP2PSession::sendTypingStatus(quint32 p_chatMessageIndex, bool p_isTyping)
+{
+    Xfire::Packet foo(0x0002);
+    foo.addAttribute(new Xfire::SIDAttributeS("sid", m_contact->m_sid));
+
+    Xfire::ParentStringAttributeS *peermsg = new Xfire::ParentStringAttributeS("peermsg");
+    peermsg->addAttribute(new Xfire::Int32AttributeS("msgtype", 3));
+    peermsg->addAttribute(new Xfire::Int32AttributeS("imindex", p_chatMessageIndex));
+    peermsg->addAttribute(new Xfire::Int32AttributeS("typing", p_isTyping ? 1 : 0));
+    foo.addAttribute(peermsg);
 
     m_contact->m_account->m_p2pConnection->sendData16(this, m_sequenceId, 0, foo.toByteArray(), "IM");
 }

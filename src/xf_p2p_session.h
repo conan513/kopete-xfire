@@ -53,8 +53,9 @@ public:
 
     quint32 m_sequenceId;
 
-    void sendMessage( quint32 p_chatMessageIndex, const QString &p_message );
+    void sendMessage( quint32 p_chatMessageIndex, const QString &p_message);
     void sendMessageConfirmation(quint32 p_chatMessageIndex);
+    void sendTypingStatus(quint32 p_chatMessageIndex, bool p_isTyping);
 
 private:
 	QTimer *m_timer;

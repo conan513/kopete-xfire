@@ -136,7 +136,7 @@ void XfireP2P::slotSocketRead()
         {
             kDebug() << "Decoding encoded packet";
 
-            for(quint32 i = 0; i < (4 + size + 16 + 4/* unknown + data + category + crc32 */); i++)
+            for(quint32 i = 0; i < (4 + size + 16 + 4); i++)
                 *(crc_data + i) ^= encoding;
         }
 
@@ -360,5 +360,3 @@ quint32 XfireP2P::calculateCrc32(const char *p_data, quint32 p_len)
 
     return ~crc32;
 }
-
-// kate: indent-mode cstyle; space-indent on; indent-width 0;

@@ -32,7 +32,7 @@ class XfireGamesManager : public QDialog
     Q_OBJECT;
 
 public:
-    XfireGamesManager ( XfireAccount *p_account );
+    XfireGamesManager(XfireAccount *p_account);
     ~XfireGamesManager();
 
 private:
@@ -47,8 +47,8 @@ public slots:
     void slotUpdate();
 
 private slots:
-    void slotGameDetectionStatusChanged ( int p_status );
-    void slotConfiguringGameChanged ( QTreeWidgetItem *p_current, QTreeWidgetItem *p_previous );
+    void slotGameDetectionStatusChanged(int p_status);
+    void slotConfiguringGameChanged(QTreeWidgetItem *p_current, QTreeWidgetItem *p_previous);
     void slotApplyGameConfiguration();
     void slotResetGameConfiguration();
     void slotDetectGames();
