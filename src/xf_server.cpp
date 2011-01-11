@@ -438,6 +438,13 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                 const Xfire::Int32AttributeS *status = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("status"));
                 const Xfire::StringAttributeS *salt = static_cast<const Xfire::StringAttributeS*>(peermsg->getAttribute("salt"));
 
+                if(!from->m_p2pSession)
+                {
+                    kDebug() << from->m_username + ": creating session";
+                    from->m_p2pSession = new XfireP2PSession(from, salt->string());
+                    m_account->m_p2pConnection->addSession(from->m_p2pSession);
+                }
+
                 int natType = status->Int32;
                 from->m_p2pSession->m_natType = natType;
 
@@ -455,13 +462,6 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                         if(natType == 1 ||(( natType == 2 || natType == 3) && m_account->m_p2pConnection->m_natCheck->m_type == 1) ||
                                 (natType == 4 &&(m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4)))
                         {
-                            if(!from->m_p2pSession)
-                            {
-                                kDebug() << from->m_username + ": creating session";
-                                from->m_p2pSession = new XfireP2PSession(from, salt->string());
-                                m_account->m_p2pConnection->addSession(from->m_p2pSession);
-                            }
-
                             from->m_p2pCapable = XfireContact::XF_P2P_YES;
                             kDebug() << from->m_username + ": compatible buddy";
 
