@@ -407,13 +407,18 @@ XfireServer* XfireAccount::server()
 
 XfireP2PSession* XfireAccount::p2pSessionByMoniker(QByteArray p_moniker)
 {
-    for(int i = 0; i < m_p2pConnection->m_sessions.size(); i++)
+    QHash<QString, Kopete::Contact*> hash;
+    hash = contacts();
+
+    QHash<QString, Kopete::Contact*>::iterator i;
+    for(i = hash.begin(); i != hash.end(); ++i)
     {
-        if(m_p2pConnection->m_sessions.at(i)->m_moniker == p_moniker)
-            return m_p2pConnection->m_sessions.at(i);
+        XfireContact *contact = static_cast<XfireContact*>(i.value());
+        if(contact->m_p2pSession->m_moniker == p_moniker)
+            return contact->m_p2pSession;
     }
 
-    return 0;
+    return 0; // Session not found
 }
 
 void XfireAccount::slotOpenGamesManager()

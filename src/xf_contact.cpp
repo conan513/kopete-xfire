@@ -178,7 +178,6 @@ void XfireContact::requestP2P()
         {
             kDebug() << m_username + ": creating session";
             m_p2pSession = new XfireP2PSession(this, randomHash);
-            m_account->m_p2pConnection->addSession(m_p2pSession);
         }
 
         m_account->server()->sendP2pSession(m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),

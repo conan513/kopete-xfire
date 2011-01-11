@@ -439,11 +439,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                 const Xfire::StringAttributeS *salt = static_cast<const Xfire::StringAttributeS*>(peermsg->getAttribute("salt"));
 
                 if(!from->m_p2pSession)
-                {
-                    kDebug() << from->m_username + ": creating session";
                     from->m_p2pSession = new XfireP2PSession(from, salt->string());
-                    m_account->m_p2pConnection->addSession(from->m_p2pSession);
-                }
 
                 int natType = status->Int32;
                 from->m_p2pSession->m_natType = natType;

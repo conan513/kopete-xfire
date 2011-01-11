@@ -62,32 +62,6 @@ void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
 
 void XfireP2PSession::slotCheckSession()
 {
-	// Check pong timeout
-	if(m_pongNeeded && m_lastPing->restart() >= 5000)
-	{
-		if(m_pingRetries++ < 5)
-		{
-			kDebug() << "Resending ping packet to:" << m_contact->m_username << "1/" << m_pingRetries;
-			m_contact->m_account->m_p2pConnection->sendPing(this); // FIXME: ugly
-			m_pongNeeded = TRUE;
-		}
-		else
-		{
-			kDebug() << m_contact->m_username + ": session timed out, removing session";
-			m_contact->m_account->m_p2pConnection->removeSession(this);
-			m_timer->stop();
-		}
-	}
-
-	// Check keep-alive timeout
-	// ...
-
-	// Request keep-alive
-	if(!m_keepAliveNeeded && m_lastKeepAlive->restart() >= 60)
-	{
-		kDebug() << "Send keep-alive request packet to:" << m_contact->m_username;
-		m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
-	}
 }
 
 void XfireP2PSession::sendMessage( quint32 p_chatMessageIndex, const QString &p_message)

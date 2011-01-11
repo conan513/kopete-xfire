@@ -39,16 +39,6 @@ XfireP2P::~XfireP2P()
 {
 }
 
-void XfireP2P::addSession(XfireP2PSession *p_session)
-{
-    m_sessions.append(p_session);
-}
-
-void XfireP2P::removeSession(XfireP2PSession *p_session)
-{
-    m_sessions.removeOne(p_session);
-}
-
 void XfireP2P::slotSocketRead()
 {
     QByteArray datagram;

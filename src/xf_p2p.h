@@ -49,11 +49,7 @@ public:
     quint32 m_sessionId;
 
     QUdpSocket *m_connection;
-    QList<XfireP2PSession *> m_sessions;
     XfireP2PNatcheck *m_natCheck;
-
-    void addSession(XfireP2PSession *p_session);
-    void removeSession(XfireP2PSession *p_session);
 
     QByteArray createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen);
 
