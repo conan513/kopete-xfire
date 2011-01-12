@@ -174,15 +174,12 @@ void XfireContact::requestP2P()
         hasher.addData(rndStr.toAscii());
         QString randomHash = hasher.result().toHex();
 
-        if(!m_p2pSession)
-        {
-            kDebug() << m_username + ": creating session";
-            m_p2pSession = new XfireP2PSession(this, randomHash);
-        }
+        kDebug() << m_username + ": creating session";
+        m_p2pSession = new XfireP2PSession(this, randomHash);
 
         m_account->server()->sendP2pSession(m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
-                                            m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                            m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
+                                                m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
+                                                m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
     }
 }
 

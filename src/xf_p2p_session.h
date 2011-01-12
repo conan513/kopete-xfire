@@ -29,6 +29,8 @@ class XfireContact;
 
 class XfireP2PSession : public QObject
 {
+    Q_OBJECT;
+
 public:
     // Constructor & destructor
     XfireP2PSession(XfireContact* p_contact, const QString& p_salt);

@@ -24,6 +24,8 @@
 
 XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact), m_contact(p_contact), m_pingRetries(0), m_natType(0), m_sequenceId(0)
 {
+    kDebug() << m_contact->m_username + ": creating p2p session";
+
     // Generate monikers (self and peer)
     QCryptographicHash hasher(QCryptographicHash::Sha1);
 

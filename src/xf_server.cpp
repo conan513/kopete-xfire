@@ -438,12 +438,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                 const Xfire::Int32AttributeS *status = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("status"));
                 const Xfire::StringAttributeS *salt = static_cast<const Xfire::StringAttributeS*>(peermsg->getAttribute("salt"));
 
-                if(!from->m_p2pSession)
-                    from->m_p2pSession = new XfireP2PSession(from, salt->string());
-
                 int natType = status->Int32;
-                from->m_p2pSession->m_natType = natType;
-
                 if(natType > 0)
                 {
                     if(from->m_p2pCapable == XfireContact::XF_P2P_YES || from->m_p2pCapable == XfireContact::XF_P2P_UNKNOWN)
@@ -460,6 +455,11 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                         {
                             from->m_p2pCapable = XfireContact::XF_P2P_YES;
                             kDebug() << from->m_username + ": compatible buddy";
+
+                            if(!from->m_p2pSession)
+                                from->m_p2pSession = new XfireP2PSession(from, salt->string());
+
+                            from->m_p2pSession->m_natType = natType;
 
                             from->m_p2pSession->setLocalAddress(localip->value(), localport->value());
                             from->m_p2pSession->setRemoteAddress(ip->value(), port->value());
