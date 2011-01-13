@@ -44,6 +44,11 @@ XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt)
 
 XfireP2PSession::~XfireP2PSession()
 {
+    kDebug() << m_contact->m_username + ": removing p2p session";
+
+    delete m_lastPing;
+    delete m_lastKeepAlive;
+    m_timer->stop();
 }
 
 void XfireP2PSession::setLocalAddress(quint32 p_ip, quint16 p_port)
@@ -57,13 +62,64 @@ void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
     m_remoteIp = p_ip;
     m_remotePort = p_port;
 
+    m_lastPing = new QTime();
+    m_lastKeepAlive = new QTime();
+
 	m_timer = new QTimer(this);
 	m_timer->start(1000);
-	QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(slotCheckSession()));
+
+    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(slotCheckSession()));
+    m_contact->m_account->m_p2pConnection->sendPing(this);
 }
 
 void XfireP2PSession::slotCheckSession()
 {
+    // Check pong timeout
+    /*if(m_pongNeeded && m_lastPing->elapsed() >= 5000)
+    {
+        if(m_pingRetries++ < 5)
+        {
+            m_contact->m_account->m_p2pConnection->sendPing(this); // FIXME: ugly
+            m_lastPing->restart();
+        }
+        else
+            emit timeout(this);
+    }
+
+    // Check keep-alive timeout
+    if(m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 5000)
+        emit timeout(this);
+
+    // Request keep-alive
+    if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
+    {
+        m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
+        m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
+        m_lastKeepAlive->restart();
+    }*/
+
+    // Check pong timeout
+    if(m_pongNeeded && m_lastPing->elapsed() >= 5000)
+    {
+        if(m_pingRetries++ < 5)
+        {
+            m_contact->m_account->m_p2pConnection->sendPing(this);
+            m_lastPing->restart();
+        }
+        else
+            emit timeout();
+    }
+
+    // Check keep-alive timeout
+    // ...
+
+    // Request keep-alive
+    if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
+    {
+        kDebug() << "Send keep-alive request packet to:" << m_contact->m_username;
+        m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
+        m_lastKeepAlive->restart();
+    }
 }
 
 void XfireP2PSession::sendMessage( quint32 p_chatMessageIndex, const QString &p_message)

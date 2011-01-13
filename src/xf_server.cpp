@@ -387,7 +387,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         {
             switch (msgtype->value())
             {
-                // Instant message
+            // Instant message
             case 0:
             {
                 const Xfire::Int32AttributeS *imindex = static_cast<const Xfire::Int32AttributeS*>(peermsg->getAttribute("imindex"));
@@ -401,7 +401,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                 if(p_packet->id() == 0x0085)
                 {
                     from->receivedMessage(im->string());
-                    sendChatConfirmation(sid->sid(), imindex->value()); // Sending confirmation
+                    sendChatConfirmation(sid->sid(), imindex->value());
                 }
                 else
                 {
@@ -456,8 +456,8 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                             from->m_p2pCapable = XfireContact::XF_P2P_YES;
                             kDebug() << from->m_username + ": compatible buddy";
 
-                            if(!from->m_p2pSession)
-                                from->m_p2pSession = new XfireP2PSession(from, salt->string());
+                            if(from->m_p2pSession == NULL)
+                                from->createP2pSession(salt->string());
 
                             from->m_p2pSession->m_natType = natType;
 

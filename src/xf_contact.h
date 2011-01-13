@@ -77,6 +77,8 @@ public:
     bool m_p2pRequested;
     XfireP2PSession *m_p2pSession;
     void requestP2P();
+    bool isPeerToPeerActive();
+    void createP2pSession(const QString& p_salt);
 
     // Chatting
     virtual Kopete::ChatSession *manager(CanCreateFlags p_canCreateFlags = CannotCreate); // Returns the Kopete chat session associated with the contact
@@ -98,7 +100,7 @@ public slots:
 
 private slots:
     void slotGotAvatar(QNetworkReply *p_reply);
-
+    void slotRemoveP2pSession();
 };
 
 #endif // XF_CONTACT_H

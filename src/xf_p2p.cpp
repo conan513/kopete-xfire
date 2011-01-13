@@ -80,19 +80,18 @@ void XfireP2P::slotSocketRead()
     {
     case XFIRE_P2P_TYPE_PING:
     {
-        kDebug() << "Received ping packet";
-
-        // NAT type 2: incorrect port received in p2p data
-        if(session->m_natType == 2)
+        // Symmetric NAT: rectify port
+        if(session->m_natType == 2 || session->m_natType == 3)
             session->m_contact->m_p2pSession->setRemoteAddress(sender.toIPv4Address(), port);
 
+        kDebug() << "Received ping packet";
         sendPong(session);
         break;
     }
     case XFIRE_P2P_TYPE_PONG:
     {
         kDebug() << "Received pong packet";
-        session->m_pongNeeded = false;
+        session->m_pongNeeded = FALSE;
         break;
     }
     case XFIRE_P2P_TYPE_ACK:
@@ -174,19 +173,17 @@ void XfireP2P::slotSocketRead()
                 {
                     case 0x3E87:
                     {
-                        kDebug() << "Received file request";
+                        kDebug() << "Received file transfer request";
                         // FIXME: not implemented yet
                         break;
                     }
                     default:
-                        kDebug() << "Invalid dl packet received"; // FIXME: don't send ack then
+                        kDebug() << "Invalid dl packet received"; // FIXME: don't send ack
                 }
             }
         }
 
-        // Acknowledge packet
-        sendAck(session, messageId, sequenceId);
-
+        sendAck(session, messageId, sequenceId); // Acknowledge packet
         break;
     }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REQ:
@@ -198,7 +195,7 @@ void XfireP2P::slotSocketRead()
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REP:
     {
         kDebug() << "Received keep-alive reply packet";
-        session->m_keepAliveNeeded = false;
+        session->m_keepAliveNeeded = FALSE;
         break;
     }
     default:
@@ -230,6 +227,8 @@ void XfireP2P::sendPing(XfireP2PSession *p_session)
     kDebug() << "Sending ping packet to: " << QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_PING,(m_sessionId > 0)? m_sessionId : m_messageId, 0, 0);
     m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+
+    p_session->m_pongNeeded = TRUE;
 
     if(m_sessionId == 0)
     {
@@ -288,7 +287,7 @@ void XfireP2P::sendData16(XfireP2PSession *p_session, quint32 p_sequenceId, quin
     foo.append(p_category, strlen(p_category)); // Category
     foo.append(QByteArray(16 - strlen(p_category), 0)); // Fill up to 16 bytes
 
-    // CRC32
+    // CRC-32
     quint32 crc32 = calculateCrc32(foo.constData() + offset, 4 + p_data.size() + 16);
     foo.append((const char*)&crc32, 4);
 

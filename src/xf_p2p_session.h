@@ -68,6 +68,9 @@ private:
 
 private slots:
 	void slotCheckSession();
+
+signals:
+    void timeout();
 };
 
 #endif // XF_P2P_SESSION_H

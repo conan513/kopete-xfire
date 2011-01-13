@@ -43,11 +43,11 @@
 
 #include <QCryptographicHash>
 
-XfireContact::XfireContact(Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent) :
-Kopete::Contact(pAccount, uniqueName, parent), m_username(uniqueName), m_chatSession(0L), m_chatMessageIndex(0),
-m_contactType(XF_FRIEND), m_p2pCapable(XF_P2P_UNKNOWN), m_p2pSession(NULL), m_p2pRequested(false)
+XfireContact::XfireContact(Kopete::Account *p_account, const QString &p_uniqueName, const QString &p_displayName, Kopete::MetaContact *p_parent) :
+    Kopete::Contact(p_account, p_uniqueName, p_parent), m_username(p_uniqueName), m_chatSession(0L), m_chatMessageIndex(0),
+    m_contactType(XF_FRIEND), m_p2pCapable(XF_P2P_UNKNOWN), m_p2pSession(NULL), m_p2pRequested(false)
 {
-    m_account = static_cast<XfireAccount *>(pAccount);
+    m_account = static_cast<XfireAccount *>(p_account);
 
     setOnlineStatus(XfireProtocol::protocol()->XfireOffline); // Set initial contact status to offline
 
@@ -64,9 +64,6 @@ m_contactType(XF_FRIEND), m_p2pCapable(XF_P2P_UNKNOWN), m_p2pSession(NULL), m_p2
         updateAvatar();
 
     removeProperties(); // Remove old properties
-
-    // Request friends
-    // FIXME: not implemented
 }
 
 void XfireContact::slotGotAvatar(QNetworkReply *pReply)
@@ -133,7 +130,7 @@ Kopete::ChatSession* XfireContact::manager(CanCreateFlags p_canCreateFlags)
 
 void XfireContact::slotSendTyping(bool p_isTyping)
 {
-    if(m_p2pCapable == XF_P2P_YES && m_account->isPeerToPeerEnabled())
+    if(isPeerToPeerActive())
         m_p2pSession->sendTypingStatus(m_chatMessageIndex, p_isTyping);
     else
         m_account->server()->sendTypingStatus(m_sid, m_chatMessageIndex, p_isTyping);
@@ -148,7 +145,7 @@ void XfireContact::sendMessage(Kopete::Message &p_message)
     XfireAccount *acc = static_cast<XfireAccount *>(account());
 
     // Send IM through P2P
-    if(m_p2pCapable == XF_P2P_YES)
+    if(isPeerToPeerActive())
     {
         kDebug() << m_username + ": sending p2p im";
         m_p2pSession->sendMessage( m_chatMessageIndex, p_message.plainBody());
@@ -174,9 +171,7 @@ void XfireContact::requestP2P()
         hasher.addData(rndStr.toAscii());
         QString randomHash = hasher.result().toHex();
 
-        kDebug() << m_username + ": creating session";
-        m_p2pSession = new XfireP2PSession(this, randomHash);
-
+        createP2pSession(randomHash);
         m_account->server()->sendP2pSession(m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
                                                 m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
                                                 m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
@@ -205,10 +200,6 @@ void XfireContact::setOnlineStatus(const Kopete::OnlineStatus &status)
 void XfireContact::setId(Xfire::Int32Attribute *p_id)
 {
     m_id = p_id->value();
-
-    // FIXME: This should be asked only on request, but not possible yet (get info not implemented in UI)
-    XfireAccount *acc = static_cast<XfireAccount *>(account());
-    acc->server()->sendAskFriendExtendedInformation(m_id);
 }
 
 void XfireContact::setMessageSucceeded()
@@ -225,4 +216,24 @@ void XfireContact::removeProperties()
 {
     removeProperty(XfireProtocol::protocol()->propGame);
     removeProperty(XfireProtocol::protocol()->propServer);
+}
+
+bool XfireContact::isPeerToPeerActive()
+{
+    if(m_p2pSession != NULL)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+void XfireContact::createP2pSession(const QString &p_salt)
+{
+    m_p2pSession = new XfireP2PSession(this, p_salt);
+    QObject::connect(m_p2pSession, SIGNAL(timeout()), this, SLOT(slotRemoveP2pSession()));
+}
+
+void XfireContact::slotRemoveP2pSession()
+{
+    delete m_p2pSession;
+    m_p2pSession = 0L;
 }
