@@ -414,7 +414,6 @@ XfireP2PSession* XfireAccount::p2pSessionByMoniker(QByteArray p_moniker)
     for(i = hash.begin(); i != hash.end(); ++i)
     {
         XfireContact *contact = static_cast<XfireContact*>(i.value());
-
         if(contact->m_p2pSession && contact->m_p2pSession->m_moniker == p_moniker)
             return contact->m_p2pSession;
     }

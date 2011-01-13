@@ -86,7 +86,7 @@ private slots:
     void socketRead();
     void login ( const QString &p_salt );
     void slotSendHeartBeat();
-    void slotConnectionInterrupted();
+    void slotConnectionInterrupted(QAbstractSocket::SocketError p_error);
     void slotAddedInfoEventActionActivated ( uint p_actionId );
 
 signals:

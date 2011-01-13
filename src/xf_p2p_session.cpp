@@ -75,30 +75,6 @@ void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
 void XfireP2PSession::slotCheckSession()
 {
     // Check pong timeout
-    /*if(m_pongNeeded && m_lastPing->elapsed() >= 5000)
-    {
-        if(m_pingRetries++ < 5)
-        {
-            m_contact->m_account->m_p2pConnection->sendPing(this); // FIXME: ugly
-            m_lastPing->restart();
-        }
-        else
-            emit timeout(this);
-    }
-
-    // Check keep-alive timeout
-    if(m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 5000)
-        emit timeout(this);
-
-    // Request keep-alive
-    if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
-    {
-        m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
-        m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
-        m_lastKeepAlive->restart();
-    }*/
-
-    // Check pong timeout
     if(m_pongNeeded && m_lastPing->elapsed() >= 5000)
     {
         if(m_pingRetries++ < 5)
@@ -111,12 +87,12 @@ void XfireP2PSession::slotCheckSession()
     }
 
     // Check keep-alive timeout
-    // ...
+    if(m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 5000)
+        emit timeout();
 
     // Request keep-alive
     if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
     {
-        kDebug() << "Send keep-alive request packet to:" << m_contact->m_username;
         m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
         m_lastKeepAlive->restart();
     }

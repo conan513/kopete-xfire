@@ -43,7 +43,7 @@ XfireServer::XfireServer(XfireAccount *parent, const QString accountId, const QS
     // Signals
     connect(m_connection, SIGNAL(connected()), this, SLOT(slotConnected()));
     connect(m_connection, SIGNAL(readyRead()), this, SLOT(socketRead()));
-    connect(m_connection, SIGNAL(error()), this, SLOT(slotConnectionInterrupted()));
+    connect(m_connection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(slotConnectionInterrupted(QAbstractSocket::SocketError)));
 
     connect(this, SIGNAL(goOnline()), m_account, SLOT(slotGoOnline()));
     connect(this, SIGNAL(goOffline()), m_account, SLOT(slotGoOffline()));
@@ -468,7 +468,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                         {
                             from->m_p2pCapable = XfireContact::XF_P2P_NO;
                             kDebug() << from->m_username + ": incompatible buddy";
-                            // FIXME: Remove session
+                            delete from->m_p2pSession; // Remove p2p session
                         }
 
                         if(!from->m_p2pRequested)
@@ -488,7 +488,10 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                     }
                 }
                 else
+                {
                     from->m_p2pCapable = XfireContact::XF_P2P_NO;
+                    delete from->m_p2pSession;
+                }
 
                 break;
             }
@@ -731,7 +734,7 @@ void XfireServer::slotAddedInfoEventActionActivated(uint p_actionId)
     }
 }
 
-void XfireServer::slotConnectionInterrupted()
+void XfireServer::slotConnectionInterrupted(QAbstractSocket::SocketError p_error)
 {
     kDebug() << "Connection interrupted";
     m_account->logOff(Kopete::Account::ConnectionReset);
