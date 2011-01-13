@@ -138,6 +138,10 @@ void XfireContact::slotSendTyping(bool p_isTyping)
 
 void XfireContact::sendMessage(Kopete::Message &p_message)
 {
+    // Request P2P information if not known yet
+    if(m_p2pCapable == XF_P2P_UNKNOWN && m_account->isPeerToPeerEnabled())
+        requestP2P();
+
     if(isPeerToPeerActive()) // Send IM through P2P
     {
         kDebug() << m_username + ": sending p2p im";
@@ -151,28 +155,26 @@ void XfireContact::sendMessage(Kopete::Message &p_message)
 
     m_chatSession->appendMessage(p_message); // Append message
     m_chatMessageIndex++; // Raise chat message index
-
-    // Request P2P information if not known yet
-    if(m_p2pCapable == XF_P2P_UNKNOWN && m_account->isPeerToPeerEnabled())
-        requestP2P();
 }
 
 void XfireContact::requestP2P()
 {
-    if(!m_p2pSession)
-    {
-        // Generate random salt
-        QCryptographicHash hasher(QCryptographicHash::Sha1);
-        QString rndStr = QString::number(rand());
+    if(m_p2pSession)
+        return;
 
-        hasher.addData(rndStr.toAscii());
-        QString randomHash = hasher.result().toHex();
+    kDebug() << m_username + ": requesting p2p information";
 
-        createP2pSession(randomHash);
-        m_account->server()->sendP2pSession(m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
-                                                m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                                m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
-    }
+    // Generate random salt
+    QCryptographicHash hasher(QCryptographicHash::Sha1);
+    QString rndStr = QString::number(rand());
+
+    hasher.addData(rndStr.toAscii());
+    QString randomHash = hasher.result().toHex();
+
+    createP2pSession(randomHash);
+    m_account->server()->sendP2pSession(m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
+                                        m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
+                                        m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
 }
 
 void XfireContact::receivedMessage(const QString &p_message)
@@ -217,7 +219,7 @@ void XfireContact::removeProperties()
 
 bool XfireContact::isPeerToPeerActive()
 {
-    if(m_p2pSession != NULL)
+    if(m_p2pSession && m_p2pSession->m_handshakeDone)
         return TRUE;
     else
         return FALSE;

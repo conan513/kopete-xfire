@@ -52,6 +52,7 @@ public:
 
     bool m_pongNeeded;
     bool m_keepAliveNeeded;
+    bool m_handshakeDone;
 
     quint32 m_sequenceId;
 

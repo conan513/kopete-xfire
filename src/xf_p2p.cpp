@@ -92,6 +92,10 @@ void XfireP2P::slotSocketRead()
     {
         kDebug() << "Received pong packet";
         session->m_pongNeeded = FALSE;
+
+        if(!session->m_handshakeDone)
+            session->m_handshakeDone = TRUE;
+
         break;
     }
     case XFIRE_P2P_TYPE_ACK:
@@ -110,7 +114,7 @@ void XfireP2P::slotSocketRead()
         quint32 size;
         memcpy(&size, datagram.constData() + 36, 4);
 
-        kDebug() << "Received data packet (" << size << " bytes)";
+        kDebug() << "Received data packet :" << size << "bytes";
 
         if(datagram.size() < (68 + size))
         {
