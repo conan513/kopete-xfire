@@ -63,9 +63,7 @@ void XfireServer::connectToServer(const QString accountId, const QString account
     m_username = accountId;
     m_password = accountPass;
 
-    // Connect to server
-    m_account->myself()->setOnlineStatus(XfireProtocol::protocol()->XfireConnecting); // Set Kopete status to connecting
-    m_connection->connectToHost(serverName, serverPort);
+    m_connection->connectToHost(serverName, serverPort); // Connect to server
 }
 
 void XfireServer::slotConnected()

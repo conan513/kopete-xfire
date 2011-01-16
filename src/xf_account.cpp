@@ -393,6 +393,8 @@ void XfireAccount::setOnlineStatus(const Kopete::OnlineStatus &p_status, const K
         slotGoOffline();
     else if(p_status.status() == Kopete::OnlineStatus::Away)
         slotGoAway();
+    else
+        slotGoOnline();
 }
 
 void XfireAccount::changeOurStatus(const Kopete::OnlineStatus &p_status)
