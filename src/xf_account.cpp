@@ -146,6 +146,10 @@ void XfireAccount::logOff(Kopete::Account::DisconnectReason p_reason)
     if(p_reason == Kopete::Account::OtherClient)
         kDebug() << "Logged in somewhere else";
 
+    delete m_p2pConnection;
+    delete m_gamesDetection;
+    delete m_server;
+
     disconnected(p_reason);
 }
 

@@ -292,7 +292,6 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
     {
         // Set password as wrong and reconnect account
         m_account->password().setWrong(true);
-
         m_account->logOff(Kopete::Account::BadPassword);
         emit goOnline();
 
