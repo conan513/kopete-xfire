@@ -142,16 +142,10 @@ void XfireContact::sendMessage(Kopete::Message &p_message)
     if(m_p2pCapable == XF_P2P_UNKNOWN && m_account->isPeerToPeerEnabled())
         requestP2P();
 
-    if(isPeerToPeerActive()) // Send IM through P2P
-    {
-        kDebug() << m_username + ": sending p2p im";
+    if(isPeerToPeerActive())
         m_p2pSession->sendMessage( m_chatMessageIndex, p_message.plainBody());
-    }
-    else // Send IM through TCP
-    {
-        kDebug() << m_username + ": sending im";
+    else
         m_account->server()->sendChat(m_sid, m_chatMessageIndex, p_message.plainBody());
-    }
 
     m_chatSession->appendMessage(p_message); // Append message
     m_chatMessageIndex++; // Raise chat message index
@@ -173,8 +167,8 @@ void XfireContact::requestP2P()
 
     createP2pSession(randomHash);
     m_account->server()->sendP2pSession(m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
-                                        m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                        m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
+                                            m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
+                                            m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
 }
 
 void XfireContact::receivedMessage(const QString &p_message)

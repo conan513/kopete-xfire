@@ -387,13 +387,13 @@ void XfireAccount::setOnlineStatus(const Kopete::OnlineStatus &p_status, const K
 
     if(p_status == XfireProtocol::protocol()->XfireConnecting && myself()->onlineStatus() == XfireProtocol::protocol()->XfireOffline)
         slotGoOnline();
-    else if(p_status == XfireProtocol::protocol()->XfireOnline || p_status.status() == Kopete::OnlineStatus::Online)
+    else if(p_status == XfireProtocol::protocol()->XfireOnline)
         slotGoOnline();
     else if(p_status == XfireProtocol::protocol()->XfireOffline)
         slotGoOffline();
-    else if(p_status.status() == Kopete::OnlineStatus::Away)
+    else if(p_status == XfireProtocol::protocol()->XfireAway)
         slotGoAway();
-    else
+    else if(p_status == Kopete::OnlineStatus::Invisible)
         slotGoOnline();
 }
 
