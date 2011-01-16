@@ -41,7 +41,7 @@
 #include "xf_server.h"
 
 XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId) :
-Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManager(0)
+    Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManager(0)
 {
     kDebug() << "Instantiating account:" << accountId;
 
@@ -49,6 +49,7 @@ Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManage
     setMyself(new XfireContact(this, accountId, accountId, Kopete::ContactList::self()->myself()));
     myself()->setOnlineStatus(parent->XfireOffline);
 
+    m_server = new XfireServer(this);
     m_gamesList = new XfireGamesList();
     m_gamesManager = new XfireGamesManager(this);
     m_openGamesManager = new KAction(KIcon("input-gaming"), i18n("Configure games"), this);
@@ -64,6 +65,9 @@ XfireAccount::~XfireAccount()
 
     if(m_gamesDetection)
         delete m_gamesDetection;
+
+    if(m_p2pConnection)
+        delete m_p2pConnection;
 }
 
 void XfireAccount::fillActionMenu(KActionMenu *p_actionMenu)
@@ -96,9 +100,8 @@ void XfireAccount::slotContinueConnecting()
 {
     kDebug() << "Starting login sequence";
 
-    // Initialize server
-    myself()->setOnlineStatus(XfireProtocol::protocol()->XfireConnecting); // Set Kopete status to connecting
-    m_server = new XfireServer(this, accountId(), m_password, serverName(), serverPort()); // Make new connection to the Xfire server
+    // Make new connection to the Xfire server
+    m_server->connectToServer(accountId(), m_password, serverName(), serverPort());
 
     // Initialize game detection if enabled
     if(isGameDetectionEnabled())
@@ -145,10 +148,6 @@ void XfireAccount::logOff(Kopete::Account::DisconnectReason p_reason)
 
     if(p_reason == Kopete::Account::OtherClient)
         kDebug() << "Logged in somewhere else";
-
-    delete m_p2pConnection;
-    delete m_gamesDetection;
-    delete m_server;
 
     disconnected(p_reason);
 }

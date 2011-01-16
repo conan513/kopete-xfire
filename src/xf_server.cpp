@@ -28,15 +28,14 @@
 #include "xf_p2p_natcheck.h"
 #include "xf_server.h"
 
-XfireServer::XfireServer(XfireAccount *parent, const QString accountId, const QString accountPass, const QString serverName, const uint serverPort) : QObject(parent), m_account(parent)
+XfireServer::XfireServer(XfireAccount *parent) : QObject(parent), m_account(parent)
 {
-    // Set account & password
-    m_username = accountId;
-    m_password = accountPass;
-
     // Create socket to the Xfire server
     m_connection = new QTcpSocket(this);
-    m_connection->connectToHost(serverName, serverPort);
+
+    // Heartbeat & heartbeat timeout
+    m_heartBeat = new QTimer(this);
+    m_connectionTimeout = new QTimer(this);
 
     kDebug() << "Waiting for a connection to the Xfire server";
 
@@ -49,10 +48,24 @@ XfireServer::XfireServer(XfireAccount *parent, const QString accountId, const QS
     connect(this, SIGNAL(goOffline()), m_account, SLOT(slotGoOffline()));
 
     connect(this, SIGNAL(ourStatusChanged(const Kopete::OnlineStatus &)), m_account, SLOT(changeOurStatus(const Kopete::OnlineStatus &)));
+
+    connect(m_heartBeat, SIGNAL(timeout()), this, SLOT(slotSendHeartBeat()));
+    connect(m_connectionTimeout, SIGNAL(timeout()), this, SLOT(slotConnectionInterrupted()));
 }
 
 XfireServer::~XfireServer()
 {
+}
+
+void XfireServer::connectToServer(const QString accountId, const QString accountPass, const QString serverName, const uint serverPort)
+{
+    // Set account & password
+    m_username = accountId;
+    m_password = accountPass;
+
+    // Connect to server
+    m_account->myself()->setOnlineStatus(XfireProtocol::protocol()->XfireConnecting); // Set Kopete status to connecting
+    m_connection->connectToHost(serverName, serverPort);
 }
 
 void XfireServer::slotConnected()
@@ -74,13 +87,6 @@ void XfireServer::slotConnected()
     Xfire::Packet version(0x03);
     version.addAttribute(new Xfire::Int32AttributeS("version", m_account->protocolVersion()));
     m_connection->write(version.toByteArray());
-
-    // Heartbeat & heartbeat timeout
-    m_heartBeat = new QTimer(this);
-    m_connectionTimeout = new QTimer(this);
-
-    connect(m_heartBeat, SIGNAL(timeout()), this, SLOT(slotSendHeartBeat()));
-    connect(m_connectionTimeout, SIGNAL(timeout()), this, SLOT(slotConnectionInterrupted()));
 }
 
 void XfireServer::login(const QString &p_salt)

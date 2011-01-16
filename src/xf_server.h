@@ -41,8 +41,10 @@ class XfireServer : public QObject
 
 public:
     // Constructor and destructor
-    XfireServer ( XfireAccount *parent, const QString accountId, const QString accountPass, const QString serverName, const uint serverPort );
+    XfireServer ( XfireAccount *parent );
     ~XfireServer();
+
+    void connectToServer( const QString accountId, const QString accountPass, const QString serverName, const uint serverPort );
 
     // Xfire server and port
     QString serverName() const;
@@ -86,7 +88,7 @@ private slots:
     void socketRead();
     void login ( const QString &p_salt );
     void slotSendHeartBeat();
-    void slotConnectionInterrupted(QAbstractSocket::SocketError p_error);
+    void slotConnectionInterrupted(QAbstractSocket::SocketError p_error = QAbstractSocket::UnknownSocketError);
     void slotAddedInfoEventActionActivated ( uint p_actionId );
 
 signals:
