@@ -43,13 +43,13 @@ class XfireAccount : public Kopete::PasswordedAccount
 
 public:
     // Constructor and destructor
-    XfireAccount ( XfireProtocol *parent, const QString &accountID );
+    XfireAccount(XfireProtocol *parent, const QString &accountID);
     ~XfireAccount();
 
     Xfire::SessionID m_sid;
 
-    virtual bool createContact ( const QString &p_contactId, Kopete::MetaContact *p_parentContact );
-    virtual void fillActionMenu ( KActionMenu *p_actionMenu );
+    virtual bool createContact(const QString &p_contactId, Kopete::MetaContact *p_parentContact);
+    virtual void fillActionMenu(KActionMenu *p_actionMenu);
 
     // Xfire server and port
     QString serverName() const;
@@ -62,14 +62,14 @@ public:
     XfireGamesList *m_gamesList;
     XfireGameDetection *m_gamesDetection;
 
-    void updateContactID ( const QString &p_contactId, Xfire::Int32Attribute *p_id );
-    void updateContactGameInformation ( const Xfire::SessionID& p_sid, quint32 p_gameId, quint32 p_serverIp, quint16 p_serverPort );
-    void setStatus ( const Xfire::SessionID &p_sid, const QString &p_statusMessage );
-    void newContact ( const QString &p_contactId, const QString &p_name, int p_groupId );
+    void updateContactID(const QString &p_contactId, Xfire::Int32Attribute *p_id);
+    void updateContactGameInformation(const Xfire::SessionID& p_sid, quint32 p_gameId, quint32 p_serverIp, quint16 p_serverPort);
+    void setStatus(const Xfire::SessionID &p_sid, const QString &p_statusMessage);
+    void newContact(const QString &p_contactId, const QString &p_name, int p_groupId);
 
-    Kopete::Contact *findContact ( QString p_contactId );
-    Kopete::Contact *findContact ( const Xfire::SessionID &p_sid );
-    Kopete::Contact *findContact ( quint32 p_id );
+    Kopete::Contact *findContact(QString p_contactId);
+    Kopete::Contact *findContact(const Xfire::SessionID &p_sid);
+    Kopete::Contact *findContact(quint32 p_id);
 
     // Settings
     bool isGameDetectionEnabled();
@@ -77,11 +77,11 @@ public:
     bool isFriendsOfFriendsEnabled();
     bool isPeerToPeerEnabled();
 
-    void logOff ( Kopete::Account::DisconnectReason p_reason );
+    void logOff(Kopete::Account::DisconnectReason p_reason);
 
     // P2P
     XfireP2P *m_p2pConnection;
-    XfireP2PSession *p2pSessionByMoniker ( QByteArray p_moniker );
+    XfireP2PSession *p2pSessionByMoniker(QByteArray p_moniker);
 
 private:
     XfireServer *m_server;
@@ -92,14 +92,14 @@ protected:
     QString m_password;
 
 public slots:
-    virtual void connectWithPassword ( const QString &p_password );
+    virtual void connectWithPassword(const QString &p_password);
     virtual void disconnect();
 
-    virtual void setOnlineStatus ( const Kopete::OnlineStatus& p_status , const Kopete::StatusMessage &p_reason = Kopete::StatusMessage(), const OnlineStatusOptions &p_options = None );
-    virtual void setStatusMessage ( const Kopete::StatusMessage &p_statusMessage );
+    virtual void setOnlineStatus(const Kopete::OnlineStatus& p_status , const Kopete::StatusMessage &p_reason = Kopete::StatusMessage(), const OnlineStatusOptions &p_options = None);
+    virtual void setStatusMessage(const Kopete::StatusMessage &p_statusMessage);
 
-    void changeOurStatus ( const Kopete::OnlineStatus &p_status );
-    void updateContactSID ( Xfire::Int32Attribute *p_id, Xfire::SIDAttribute *p_sid );
+    void changeOurStatus(const Kopete::OnlineStatus &p_status);
+    void updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttribute *p_sid);
 
     void slotOpenGamesManager();
 
