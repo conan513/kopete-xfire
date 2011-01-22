@@ -177,7 +177,7 @@ void XfireP2P::slotSocketRead()
                 {
                     case 0x3E87:
                     {
-                        kDebug() << "Received file transfer request";
+                        kDebug() << "File transfer request received";
                         break;
                     }
                     default:

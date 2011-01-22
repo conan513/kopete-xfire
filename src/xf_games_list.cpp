@@ -248,7 +248,7 @@ void XfireGamesList::slotGamesListUpdated()
 void XfireGamesList::slotUpdate()
 {
     // Download versions file and initialize both lists
-    m_manager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_version.xml")));
+    m_manager->get(QNetworkRequest(QUrl(XF_GAMES_LIST_URL)));
 
     initGamesList();
     initConfiguredGamesList();

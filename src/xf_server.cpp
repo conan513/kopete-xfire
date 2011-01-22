@@ -131,7 +131,7 @@ void XfireServer::socketRead()
 
     // Parse all available packets
     quint16 len = 0;
-    while (( len = Xfire::Packet::requiredLen(m_buffer)) <= m_buffer.length())
+    while((len = Xfire::Packet::requiredLen(m_buffer)) <= m_buffer.length())
     {
         Xfire::Packet *packet = Xfire::Packet::parseData(m_buffer);
         if(!packet || !packet->isValid())
@@ -274,7 +274,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
 {
     switch (p_packet->id())
     {
-        // Login salt
+    // Login salt
     case 0x0080:
     {
         const Xfire::StringAttributeS *attr = static_cast<const Xfire::StringAttributeS*>(p_packet->getAttribute("salt"));
@@ -456,7 +456,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                         }
 
                         if(natType == 1 ||(( natType == 2 || natType == 3) && m_account->m_p2pConnection->m_natCheck->m_type == 1) ||
-                                (natType == 4 &&(m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4)))
+                            (natType == 4 &&(m_account->m_p2pConnection->m_natCheck->m_type == 1 || m_account->m_p2pConnection->m_natCheck->m_type == 4)))
                         {
                             from->m_p2pCapable = XfireContact::XF_P2P_YES;
                             kDebug() << from->m_username + ": compatible buddy";
@@ -473,14 +473,14 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                         {
                             from->m_p2pCapable = XfireContact::XF_P2P_NO;
                             kDebug() << from->m_username + ": incompatible buddy";
-                            delete from->m_p2pSession; // Remove p2p session
+                            delete from->m_p2pSession; // Remove P2P session
                         }
 
                         if(!from->m_p2pRequested)
                         {
                             sendP2pSession(from->m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
-                                           m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                           m_account->m_p2pConnection->m_natCheck->m_type, salt->string());
+                                m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
+                                m_account->m_p2pConnection->m_natCheck->m_type, salt->string());
 
                             from->m_p2pRequested = TRUE;
                             kDebug() << from->m_username + ": peer to peer request received, sent own data";
@@ -532,7 +532,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         }
 
         Xfire::Int32Attribute *v = version->elements().at(0).int32;
-        kDebug() << "New version:" << v->value();
+        kDebug() << "New version available:" << v->value();
 
         m_account->configGroup()->writeEntry("ProtocolVersion", v->value());
         emit m_account->slotVersionUpdated();
@@ -574,7 +574,6 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
     // Friend network information
     case 0x0088:
     {
-        kDebug() << "GOT FOF!";
         break;
     }
 
@@ -656,11 +655,11 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
             return;
         }
 
+        kDebug() << "Clans list received";
+
         // Create groups (clans) if needed
         for(int i = 0; i < clanID->elements().size(); i++)
         {
-            kDebug() << "Clan:" << clanLongName->elements().at(i).string->string();
-
             Kopete::Group *group = Kopete::ContactList::self()->findGroup(clanLongName->elements().at(i).string->string());
             group->setGroupId(clanID->elements().at(i).int32->value());
         }
@@ -684,11 +683,11 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
             kDebug() << "Invalid packet received, ignoring";
             return;
         }
+        
+        kDebug() << "Clan friends list received";
 
         for(int i = 0; i < userID->elements().size(); i++)
         {
-            kDebug() << "Clan friend: " + username->elements().at(i).string->string();
-
             // Add the contact and update the ID
             uint cid = Kopete::ContactList::self()->group(clanID->value())->groupId();
             m_account->newContact(username->elements().at(i).string->string(), nickname->elements().at(i).string->string(), cid);
@@ -741,7 +740,7 @@ void XfireServer::slotAddedInfoEventActionActivated(uint p_actionId)
 
 void XfireServer::slotConnectionInterrupted(QAbstractSocket::SocketError p_error)
 {
-    kDebug() << "Connection interrupted";
+    kDebug() << "Connection to the Xfire server was interrupted";
     m_account->logOff(Kopete::Account::ConnectionReset);
 }
 

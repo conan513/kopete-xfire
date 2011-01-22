@@ -23,7 +23,7 @@
 #include "xf_server.h"
 
 XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact),
-    m_contact(p_contact), m_pingRetries(0), m_natType(0), m_sequenceId(0), m_handshakeDone(FALSE)
+    m_contact(p_contact), m_pingRetries(0), m_natType(0), m_sequenceId(0), m_handshakeDone(FALSE), m_triedLocalAddress(FALSE)
 {
     kDebug() << m_contact->m_username + ": creating p2p session";
 
@@ -83,6 +83,15 @@ void XfireP2PSession::slotCheckSession()
             m_contact->m_account->m_p2pConnection->sendPing(this);
             m_lastPing->restart();
         }
+        /*else if(!m_triedLocalAddress)
+        {
+            m_triedLocalAddress = TRUE;
+            setRemoteAddress(m_localIp, m_localPort);
+            
+            m_pingRetries = 0;
+            m_contact->m_account->m_p2pConnection->sendPing(this);
+            m_lastPing->restart();
+        }*/
         else
             emit timeout();
     }
@@ -99,7 +108,7 @@ void XfireP2PSession::slotCheckSession()
     }
 }
 
-void XfireP2PSession::sendMessage( quint32 p_chatMessageIndex, const QString &p_message)
+void XfireP2PSession::sendMessage(quint32 p_chatMessageIndex, const QString &p_message)
 {
     Xfire::Packet foo(0x0002);
     foo.addAttribute(new Xfire::SIDAttributeS("sid", m_contact->m_sid));

@@ -22,6 +22,8 @@
 #include <QDomDocument>
 #include <QtNetwork>
 
+#define XF_GAMES_LIST_URL "http://gfireproject.org/files/gfire_version.xml"
+
 class XfireGamesList : public QObject
 {
     Q_OBJECT;

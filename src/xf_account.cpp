@@ -159,7 +159,6 @@ void XfireAccount::disconnect()
 
 bool XfireAccount::createContact(const QString &p_contactId, Kopete::MetaContact *p_parentContact)
 {
-    kDebug() << "Creating contact:" << p_contactId;
     XfireContact *newContact = new XfireContact(this, p_contactId, p_parentContact->displayName(), p_parentContact);
     return newContact != 0;
 }
@@ -178,7 +177,10 @@ void XfireAccount::slotGoOnline()
     if(!isConnected())
         connect(XfireProtocol::protocol()->XfireConnecting);
     else
+    {
         myself()->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
+        server()->sendStatusMessage("");
+    }
 }
 
 void XfireAccount::slotGoAway()
@@ -187,7 +189,7 @@ void XfireAccount::slotGoAway()
         connect(XfireProtocol::protocol()->XfireConnecting);
 
     myself()->setOnlineStatus(XfireProtocol::protocol()->XfireAway);
-    server()->sendStatusMessage("(AFK) Away From Keyboard");
+    server()->sendStatusMessage(i18n("(AFK) Away From Keyboard"));
 }
 
 void XfireAccount::slotGoOffline()

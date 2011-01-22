@@ -61,14 +61,15 @@ public:
     void sendTypingStatus(quint32 p_chatMessageIndex, bool p_isTyping);
 
 private:
-	QTimer *m_timer;
-	QTime *m_lastKeepAlive;
-	QTime *m_lastPing;
+    QTimer *m_timer;
+    QTime *m_lastKeepAlive;
+    QTime *m_lastPing;
 
-	int m_pingRetries;
+    int m_pingRetries;
+    bool m_triedLocalAddress;
 
 private slots:
-	void slotCheckSession();
+    void slotCheckSession();
 
 signals:
     void timeout();
