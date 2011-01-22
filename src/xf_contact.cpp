@@ -230,3 +230,13 @@ void XfireContact::slotRemoveP2pSession()
     delete m_p2pSession;
     m_p2pSession = 0L;
 }
+
+void XfireContact::deleteContact()
+{
+    if(account()->isConnected())
+    {
+        kDebug() << "Removing friend from list:" << m_username;
+        m_account->server()->sendFriendRemoval(m_id);
+        deleteLater();
+    }
+}

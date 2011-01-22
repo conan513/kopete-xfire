@@ -41,27 +41,28 @@ class XfireServer : public QObject
 
 public:
     // Constructor and destructor
-    XfireServer ( XfireAccount *parent );
+    XfireServer(XfireAccount *parent);
     ~XfireServer();
 
-    void connectToServer( const QString accountId, const QString accountPass, const QString serverName, const uint serverPort );
+    void connectToServer( const QString accountId, const QString accountPass, const QString serverName, const uint serverPort);
 
     // Xfire server and port
     QString serverName() const;
     uint serverPort() const;
 
     // Packets sent to the server
-    void sendAskFriendExtendedInformation ( quint32 p_uid );
-    void sendChat ( const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, const QString &p_message );
-    void sendChatConfirmation ( const Xfire::SessionID &p_sid, quint32 p_messageIndex );
-    void sendFriendInvitation ( QString &p_username, QString &p_message );
-    void sendFriendInvitationResponse ( QString p_username, bool p_response );
-    void sendFriendNetworkRequest ( QList<Xfire::SIDAttribute*> fofs );
-    void sendIngameStatus ( quint32 p_gameId, quint32 p_ip, quint32 p_port );
-    void sendNickname ( const QString &p_nickname );
-    void sendP2pSession ( const Xfire::SessionID &p_sid, quint32 p_ip, quint16 p_port, quint32 p_localIp, quint16 p_localPort, quint32 p_natType, const QString &p_salt );
-    void sendStatusMessage ( const QString &p_message );
-    void sendTypingStatus ( const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, bool p_isTyping );
+    void sendAskFriendExtendedInformation(quint32 p_uid);
+    void sendChat(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, const QString &p_message);
+    void sendChatConfirmation(const Xfire::SessionID &p_sid, quint32 p_messageIndex);
+    void sendFriendInvitation(QString &p_username, QString &p_message);
+    void sendFriendInvitationResponse(QString p_username, bool p_response);
+    void sendFriendNetworkRequest(QList<Xfire::SIDAttribute*> fofs);
+    void sendIngameStatus(quint32 p_gameId, quint32 p_ip, quint32 p_port);
+    void sendNickname(const QString &p_nickname);
+    void sendP2pSession(const Xfire::SessionID &p_sid, quint32 p_ip, quint16 p_port, quint32 p_localIp, quint16 p_localPort, quint32 p_natType, const QString &p_salt);
+    void sendStatusMessage(const QString &p_message);
+    void sendTypingStatus(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, bool p_isTyping);
+    void sendFriendRemoval(quint32 p_uid);
 
     QTcpSocket *m_connection;
 
@@ -81,22 +82,22 @@ private:
 
 public slots:
     void closeConnection();
-	void handlePacket ( const Xfire::Packet *p_packet, XfireP2PSession *p_session = 0 );
+	void handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p_session = 0);
 
 private slots:
     void slotConnected();
     void socketRead();
-    void login ( const QString &p_salt );
+    void login(const QString &p_salt);
     void slotSendHeartBeat();
     void slotConnectionInterrupted(QAbstractSocket::SocketError p_error = QAbstractSocket::UnknownSocketError);
-    void slotAddedInfoEventActionActivated ( uint p_actionId );
+    void slotAddedInfoEventActionActivated(uint p_actionId);
 
 signals:
     void goOffline();
     void goOnline();
 
-    void addUser ( const QString &p_contactId, const QString &p_displayName, int p_groupId );
-    void ourStatusChanged ( const Kopete::OnlineStatus &p_status );
+    void addUser(const QString &p_contactId, const QString &p_displayName, int p_groupId);
+    void ourStatusChanged(const Kopete::OnlineStatus &p_status);
 };
 
 #endif // XF_SERVER_H

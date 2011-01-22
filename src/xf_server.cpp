@@ -212,11 +212,19 @@ void XfireServer::sendFriendInvitation(QString &p_username, QString &p_message)
     m_connection->write(foo.toByteArray());
 }
 
-void XfireServer::sendFriendInvitationResponse(QString p_username, bool pResponse)
+void XfireServer::sendFriendRemoval(quint32 p_uid)
+{
+    Xfire::Packet foo(0x0009);
+    foo.addAttribute(new Xfire::Int32AttributeS("userid", p_uid));
+    
+    m_connection->write(foo.toByteArray());
+}
+
+void XfireServer::sendFriendInvitationResponse(QString p_username, bool p_response)
 {
     Xfire::Packet *foo;
 
-    foo = new Xfire::Packet(pResponse ? 0x0007 : 0x0008);
+    foo = new Xfire::Packet(p_response ? 0x0007 : 0x0008);
     foo->addAttribute(new Xfire::StringAttributeS("name", p_username));
 
     m_connection->write(foo->toByteArray());

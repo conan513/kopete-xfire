@@ -97,6 +97,7 @@ public slots:
     void sendMessage(Kopete::Message &p_message);
     void slotChatSessionDestroyed();
     void slotSendTyping(bool p_isTyping);
+    virtual void deleteContact();
 
 private slots:
     void slotGotAvatar(QNetworkReply *p_reply);
