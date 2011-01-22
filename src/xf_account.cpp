@@ -41,7 +41,7 @@
 #include "xf_server.h"
 
 XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId) :
-    Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManager(0)
+    Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManager(0), m_p2pConnection(0)
 {
     kDebug() << "Instantiating account:" << accountId;
 
