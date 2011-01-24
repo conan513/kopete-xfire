@@ -22,11 +22,11 @@
 #include <QByteArray>
 #include <QDomDocument>
 #include <QHash>
+#include <QThread>
 #include <QTimer>
 
 class XfireAccount;
-
-class XfireGameDetection : public QObject
+class XfireGameDetection : public QThread
 {
     Q_OBJECT;
 
@@ -45,11 +45,10 @@ class XfireGameDetection : public QObject
     };
 
 public:
-    // Constructor & destructor
     XfireGameDetection(XfireAccount *p_account);
-    ~XfireGameDetection();
+    void run();
 
-	gameInfo m_currentGame;
+    gameInfo m_currentGame;
     quint32 isGameRunning(QString p_executable);
 
 private:

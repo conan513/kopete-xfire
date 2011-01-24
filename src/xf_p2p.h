@@ -28,6 +28,12 @@
 #define XFIRE_P2P_TYPE_KEEP_ALIVE_REQ   0x0800
 #define XFIRE_P2P_TYPE_KEEP_ALIVE_REP   0x1000
 
+#include "XfireAttribute.h"
+#include "XfirePeerToPeerPacket.h"
+#include "XfireTypes.h"
+
+#define XF_P2P_FT_CHUNK_SIZE 0xC800 // 50 * 1024 bytes = 51200 bytes
+
 #include <QUdpSocket>
 
 class XfireAccount;
@@ -52,6 +58,7 @@ public:
     XfireP2PNatcheck *m_natCheck;
 
     QByteArray createHeader(quint8 p_encoding, QByteArray p_moniker, quint32 p_type, quint32 p_messageId, quint32 p_sequenceId, quint32 p_dataLen);
+    void sendPacket(XfireP2PSession *p_session, QByteArray &p_data);
 
     void sendPing(XfireP2PSession *p_session);
     void sendPong(XfireP2PSession *p_session);
@@ -59,10 +66,12 @@ public:
     void sendKeepAliveRequest(XfireP2PSession *p_session);
     void sendAck(XfireP2PSession *p_session, quint32 p_sessionId, quint32 p_sequenceId);
     void sendData16( XfireP2PSession *p_session, quint32 p_sequenceId, quint8 p_encoding, QByteArray p_data, const char *p_category);
+    void sendData32(XfireP2PSession *p_session, quint32 p_sequenceId, quint8 p_encoding, QByteArray p_data, const char *p_category);
     void sendBadCrc32(XfireP2PSession *p_session, quint32 p_sequenceId);
 
 private:
     quint32 calculateCrc32(const char *p_data, quint32 p_len);
+    quint32 m_transferMessageId; // FIXME: Does not belong here!
 
 public slots:
     void slotSocketRead();

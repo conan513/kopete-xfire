@@ -53,12 +53,16 @@ public:
     bool m_pongNeeded;
     bool m_keepAliveNeeded;
     bool m_handshakeDone;
+    bool m_triedLocalAddress;
 
     quint32 m_sequenceId;
 
     void sendMessage( quint32 p_chatMessageIndex, const QString &p_message);
     void sendMessageConfirmation(quint32 p_chatMessageIndex);
     void sendTypingStatus(quint32 p_chatMessageIndex, bool p_isTyping);
+    void sendFileRequestReply(quint32 p_fileid, bool p_reply);
+    void sendFileTransferInfo(quint32 p_fileid, quint64 p_offset, quint32 p_chunkSize, quint32 p_chunkCount, quint32 p_messageId);
+    void sendFileDataPacketRequest(quint32 p_fileid, quint64 p_offset, quint32 p_size, quint32 p_messageId);
 
 private:
     QTimer *m_timer;
@@ -66,7 +70,6 @@ private:
     QTime *m_lastPing;
 
     int m_pingRetries;
-    bool m_triedLocalAddress;
 
 private slots:
     void slotCheckSession();

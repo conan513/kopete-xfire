@@ -28,7 +28,7 @@
 #include "xf_contact.h"
 #include "xf_server.h"
 
-XfireP2P::XfireP2P(XfireAccount *p_account): m_account(p_account), m_messageId(0), m_sessionId(0)
+XfireP2P::XfireP2P(XfireAccount *p_account): m_account(p_account), m_messageId(0), m_sessionId(0), m_transferMessageId(0) // FIXME: Rectify this ASAP
 {
     // Start NAT type check
     m_natCheck = new XfireP2PNatcheck(this);
@@ -51,7 +51,7 @@ void XfireP2P::slotSocketRead()
 
     if(datagram.size() < 44)
     {
-        kDebug() << "Bad P2P packet received, ignoring";
+        kDebug() << "Bad P2P packet received, ignoring packet";
         return;
     }
 
@@ -63,7 +63,7 @@ void XfireP2P::slotSocketRead()
 
     if(!session)
     {
-        kDebug() << "Unknown P2P session, ignoring";
+        kDebug() << "Unknown P2P session, ignoring packet";
         return;
     }
 
@@ -164,25 +164,97 @@ void XfireP2P::slotSocketRead()
                     m_account->server()->handlePacket(packet, session);
             }
         }
-        else
+        else if(!strcmp(category, "DL"))
         {
-            if(!strcmp(category, "DL"))
+            kDebug() << "Received dl packet";
+
+            quint16 type;
+            memcpy(&type, datagram.constData() + 40 + 8 + 4, 2);
+                
+            Xfire::PeerToPeerPacket *packet = Xfire::PeerToPeerPacket::parseData(datagram.mid(40 + 8));
+            if(!packet || !packet->isValid())
             {
-                kDebug() << "Received dl packet";
+                kDebug() << "Invalid dl packet received, ignoring";
+                break;
+            }
 
-                quint16 type;
-                memcpy(&type, datagram.constData() + 40 + 8 + 4, 2);
+            switch(type)
+            {
+            // File request
+            case 0x3E87:
+            {
+                const Xfire::Int32AttributeS *fileid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("fileid"));
+                const Xfire::StringAttributeS *filename = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("filename"));
+                const Xfire::StringAttributeS *desc = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("desc"));
+                const Xfire::Int64AttributeS *size = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("size"));
+                const Xfire::Int32AttributeS *mtime = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("mtime"));
+                           
+                kDebug() << "File transfer request received, file:" << filename->string();
+                kDebug() << "File ID: " << fileid->value() << size->value();
 
-                switch(type)
-                {
-                    case 0x3E87:
-                    {
-                        kDebug() << "File transfer request received";
-                        break;
-                    }
-                    default:
-                        kDebug() << "Invalid dl packet received"; // FIXME: don't send ack
-                }
+                session->sendFileRequestReply(fileid->value(), TRUE);
+                session->sendFileTransferInfo(fileid->value(), 0, XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
+
+                // FIXME: Request first chunk
+                // session->sendFileTransferInfo(fileid->value(), 0, XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
+                
+                break;
+            }
+            // File request reply
+            case 0x3E88:
+            {
+                kDebug() << "GOT file request reply";
+                break;
+            }
+            // File transfer info
+            case 0x3E89:
+            {
+                kDebug() << "GOT file transfer info";
+                break;
+            }
+            // File chunk info
+            case 0x3E8A:
+            {
+                const Xfire::Int32AttributeS *fileid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("fileid"));
+                const Xfire::Int64AttributeS *offset = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("offset"));
+                const Xfire::Int32AttributeS *size = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("size"));
+                const Xfire::StringAttributeS *checksum = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("checksum"));
+                const Xfire::Int32AttributeS *msgid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("msgid"));
+                
+                kDebug() << "Received file chunk info: File ID:" << fileid->value() << "Offset: " << offset->value() << "Size: " << size->value() << "Checksum" << checksum->string() << "MSGID: " << msgid->value();
+                //session->sendFileTransferInfo(fileid->value(), offset->value(), XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
+                //session->sendFileDataPacketRequest(fileid->value(), offset->value(), size->value(), msgid->value());
+                break;
+            }
+            // File data request
+            case 0x3E8B:
+            {
+                kDebug() << "GOT data packet request";
+                break;
+            }
+            // File data
+            case 0x3E8C:
+            {
+                kDebug() << "GOT data packet";
+                break;
+            }
+            // File completion message
+            case 0x3E8D:
+            {
+                kDebug() << "GOT file completion msg";
+                break;
+            }
+            // File event
+            case 0x3E8E:
+            {
+                kDebug() << "GOT file event";
+                break;
+            }
+            default:
+            {
+                kDebug() << "Invalid dl packet received"; // FIXME: Don't send ack
+                break;
+            }
             }
         }
 
@@ -225,11 +297,19 @@ QByteArray XfireP2P::createHeader(quint8 p_encoding, QByteArray p_moniker, quint
     return ret;
 }
 
+void XfireP2P::sendPacket(XfireP2PSession *p_session, QByteArray &p_data)
+{
+    if(p_session->m_triedLocalAddress)
+      m_connection->writeDatagram(p_data, QHostAddress(p_session->m_localIp), p_session->m_localPort);
+    else
+      m_connection->writeDatagram(p_data, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+}
+
 void XfireP2P::sendPing(XfireP2PSession *p_session)
 {
-    kDebug() << "Sending ping packet to: " << QHostAddress(p_session->m_remoteIp).toString() << ":" << QString::number(p_session->m_remotePort);
+    kDebug() << "Sending ping to: " + QHostAddress(p_session->m_remoteIp).toString() + ": " + QString::number(p_session->m_remotePort);
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_PING,(m_sessionId > 0)? m_sessionId : m_messageId, 0, 0);
-    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+    sendPacket(p_session, foo);
 
     p_session->m_pongNeeded = TRUE;
 
@@ -246,7 +326,7 @@ void XfireP2P::sendPong(XfireP2PSession *p_session)
 {
     kDebug() << "Sending pong to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_PONG,(m_sessionId > 0)? m_sessionId : m_messageId, 0, 0);
-    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+    sendPacket(p_session, foo);
 
     if(m_sessionId == 0)
     {
@@ -261,21 +341,21 @@ void XfireP2P::sendKeepAlive(XfireP2PSession *p_session)
 {
     kDebug() << "Sending keep-alive to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_KEEP_ALIVE_REP, m_sessionId, 0, 0);
-    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+    sendPacket(p_session, foo);
 }
 
 void XfireP2P::sendKeepAliveRequest(XfireP2PSession *p_session)
 {
     kDebug() << "Sending keep-alive request to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_KEEP_ALIVE_REQ, m_sessionId, 0, 0);
-    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+    sendPacket(p_session, foo);
 }
 
 void XfireP2P::sendAck(XfireP2PSession *p_session, quint32 p_sessionId, quint32 p_sequenceId)
 {
     kDebug() << "Sending ack to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_ACK, p_sessionId, p_sequenceId, 0);
-    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+    sendPacket(p_session, foo);
 }
 
 void XfireP2P::sendData16(XfireP2PSession *p_session, quint32 p_sequenceId, quint8 p_encoding, QByteArray p_data, const char *p_category)
@@ -305,17 +385,50 @@ void XfireP2P::sendData16(XfireP2PSession *p_session, quint32 p_sequenceId, quin
         }
     }
 
-    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+    sendPacket(p_session, foo);
 
     m_messageId++;
     p_session->m_sequenceId++;
+}
+
+void XfireP2P::sendData32(XfireP2PSession *p_session, quint32 p_sequenceId, quint8 p_encoding, QByteArray p_data, const char *p_category)
+{
+    kDebug() << "Sending data32 to:" << p_session->m_contact->m_username;
+    QByteArray foo = createHeader(p_encoding, p_session->m_monikerSelf, XFIRE_P2P_TYPE_DATA32, m_messageId, p_sequenceId, p_data.size());
+
+    quint32 offset = foo.size();
+
+    foo.append(QByteArray(4, 0)); // 4 unknown bytes
+    foo.append(p_data); // Data
+    foo.append(p_category, strlen(p_category)); // Category
+    foo.append(QByteArray(16 - strlen(p_category), 0)); // Fill up to 16 bytes
+
+    // CRC-32
+    quint32 crc32 = calculateCrc32(foo.constData() + offset, 4 + p_data.size() + 16);
+    foo.append((const char*)&crc32, 4);
+
+    // Encode data
+    if(p_encoding != 0) // FIXME: not tested
+    {
+        char *checksumData = foo.data();
+        while(checksumData < (foo.data() + offset + 4))
+        {
+            *checksumData ^= p_encoding;
+            checksumData++;
+        }
+    }
+
+    sendPacket(p_session, foo);
+
+    m_messageId++;
+    p_session->m_sequenceId++;   
 }
 
 void XfireP2P::sendBadCrc32(XfireP2PSession *p_session, quint32 p_sequenceId)
 {
     kDebug() << "Sending badcrc to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_BADCRC, m_sessionId, m_messageId, p_sequenceId);
-    m_connection->writeDatagram(foo, QHostAddress(p_session->m_remoteIp), p_session->m_remotePort);
+    sendPacket(p_session, foo);
 }
 
 void XfireP2P::slotNatCheckReady(QUdpSocket *p_connection)

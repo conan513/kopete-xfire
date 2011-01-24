@@ -28,16 +28,18 @@
 #include "xf_account.h"
 #include "xf_game_detection.h"
 
-XfireGameDetection::XfireGameDetection(XfireAccount *p_account) : m_account(p_account)
-{
-    // Initialize and start game detection timer
-    m_timer = new QTimer(this);
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(slotUpdateRunningProcesses()));
-    m_timer->start(8000);
+XfireGameDetection::XfireGameDetection(XfireAccount *p_account) : QThread(p_account), m_account(p_account)
+{    
+    m_timer = new QTimer(this); // Initialize game detection timer
 }
 
-XfireGameDetection::~XfireGameDetection()
+void XfireGameDetection::run()
 {
+    // Start game detection timer
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(slotUpdateRunningProcesses()));
+    m_timer->start(8000);
+    
+    exec();
 }
 
 quint32 XfireGameDetection::isGameRunning(QString p_executable)

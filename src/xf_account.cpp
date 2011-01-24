@@ -108,6 +108,7 @@ void XfireAccount::slotContinueConnecting()
     {
         m_gamesDetection = new XfireGameDetection(this);
         QObject::connect(m_gamesDetection, SIGNAL(gameRunning()), this, SLOT(slotSendIngameStatus()));
+        m_gamesDetection->start();
     }
 
     // Initialize peer to peer if enabled

@@ -25,7 +25,7 @@
 XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact),
     m_contact(p_contact), m_pingRetries(0), m_natType(0), m_sequenceId(0), m_handshakeDone(FALSE), m_triedLocalAddress(FALSE)
 {
-    kDebug() << m_contact->m_username + ": creating p2p session";
+    kDebug() << m_contact->m_username + ": creating P2P session";
 
     // Generate monikers (self and peer)
     QCryptographicHash hasher(QCryptographicHash::Sha1);
@@ -40,12 +40,12 @@ XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt)
     m_monikerSelf = hasher.result();
 
     kDebug() << "Moniker generated: " + m_monikerSelf.toHex();
-    kDebug() << "Peer moniker generated:" << p_contact->m_username + ": " << m_moniker.toHex();
+    kDebug() << "Peer moniker generated:" + p_contact->m_username + ": " + m_moniker.toHex();
 }
 
 XfireP2PSession::~XfireP2PSession()
 {
-    kDebug() << m_contact->m_username + ": removing p2p session";
+    kDebug() << m_contact->m_username + ": removing P2P session";
 
     delete m_lastPing;
     delete m_lastKeepAlive;
@@ -66,8 +66,8 @@ void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
     m_lastPing = new QTime();
     m_lastKeepAlive = new QTime();
 
-	m_timer = new QTimer(this);
-	m_timer->start(1000);
+    m_timer = new QTimer(this);
+    m_timer->start(1000);
 
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(slotCheckSession()));
     m_contact->m_account->m_p2pConnection->sendPing(this);
@@ -76,36 +76,27 @@ void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
 void XfireP2PSession::slotCheckSession()
 {
     // Check pong timeout
-    if(m_pongNeeded && m_lastPing->elapsed() >= 5000)
+    if(m_pongNeeded && m_lastPing->elapsed() >= 50000)
     {
-        if(m_pingRetries++ < 5)
+        if(m_pingRetries++ < 10)
         {
             m_contact->m_account->m_p2pConnection->sendPing(this);
             m_lastPing->restart();
         }
-        /*else if(!m_triedLocalAddress)
-        {
-            m_triedLocalAddress = TRUE;
-            setRemoteAddress(m_localIp, m_localPort);
-            
-            m_pingRetries = 0;
-            m_contact->m_account->m_p2pConnection->sendPing(this);
-            m_lastPing->restart();
-        }*/
         else
             emit timeout();
     }
 
     // Check keep-alive timeout
-    if(m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 5000)
-        emit timeout();
+    //if(m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 10000)
+        //emit timeout();
 
     // Request keep-alive
-    if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
-    {
-        m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
-        m_lastKeepAlive->restart();
-    }
+    //if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
+    //{
+        //m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
+      //  m_lastKeepAlive->restart();
+    //}
 }
 
 void XfireP2PSession::sendMessage(quint32 p_chatMessageIndex, const QString &p_message)
@@ -147,4 +138,36 @@ void XfireP2PSession::sendTypingStatus(quint32 p_chatMessageIndex, bool p_isTypi
     foo.addAttribute(peermsg);
 
     m_contact->m_account->m_p2pConnection->sendData16(this, m_sequenceId, 0, foo.toByteArray(), "IM");
+}
+
+void XfireP2PSession::sendFileRequestReply(quint32 p_fileid, bool p_reply)
+{
+    Xfire::PeerToPeerPacket foo(0x3E88);
+    foo.addAttribute(new Xfire::Int32AttributeS("fileid", p_fileid));
+    foo.addAttribute(new Xfire::BoolAttributeS("reply", p_reply));
+    
+    m_contact->m_account->m_p2pConnection->sendData32(this, m_sequenceId, 0, foo.toByteArray(), "DL");
+}
+
+void XfireP2PSession::sendFileTransferInfo(quint32 p_fileid, quint64 p_offset, quint32 p_chunkSize, quint32 p_chunkCount, quint32 p_messageId)
+{
+    Xfire::PeerToPeerPacket foo(0x3E89);
+    foo.addAttribute(new Xfire::Int32AttributeS("fileid", p_fileid));
+    foo.addAttribute(new Xfire::Int64AttributeS("offset", p_offset));
+    foo.addAttribute(new Xfire::Int32AttributeS("size", p_chunkSize));
+    foo.addAttribute(new Xfire::Int32AttributeS("chunkcnt", p_chunkCount));
+    foo.addAttribute(new Xfire::Int32AttributeS("msgid", p_messageId));
+    
+    m_contact->m_account->m_p2pConnection->sendData32(this, m_sequenceId, 0, foo.toByteArray(), "DL");
+}
+
+void XfireP2PSession::sendFileDataPacketRequest(quint32 p_fileid, quint64 p_offset, quint32 p_size, quint32 p_messageId)
+{
+    Xfire::PeerToPeerPacket foo(0x3E8B);
+    foo.addAttribute(new Xfire::Int32AttributeS("fileid", p_fileid));
+    foo.addAttribute(new Xfire::Int64AttributeS("offset", p_offset));
+    foo.addAttribute(new Xfire::Int32AttributeS("size", p_size));
+    foo.addAttribute(new Xfire::Int32AttributeS("msgid", p_messageId));
+    
+    m_contact->m_account->m_p2pConnection->sendData32(this, m_sequenceId, 0, foo.toByteArray(), "DL");
 }
