@@ -45,7 +45,7 @@ set(kopete_xfire_PART_SRCS
 
 	libxfire/XfireAttribute.cpp
 	libxfire/XfirePacket.cpp
-     libxfire/XfirePeerToPeerPacket.cpp
+    libxfire/XfirePeerToPeerPacket.cpp
 	libxfire/XfireTypes.cpp
 )
 

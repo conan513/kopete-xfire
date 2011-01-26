@@ -43,14 +43,11 @@ XfireServer::XfireServer(XfireAccount *parent) : QObject(parent), m_account(pare
     connect(m_connection, SIGNAL(connected()), this, SLOT(slotConnected()));
     connect(m_connection, SIGNAL(readyRead()), this, SLOT(socketRead()));
     connect(m_connection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(slotConnectionInterrupted(QAbstractSocket::SocketError)));
-
-    connect(this, SIGNAL(goOnline()), m_account, SLOT(slotGoOnline()));
-    connect(this, SIGNAL(goOffline()), m_account, SLOT(slotGoOffline()));
+    connect(m_heartBeat, SIGNAL(timeout()), this, SLOT(slotSendHeartBeat()));
 
     connect(this, SIGNAL(ourStatusChanged(const Kopete::OnlineStatus &)), m_account, SLOT(changeOurStatus(const Kopete::OnlineStatus &)));
-
-    connect(m_heartBeat, SIGNAL(timeout()), this, SLOT(slotSendHeartBeat()));
-    connect(m_connectionTimeout, SIGNAL(timeout()), this, SLOT(slotConnectionInterrupted()));
+    connect(this, SIGNAL(goOnline()), m_account, SLOT(slotGoOnline()));
+    connect(this, SIGNAL(goOffline()), m_account, SLOT(slotGoOffline()));
 }
 
 XfireServer::~XfireServer()

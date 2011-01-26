@@ -32,7 +32,7 @@
 #include "xf_contact.h"
 #include "xf_protocol.h"
 
-#define XF_HEARTBEAT_TIMEOUT (180 * 1000)
+#define XF_HEARTBEAT_TIMEOUT (240 * 1000)
 #define XF_CONNECTION_TIMEOUT (XF_HEARTBEAT_TIMEOUT + 30 * 1000)
 
 class XfireServer : public QObject
