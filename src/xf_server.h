@@ -44,7 +44,7 @@ public:
     XfireServer(XfireAccount *parent);
     ~XfireServer();
 
-    void connectToServer( const QString accountId, const QString accountPass, const QString serverName, const uint serverPort);
+    void connectToServer(const QString accountId, const QString accountPass, const QString serverName, const uint serverPort);
 
     // Xfire server and port
     QString serverName() const;
@@ -56,7 +56,7 @@ public:
     void sendChatConfirmation(const Xfire::SessionID &p_sid, quint32 p_messageIndex);
     void sendFriendInvitation(QString &p_username, QString &p_message);
     void sendFriendInvitationResponse(QString p_username, bool p_response);
-    void sendFriendNetworkRequest(QList<Xfire::SIDAttribute*> fofs);
+    void sendFriendNetworkRequest(QList<Xfire::SIDAttribute*> p_fofs);
     void sendIngameStatus(quint32 p_gameId, quint32 p_ip, quint32 p_port);
     void sendNickname(const QString &p_nickname);
     void sendP2pSession(const Xfire::SessionID &p_sid, quint32 p_ip, quint16 p_port, quint32 p_localIp, quint16 p_localPort, quint32 p_natType, const QString &p_salt);
@@ -82,7 +82,7 @@ private:
 
 public slots:
     void closeConnection();
-	void handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p_session = 0);
+    void handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p_session = 0);
 
 private slots:
     void slotConnected();

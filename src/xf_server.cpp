@@ -56,7 +56,7 @@ XfireServer::~XfireServer()
 
 void XfireServer::connectToServer(const QString accountId, const QString accountPass, const QString serverName, const uint serverPort)
 {
-    // Set account & password
+    // Set account and password
     m_username = accountId;
     m_password = accountPass;
 
@@ -67,7 +67,7 @@ void XfireServer::connectToServer(const QString accountId, const QString account
 
 void XfireServer::slotConnected()
 {
-    // Emit connection error if we could not connect to the server
+    // Emit connection error if we couldn't connect to the server
     if(!m_connection->waitForConnected())
     {
         // Unknown connection error
@@ -115,7 +115,7 @@ void XfireServer::login(const QString &p_salt)
 
 void XfireServer::closeConnection()
 {
-    m_connection->close();
+    m_connection->close(); // Close socket
 
     // Remove unneeded timers
     m_heartBeat->stop();
@@ -227,9 +227,10 @@ void XfireServer::sendFriendInvitationResponse(QString p_username, bool p_respon
     m_connection->write(foo->toByteArray());
 }
 
-void XfireServer::sendFriendNetworkRequest(QList<Xfire::SIDAttribute*> fofs)
+void XfireServer::sendFriendNetworkRequest(QList<Xfire::SIDAttribute*> p_fofs)
 {
     // FIXME: Not implemented yet
+    Q_UNUSED(p_fofs);
 }
 
 void XfireServer::sendIngameStatus(quint32 p_gameId, quint32 p_gameIp, quint32 p_gamePort)
@@ -556,8 +557,10 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeS *gip = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("gip"));
         const Xfire::ListAttributeS *gport = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("gport"));
 
-        if(!sid || sid->type() != Xfire::Attribute::List || !gameid || gameid->type() != Xfire::Attribute::List ||!gip ||
-            gip->type() != Xfire::Attribute::List || !gport || gport->type() != Xfire::Attribute::List)
+        if(!sid || sid->type() != Xfire::Attribute::List ||
+            !gameid || gameid->type() != Xfire::Attribute::List ||
+            !gip || gip->type() != Xfire::Attribute::List ||
+            !gport || gport->type() != Xfire::Attribute::List)
         {
             kDebug() << "Invalid packet received, ignoring";
             return;
@@ -589,7 +592,9 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeS *nick = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("nick"));
         const Xfire::ListAttributeS *msg = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("msg"));
 
-        if(!name || name->type() != Xfire::Attribute::List || !nick || nick->type() != Xfire::Attribute::List || !msg || msg->type() != Xfire::Attribute::List)
+        if(!name || name->type() != Xfire::Attribute::List ||
+            !nick || nick->type() != Xfire::Attribute::List ||
+            !msg || msg->type() != Xfire::Attribute::List)
         {
             kDebug() << "Invalid packet received, ignoring";
             return;
@@ -616,7 +621,8 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
     // Heartbeat
     case 0x0090:
     {
-        m_connectionTimeout->start(XF_CONNECTION_TIMEOUT); // Start connection check timer or restart if needed
+        // Send heartbeat reply
+        m_connectionTimeout->start(XF_CONNECTION_TIMEOUT);
         break;
     }
 
@@ -634,7 +640,8 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeS *sid = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("sid"));
         const Xfire::ListAttributeS *msg = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("msg"));
 
-        if(!sid || sid->type() != Xfire::Attribute::List || !msg || msg->type() != Xfire::Attribute::List)
+        if(!sid || sid->type() != Xfire::Attribute::List ||
+            !msg || msg->type() != Xfire::Attribute::List)
         {
             kDebug() << "Invalid packet received, ignoring";
             return;
@@ -653,8 +660,10 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeB *clanShortName = static_cast<const Xfire::ListAttributeB *>(p_packet->getAttribute(0x0072));
         const Xfire::ListAttributeB *clanType = static_cast<const Xfire::ListAttributeB *>(p_packet->getAttribute(0x0034));
 
-        if(!clanID || clanID->type() != Xfire::Attribute::List || !clanLongName || clanLongName->type() != Xfire::Attribute::List ||
-            !clanShortName || clanShortName->type() != Xfire::Attribute::List || !clanType || clanType->type() != Xfire::Attribute::List)
+        if(!clanID || clanID->type() != Xfire::Attribute::List ||
+            !clanLongName || clanLongName->type() != Xfire::Attribute::List ||
+            !clanShortName || clanShortName->type() != Xfire::Attribute::List ||
+            !clanType || clanType->type() != Xfire::Attribute::List)
         {
             kDebug() << "Invalid packet received, ignoring";
             return;
@@ -681,8 +690,10 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeB *clanNickname = static_cast<const Xfire::ListAttributeB *>(p_packet->getAttribute(0x006d));
         // INFO: Unknown attribute 0x0074
 
-        if(!clanID || clanID->type() != Xfire::Attribute::Int32 || !userID || userID->type() != Xfire::Attribute::List ||
-            !username || username->type() != Xfire::Attribute::List || !nickname || nickname->type() != Xfire::Attribute::List ||
+        if(!clanID || clanID->type() != Xfire::Attribute::Int32 ||
+            !userID || userID->type() != Xfire::Attribute::List ||
+            !username || username->type() != Xfire::Attribute::List ||
+            !nickname || nickname->type() != Xfire::Attribute::List ||
             !clanNickname || clanNickname->type() != Xfire::Attribute::List)
         {
             kDebug() << "Invalid packet received, ignoring";
@@ -745,6 +756,7 @@ void XfireServer::slotAddedInfoEventActionActivated(uint p_actionId)
 
 void XfireServer::slotConnectionInterrupted(QAbstractSocket::SocketError p_error)
 {
+    Q_UNUSED(p_error);
     kDebug() << "Connection to the Xfire server was interrupted";
     m_account->logOff(Kopete::Account::ConnectionReset);
 }
