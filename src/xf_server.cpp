@@ -24,8 +24,8 @@
 #include <kopetepassword.h>
 
 #include "xf_contact.h"
-#include "xf_protocol.h"
 #include "xf_p2p_natcheck.h"
+#include "xf_protocol.h"
 #include "xf_server.h"
 
 XfireServer::XfireServer(XfireAccount *parent) : QObject(parent), m_account(parent)
@@ -43,6 +43,7 @@ XfireServer::XfireServer(XfireAccount *parent) : QObject(parent), m_account(pare
     connect(m_connection, SIGNAL(connected()), this, SLOT(slotConnected()));
     connect(m_connection, SIGNAL(readyRead()), this, SLOT(socketRead()));
     connect(m_connection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(slotConnectionInterrupted(QAbstractSocket::SocketError)));
+    connect(m_connectionTimeout, SIGNAL(timeout()), this, SLOT(slotConnectionInterrupted()));
     connect(m_heartBeat, SIGNAL(timeout()), this, SLOT(slotSendHeartBeat()));
 
     connect(this, SIGNAL(ourStatusChanged(const Kopete::OnlineStatus &)), m_account, SLOT(changeOurStatus(const Kopete::OnlineStatus &)));
@@ -54,15 +55,15 @@ XfireServer::~XfireServer()
 {
 }
 
-void XfireServer::connectToServer(const QString accountId, const QString accountPass, const QString serverName, const uint serverPort)
+void XfireServer::connectToServer(const QString p_account, const QString p_password, const QString p_serverIp, const uint p_serverPort)
 {
     // Set account and password
-    m_username = accountId;
-    m_password = accountPass;
+    m_username = p_account;
+    m_password = p_password;
 
     // Connect to server
     m_account->myself()->setOnlineStatus(XfireProtocol::protocol()->XfireConnecting); // Set Kopete status to connecting
-    m_connection->connectToHost(serverName, serverPort);
+    m_connection->connectToHost(p_serverIp, p_serverPort);
 }
 
 void XfireServer::slotConnected()
@@ -213,7 +214,7 @@ void XfireServer::sendFriendRemoval(quint32 p_uid)
 {
     Xfire::Packet foo(0x0009);
     foo.addAttribute(new Xfire::Int32AttributeS("userid", p_uid));
-    
+
     m_connection->write(foo.toByteArray());
 }
 
@@ -299,15 +300,43 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         break;
     }
 
-    // Wrong username or password
+    // Login error
     case 0x0081:
     {
-        // Set password as wrong and reconnect account
-        m_account->password().setWrong(true);
-        m_account->logOff(Kopete::Account::BadPassword);
-        emit goOnline();
+        const Xfire::Int32AttributeS *reason = static_cast<const Xfire::Int32AttributeS*>(p_packet->getAttribute("reason"));
 
-        break;
+        if(!reason)
+        {
+            kDebug() << "Invalid login error packet received";
+            return;
+        }
+
+        switch(reason->value())
+        {
+        // Wrong password
+        case 0:
+        {
+            // Set password as wrong and reconnect account
+            m_account->password().setWrong(true);
+            m_account->logOff(Kopete::Account::BadPassword);
+            emit goOnline();
+
+            break;
+        }
+
+        // Login system error (undocumented)
+        case 1:
+            kDebug() << "Login system malfunctioning reported";
+
+        // Unknown reason
+        default:
+        {
+            m_account->logOff(Kopete::Account::BadPassword);
+            emit goOnline();
+
+            break;
+        }
+        }
     }
 
     // Client information
@@ -340,7 +369,8 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeS *nick = static_cast<const Xfire::ListAttributeS*>(p_packet->getAttribute("nick"));
         const Xfire::ListAttributeS *uid = static_cast<const Xfire::ListAttributeS*>(p_packet->getAttribute("userid"));
 
-        if(!friends || friends->type() != Xfire::Attribute::List || !nick || nick->type() != Xfire::Attribute::List ||
+        if(!friends || friends->type() != Xfire::Attribute::List ||
+            !nick || nick->type() != Xfire::Attribute::List ||
             !uid || uid->type() != Xfire::Attribute::List)
         {
             kDebug() << "Invalid packet received, ignoring";
@@ -635,6 +665,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         break;
     }
 
+    // Status message changes
     case 0x009a:
     {
         const Xfire::ListAttributeS *sid = static_cast<const Xfire::ListAttributeS *>(p_packet->getAttribute("sid"));
@@ -653,6 +684,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         break;
     }
 
+    // Clan list
     case 0x009e:
     {
         const Xfire::ListAttributeB *clanID = static_cast<const Xfire::ListAttributeB *>(p_packet->getAttribute(0x006c));
@@ -669,7 +701,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
             return;
         }
 
-        kDebug() << "Clans list received";
+        kDebug() << "Clan list received";
 
         // Create groups (clans) if needed
         for(int i = 0; i < clanID->elements().size(); i++)
@@ -681,6 +713,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         break;
     }
 
+    // Clan friends list
     case 0x009f:
     {
         const Xfire::Int32AttributeB *clanID = static_cast<const Xfire::Int32AttributeB*>(p_packet->getAttribute(0x006c));
@@ -699,7 +732,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
             kDebug() << "Invalid packet received, ignoring";
             return;
         }
-        
+
         kDebug() << "Clan friends list received";
 
         for(int i = 0; i < userID->elements().size(); i++)
@@ -713,6 +746,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         break;
     }
 
+    // Avatar changes
     case 0x00ae:
     {
         const Xfire::Int32AttributeB *sid = static_cast<const Xfire::Int32AttributeB *>(p_packet->getAttribute(0x0001));
@@ -743,15 +777,10 @@ void XfireServer::slotAddedInfoEventActionActivated(uint p_actionId)
     if(!event)
         return;
 
-    switch (p_actionId)
-    {
-    case Kopete::AddedInfoEvent::AddContactAction:
+    if(p_actionId == Kopete::AddedInfoEvent::AddContactAction)
         sendFriendInvitationResponse(event->contactId(), true);
-        break;
-    case Kopete::AddedInfoEvent::BlockAction:
+    else if(p_actionId == Kopete::AddedInfoEvent::BlockAction)
         sendFriendInvitationResponse(event->contactId(), false);
-        break;
-    }
 }
 
 void XfireServer::slotConnectionInterrupted(QAbstractSocket::SocketError p_error)

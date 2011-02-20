@@ -37,6 +37,7 @@ XfireP2P::XfireP2P(XfireAccount *p_account): m_account(p_account), m_messageId(0
 
 XfireP2P::~XfireP2P()
 {
+    delete m_natCheck;
 }
 
 void XfireP2P::slotSocketRead()
@@ -170,7 +171,7 @@ void XfireP2P::slotSocketRead()
 
             quint16 type;
             memcpy(&type, datagram.constData() + 40 + 8 + 4, 2);
-                
+
             Xfire::PeerToPeerPacket *packet = Xfire::PeerToPeerPacket::parseData(datagram.mid(40 + 8));
             if(!packet || !packet->isValid())
             {
@@ -188,7 +189,7 @@ void XfireP2P::slotSocketRead()
                 const Xfire::StringAttributeS *desc = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("desc"));
                 const Xfire::Int64AttributeS *size = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("size"));
                 const Xfire::Int32AttributeS *mtime = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("mtime"));
-                           
+
                 kDebug() << "File transfer request received, file:" << filename->string();
                 kDebug() << "File ID: " << fileid->value() << size->value();
 
@@ -197,7 +198,7 @@ void XfireP2P::slotSocketRead()
 
                 // FIXME: Request first chunk
                 // session->sendFileTransferInfo(fileid->value(), 0, XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
-                
+
                 break;
             }
             // File request reply
@@ -220,7 +221,7 @@ void XfireP2P::slotSocketRead()
                 const Xfire::Int32AttributeS *size = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("size"));
                 const Xfire::StringAttributeS *checksum = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("checksum"));
                 const Xfire::Int32AttributeS *msgid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("msgid"));
-                
+
                 kDebug() << "Received file chunk info: File ID:" << fileid->value() << "Offset: " << offset->value() << "Size: " << size->value() << "Checksum" << checksum->string() << "MSGID: " << msgid->value();
                 //session->sendFileTransferInfo(fileid->value(), offset->value(), XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
                 //session->sendFileDataPacketRequest(fileid->value(), offset->value(), size->value(), msgid->value());
@@ -421,7 +422,7 @@ void XfireP2P::sendData32(XfireP2PSession *p_session, quint32 p_sequenceId, quin
     sendPacket(p_session, foo);
 
     m_messageId++;
-    p_session->m_sequenceId++;   
+    p_session->m_sequenceId++;
 }
 
 void XfireP2P::sendBadCrc32(XfireP2PSession *p_session, quint32 p_sequenceId)

@@ -44,7 +44,7 @@ public:
     XfireServer(XfireAccount *parent);
     ~XfireServer();
 
-    void connectToServer(const QString accountId, const QString accountPass, const QString serverName, const uint serverPort);
+    void connectToServer(const QString p_account, const QString p_password, const QString p_serverIp, const uint p_serverPort);
 
     // Xfire server and port
     QString serverName() const;
