@@ -334,18 +334,18 @@ Kopete::Contact* XfireAccount::findContact(QString p_contactId)
 QString XfireAccount::serverName() const
 {
     if(configGroup()->readEntry("Custom_server", false))
-        return configGroup()->readEntry("ServerIP", "cs.xfire.com");
+        return configGroup()->readEntry("ServerIP", XFIRE_SERVER_IP);
     else
-        return "cs.xfire.com";
+        return XFIRE_SERVER_IP;
 }
 
 uint XfireAccount::serverPort() const
 {
 
     if(configGroup()->readEntry("Custom_server", false))
-        return configGroup()->readEntry("ServerPort", 25999);
+        return configGroup()->readEntry("ServerPort", XFIRE_SERVER_PORT);
     else
-        return 25999;
+        return XFIRE_SERVER_PORT;
 }
 
 uint XfireAccount::protocolVersion() const

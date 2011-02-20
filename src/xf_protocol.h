@@ -28,6 +28,8 @@
 #include <kopeteproperty.h>
 #include <kopeteprotocol.h>
 
+#define XFIRE_SERVER_IP "cs.xfire.com"
+#define XFIRE_SERVER_PORT 25999
 #define XFIRE_PROTO_VERSION 127
 
 namespace Kopete

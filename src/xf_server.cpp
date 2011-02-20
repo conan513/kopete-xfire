@@ -319,7 +319,6 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
             // Set password as wrong and reconnect account
             m_account->password().setWrong(true);
             m_account->logOff(Kopete::Account::BadPassword);
-            emit goOnline();
 
             break;
         }
@@ -331,9 +330,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         // Unknown reason
         default:
         {
-            m_account->logOff(Kopete::Account::BadPassword);
-            emit goOnline();
-
+            m_account->logOff(Kopete::Account::Unknown);
             break;
         }
         }
@@ -568,13 +565,12 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         }
 
         Xfire::Int32Attribute *v = version->elements().at(0).int32;
-        kDebug() << "New version available:" << v->value();
+        kDebug() << "New Xfire version available, setting value:" << v->value();
 
+        // Set new version and reconnect
         m_account->configGroup()->writeEntry("ProtocolVersion", v->value());
         emit m_account->slotVersionUpdated();
-
-        emit goOffline();
-        emit goOnline();
+        m_account->logOff(Kopete::Account::Manual);
 
         break;
     }
