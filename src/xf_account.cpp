@@ -180,7 +180,7 @@ void XfireAccount::slotGoOnline()
     else
     {
         myself()->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
-        server()->sendStatusMessage("");
+        server()->sendStatusMessage(QString());
     }
 }
 
@@ -380,21 +380,17 @@ void XfireAccount::setOnlineStatus(const Kopete::OnlineStatus &p_status, const K
 {
     Q_UNUSED(p_options);
 
-    if(isConnected())
-    {
-        kDebug() << "Setting status message to:" << p_reason.message();
-        m_server->sendStatusMessage(p_reason.message());
-    }
+    setStatusMessage(p_reason.message());
 
     kDebug() << "Setting online status to:" << p_status.description();
 
     if(p_status == XfireProtocol::protocol()->XfireConnecting && myself()->onlineStatus() == XfireProtocol::protocol()->XfireOffline)
         slotGoOnline();
-    else if(p_status == XfireProtocol::protocol()->XfireOnline)
+    else if(p_status == XfireProtocol::protocol()->XfireOnline || p_status == Kopete::OnlineStatus::Online)
         slotGoOnline();
-    else if(p_status == XfireProtocol::protocol()->XfireOffline)
+    else if(p_status == XfireProtocol::protocol()->XfireOffline || p_status == Kopete::OnlineStatus::Offline)
         slotGoOffline();
-    else if(p_status == XfireProtocol::protocol()->XfireAway)
+    else if(p_status == XfireProtocol::protocol()->XfireAway || p_status == Kopete::OnlineStatus::Away)
         slotGoAway();
     else if(p_status == Kopete::OnlineStatus::Invisible)
         slotGoOnline();
