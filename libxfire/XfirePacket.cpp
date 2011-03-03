@@ -44,7 +44,7 @@ const StringIDAttribute *Packet::getAttribute(const QString &p_id) const
 {
     foreach(const Attribute *attr, m_attributes)
     {
-        if(attr->isValid() &&(attr->idType() == Attribute::StringID) &&
+        if(attr->isValid() && (attr->idType() == Attribute::StringID) &&
                (static_cast<const StringIDAttribute*>(attr)->id() == p_id))
             return static_cast<const StringIDAttribute*>(attr);
     }
@@ -56,7 +56,7 @@ const ByteIDAttribute *Packet::getAttribute(quint8 p_id) const
 {
     foreach(const Attribute *attr, m_attributes)
     {
-        if(attr->isValid() &&(attr->idType() == Attribute::ByteID) &&
+        if(attr->isValid() && (attr->idType() == Attribute::ByteID) &&
                (static_cast<const ByteIDAttribute*>(attr)->id() == p_id))
             return static_cast<const ByteIDAttribute*>(attr);
     }
@@ -130,7 +130,7 @@ Packet *Packet::parseData(const QByteArray &p_data)
 
     static const quint16 stringPackets[] =
     {
-        0x0002, 0x0080, 0x0081, 0x0082, 0x0083, 0x0084, 0x0085, 0x0086, 0x0087, 0x0088, 0x0089, 0x008A,
+        0x0002, 0x0080, 0x0081, 0x0082, 0x0083, 0x0085, 0x0086, 0x0087, 0x0088, 0x0089, 0x008A,
         0x008B, 0x008F, 0x0090, 0x0091, 0x0093, 0x0094, 0x0095, 0x009A, 0x009C, 0x0190, 0x0191,
         0x0192, 0x0194, 0x0000
     };

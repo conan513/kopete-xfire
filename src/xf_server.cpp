@@ -387,8 +387,8 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
     // Friends list: online/offline
     case 0x0084:
     {
-        const Xfire::ListAttributeS *uid = static_cast<const Xfire::ListAttributeS*>(p_packet->getAttribute("userid"));
-        const Xfire::ListAttributeS *usid = static_cast<const Xfire::ListAttributeS*>(p_packet->getAttribute("sid"));
+        const Xfire::ListAttributeB *uid = static_cast<const Xfire::ListAttributeB*>(p_packet->getAttribute(0x01));
+        const Xfire::ListAttributeB *usid = static_cast<const Xfire::ListAttributeB*>(p_packet->getAttribute(0x03));
 
         if(!uid || uid->type() != Xfire::Attribute::List || !usid || usid->type() != Xfire::Attribute::List)
         {
