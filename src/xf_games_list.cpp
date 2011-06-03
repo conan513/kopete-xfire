@@ -100,13 +100,13 @@ void XfireGamesList::slotReceivedGamesList(QNetworkReply *p_reply)
         mRemoteGamesListVersion = version->firstChildElement("gfire").attributes().namedItem("games_list_version").nodeValue().toInt();
 
         if (mRemoteGamesListVersion != mLocalGamesListVersion)
-            m_manager->get(QNetworkRequest(QUrl("http://gfireproject.org/files/gfire_games.xml"))); // Download games list file
+            m_manager->get(QNetworkRequest(QUrl(XF_GAMES_LIST_URL))); // Download games list file
         else
             emit gamesListReady();
 
         delete version;
     }
-    else if (p_reply->url().toString().contains("gfire_games.xml"))
+    else if (p_reply->url().toString().contains("gfire_games_v2.xml"))
     {
         kDebug() << "Received new games list.";
 
@@ -248,7 +248,7 @@ void XfireGamesList::slotGamesListUpdated()
 void XfireGamesList::slotUpdate()
 {
     // Download versions file and initialize both lists
-    m_manager->get(QNetworkRequest(QUrl(XF_GAMES_LIST_URL)));
+    m_manager->get(QNetworkRequest(QUrl(XF_GAMES_VERSION_URL)));
 
     initGamesList();
     initConfiguredGamesList();
