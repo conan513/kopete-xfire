@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabBasic">
       <attribute name="title">
@@ -214,6 +214,13 @@
            <widget class="QCheckBox" name="prefInformAccounts">
             <property name="text">
              <string>Inform other accounts about ingame status</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="prefShowClanFriends">
+            <property name="text">
+             <string>Show clan friends</string>
             </property>
            </widget>
           </item>

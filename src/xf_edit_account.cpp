@@ -68,6 +68,7 @@ void XfireEditAccountWidget::updatePreferences()
     mWidget->prefInformAccounts->setChecked(account()->configGroup()->readEntry("InformAccounts", false));
     mWidget->prefFriendsOfFriends->setChecked(account()->configGroup()->readEntry("FriendsOfFriends", true));
     mWidget->prefPeerToPeer->setChecked(account()->configGroup()->readEntry("PeerToPeer", false));
+    mWidget->prefShowClanFriends->setChecked(account()->configGroup()->readEntry("ClanFriends", false));
 
     if(account()->configGroup()->readEntry("CustomServer", false))
         mWidget->prefOverrideServer->animateClick(); // FIXME: Best way to trigger the clicked() slot?
@@ -109,6 +110,7 @@ Kopete::Account* XfireEditAccountWidget::apply()
     account()->configGroup()->writeEntry("UpdateVersion", mWidget->prefUpdateVersion->isChecked());
     account()->configGroup()->writeEntry("ProtocolVersion", mWidget->prefVersion->value());
     account()->configGroup()->writeEntry("PeerToPeer", mWidget->prefPeerToPeer->isChecked());
+    account()->configGroup()->writeEntry("ClanFriends", mWidget->prefShowClanFriends->isChecked());
 
     return account();
 }

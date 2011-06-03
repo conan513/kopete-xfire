@@ -1,14 +1,14 @@
 /********************************************************************************
-** Form generated from reading UI file 'edit_accountB14638.ui'
+** Form generated from reading UI file 'edit_accountql2707.ui'
 **
-** Created: Wed Nov 3 14:16:49 2010
-**      by: Qt User Interface Compiler version 4.7.0
+** Created: Fri Jun 3 10:50:21 2011
+**      by: Qt User Interface Compiler version 4.7.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef EDIT_ACCOUNTB14638_H
-#define EDIT_ACCOUNTB14638_H
+#ifndef EDIT_ACCOUNTQL2707_H
+#define EDIT_ACCOUNTQL2707_H
 
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
@@ -58,6 +58,7 @@ public:
     QVBoxLayout *verticalLayout_4;
     QCheckBox *prefGameDetection;
     QCheckBox *prefInformAccounts;
+    QCheckBox *prefShowClanFriends;
     QCheckBox *prefFriendsOfFriends;
     QCheckBox *prefPeerToPeer;
     QSpacerItem *vspGeneral;
@@ -216,6 +217,11 @@ public:
         prefInformAccounts->setObjectName(QString::fromUtf8("prefInformAccounts"));
 
         verticalLayout_4->addWidget(prefInformAccounts);
+
+        prefShowClanFriends = new QCheckBox(gpbGeneral);
+        prefShowClanFriends->setObjectName(QString::fromUtf8("prefShowClanFriends"));
+
+        verticalLayout_4->addWidget(prefShowClanFriends);
 
         prefFriendsOfFriends = new QCheckBox(gpbGeneral);
         prefFriendsOfFriends->setObjectName(QString::fromUtf8("prefFriendsOfFriends"));
@@ -383,6 +389,7 @@ public:
         gpbGeneral->setTitle(QApplication::translate("XfireEditAccount", "General preferences", 0, QApplication::UnicodeUTF8));
         prefGameDetection->setText(QApplication::translate("XfireEditAccount", "Use game detection", 0, QApplication::UnicodeUTF8));
         prefInformAccounts->setText(QApplication::translate("XfireEditAccount", "Inform other accounts about ingame status", 0, QApplication::UnicodeUTF8));
+        prefShowClanFriends->setText(QApplication::translate("XfireEditAccount", "Show clan friends", 0, QApplication::UnicodeUTF8));
         prefFriendsOfFriends->setText(QApplication::translate("XfireEditAccount", "Show friends of friends", 0, QApplication::UnicodeUTF8));
         prefPeerToPeer->setText(QApplication::translate("XfireEditAccount", "Use peer to peer capabilities", 0, QApplication::UnicodeUTF8));
         tabPreferences->setTabText(tabPreferences->indexOf(tabGeneral), QApplication::translate("XfireEditAccount", "&General", 0, QApplication::UnicodeUTF8));
@@ -416,4 +423,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // EDIT_ACCOUNTB14638_H
+#endif // EDIT_ACCOUNTQL2707_H

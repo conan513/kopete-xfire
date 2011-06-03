@@ -376,6 +376,11 @@ bool XfireAccount::isPeerToPeerEnabled()
     return configGroup()->readEntry("PeerToPeer", false);
 }
 
+bool XfireAccount::isClanFriendsEnabled()
+{
+    return configGroup()->readEntry("ClanFriends", false);
+}
+
 void XfireAccount::setOnlineStatus(const Kopete::OnlineStatus &p_status, const Kopete::StatusMessage &p_reason, const OnlineStatusOptions &p_options)
 {
     Q_UNUSED(p_options);

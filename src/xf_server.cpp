@@ -731,6 +731,9 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
 
         kDebug() << "Clan friends list received";
 
+        if(!m_account->isClanFriendsEnabled())
+            return;
+        
         for(int i = 0; i < userID->elements().size(); i++)
         {
             // Add the contact and update the ID

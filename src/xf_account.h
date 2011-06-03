@@ -76,6 +76,7 @@ public:
     bool isInformAccountsEnabled();
     bool isFriendsOfFriendsEnabled();
     bool isPeerToPeerEnabled();
+    bool isClanFriendsEnabled();
 
     void logOff(Kopete::Account::DisconnectReason p_reason);
 
