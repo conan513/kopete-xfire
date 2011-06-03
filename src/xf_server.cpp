@@ -420,7 +420,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
             return;
         }
 
-        XfireContact *from = static_cast<const XfireContact *>(m_account->findContact(sid->sid()));
+        XfireContact *from = static_cast<XfireContact *>(m_account->findContact(sid->sid()));
         if(from != 0)
         {
             switch (msgtype->value())
