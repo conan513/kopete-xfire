@@ -34,7 +34,7 @@ XfireP2P::XfireP2P(XfireAccount *p_account): m_account(p_account), m_messageId(0
 {
     // Start NAT type check
     m_natCheck = new XfireP2PNatcheck(this);
-    connect(m_natCheck, SIGNAL(ready(QUdpSocket *)), this, SLOT(slotNatCheckReady(QUdpSocket *)));
+    connect(m_natCheck, SIGNAL(ready(QUdpSocket*)), this, SLOT(slotNatCheckReady(QUdpSocket*)));
 }
 
 XfireP2P::~XfireP2P()
@@ -192,8 +192,8 @@ void XfireP2P::slotSocketRead()
                 const Xfire::Int64AttributeS *size = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("size"));
                 const Xfire::Int32AttributeS *mtime = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("mtime"));
 
-                kDebug() << "File transfer request received, file:" << filename->string() << ", id:" << fileid->value()
-                    << ", size:" << size->value() << "description:" << desc->string();
+                kDebug() << "File transfer request received, file:" << filename->string() << "id:" << fileid->value()
+                    << "size:" << size->value() << "description:" << desc->string();
 
                 session->createFileTransfer(fileid->value(), filename->string(), size->value());
                 
@@ -243,15 +243,12 @@ void XfireP2P::slotSocketRead()
                 const Xfire::Int32AttributeS *size = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("size"));
                 const Xfire::ListAttributeS *data = static_cast<const Xfire::ListAttributeS*>(packet->getAttribute("data"));
                 const Xfire::Int32AttributeS *msgid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("msgid"));
-
-                kDebug() << "offset:" << offset->value();
                 
                 QByteArray ba;
 
                 quint32 o = 0;
                 data->writeDataToByteArray(ba, o);
-                kDebug() << "Actual data:" << ba.toHex();
-
+                
                 XfireP2PFileTransfer *ft;
                 if(session->m_fileTransfers.contains(fileid->value()))
                     ft = session->m_fileTransfers.value(fileid->value());
@@ -261,16 +258,12 @@ void XfireP2P::slotSocketRead()
                     break;
                 }
 
-                ft->m_file->write(ba.constData(), size->value());
-                //session->sendFileChunkInfoRequest(ft->m_fileid, offset->value(), XF_P2P_FT_CHUNK_SIZE, 0, session->m_p2p->m_messageId++);
-                
-                // Check checksum
-                QCryptographicHash hasher(QCryptographicHash::Sha1);
-                
-                hasher.addData(ba.constData());
-                QByteArray cs = hasher.result();
-
-                kDebug() << "CHECKSUM GENERATED:" << cs.toHex();
+                ft->m_currentChunk->writeData(ba.constData(), offset->value(), size->value());
+                if(ft->m_currentChunk->m_done == TRUE)
+                {
+                    kDebug() << "CHUNK DONE";
+                    ft->m_file->write(ft->m_currentChunk->m_data->constData(), ft->m_currentChunk->m_size);
+                }
                 
                 break;
             }

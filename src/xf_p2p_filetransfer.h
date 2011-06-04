@@ -19,6 +19,7 @@
 #ifndef XF_P2P_FILETRANSFER_H
 #define XF_P2P_FILETRANSFER_H
 
+#include <QByteArray>
 #include <QFile>
 
 class XfireP2PFileChunk;
@@ -49,6 +50,9 @@ public:
     // File
     QFile *m_file;
     quint64 m_size;
+
+public slots: // FIXME: really?
+    void slotChunkReady();
 };
 
 class XfireP2PFileChunk : public QObject
@@ -72,8 +76,12 @@ public:
     QString *m_checksum;
     QByteArray *m_data;
 
+    bool m_done; // FIXME: get rid of this using slots
+    
+    void writeData(const QByteArray &p_data, quint64 p_offset, quint32 p_size);
+    
 signals:
-    void ready();
+    void chunkReady();
     
 };
 
