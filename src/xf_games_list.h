@@ -22,15 +22,14 @@
 #include <QDomDocument>
 #include <QtNetwork>
 
-#define XF_GAMES_VERSION_URL "http://gfireproject.org/files/gfire_version.xml"
-#define XF_GAMES_LIST_URL "http://gfireproject.org/files/gfire_games_v2.xml"
+#define XF_GAMES_VERSION_URL    "http://gfireproject.org/files/gfire_version.xml"
+#define XF_GAMES_LIST_URL       "http://gfireproject.org/files/gfire_games_v2.xml"
 
 class XfireGamesList : public QObject
 {
     Q_OBJECT;
 
 public:
-    // Constructor and destructor
     XfireGamesList();
     ~XfireGamesList();
 
@@ -46,7 +45,7 @@ public:
 
     void removeConfiguredGame(QString p_name);
 
-    QDomDocument *mConfiguredGamesList; // FIXME: Make private
+    QDomDocument *m_configuredGamesList; // FIXME: Make private
     void saveConfiguredGamesList();
     void saveGamesList();
 

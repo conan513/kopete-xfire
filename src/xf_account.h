@@ -26,11 +26,10 @@
 #include "XfirePacket.h"
 #include "XfireTypes.h"
 
-#include "xf_games_list.h"
-
 class KAction;
 class KActionMenu;
 class XfireGameDetection;
+class XfireGamesList;
 class XfireGamesManager;
 class XfireP2P;
 class XfireP2PSession;
@@ -42,7 +41,6 @@ class XfireAccount : public Kopete::PasswordedAccount
     Q_OBJECT
 
 public:
-    // Constructor and destructor
     XfireAccount(XfireProtocol *parent, const QString &accountID);
     ~XfireAccount();
 

@@ -19,6 +19,9 @@
 #ifndef XF_SERVER_H
 #define XF_SERVER_H
 
+#define XF_HEARTBEAT_TIMEOUT (30 * 1000)
+#define XF_CONNECTION_TIMEOUT (XF_HEARTBEAT_TIMEOUT + 30 * 1000)
+
 #include <QCryptographicHash>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QTcpSocket>
@@ -28,19 +31,15 @@
 #include "XfirePacket.h"
 #include "XfireTypes.h"
 
-#include "xf_account.h"
-#include "xf_contact.h"
-#include "xf_protocol.h"
-
-#define XF_HEARTBEAT_TIMEOUT (30 * 1000)
-#define XF_CONNECTION_TIMEOUT (XF_HEARTBEAT_TIMEOUT + 30 * 1000)
+class XfireAccount;
+class XfireContact;
+class XfireProtocol;
 
 class XfireServer : public QObject
 {
     Q_OBJECT;
 
 public:
-    // Constructor and destructor
     XfireServer(XfireAccount *parent);
     ~XfireServer();
 
@@ -65,8 +64,7 @@ public:
     void sendFriendRemoval(quint32 p_uid);
 
     QTcpSocket *m_connection;
-
-    QString m_salt; // FIXME: Private or public?
+    QString m_salt;
 
 private:
     XfireAccount *m_account;

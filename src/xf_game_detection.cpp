@@ -27,6 +27,7 @@
 
 #include "xf_account.h"
 #include "xf_game_detection.h"
+#include "xf_games_list.h"
 
 XfireGameDetection::XfireGameDetection(XfireAccount *p_account) : QThread(p_account), m_account(p_account)
 {    
@@ -58,7 +59,7 @@ void XfireGameDetection::checkRunningGames()
 {
     quint32 detectedGameID = 0;
 
-    QDomNodeList configuredGames = m_account->m_gamesList->mConfiguredGamesList->elementsByTagName("game");
+    QDomNodeList configuredGames = m_account->m_gamesList->m_configuredGamesList->elementsByTagName("game");
     for(int i = 0; i < configuredGames.count(); i++)
     {
         quint32 gameID = m_account->m_gamesList->getGameIDFromName(configuredGames.at(i).attributes().namedItem("name").nodeValue());

@@ -29,9 +29,10 @@
 #include "XfirePacket.h"
 #include "XfireTypes.h"
 
-#include "xf_account.h"
-#include "xf_p2p.h"
-#include "xf_p2p_session.h"
+class XfireAccount;
+class XfireP2PSession;
+class XfireP2P;
+class XfireP2PSession;
 
 class XfireContact : public Kopete::Contact
 {

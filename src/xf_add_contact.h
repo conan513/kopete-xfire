@@ -21,21 +21,8 @@
 
 #include <addcontactpage.h>
 
-#include "xf_account.h"
-#include "ui_add_contact.h"
-
-namespace Kopete
-{
-class Account;
-}
-namespace Kopete
-{
-class MetaContact;
-}
-namespace Ui
-{
-class WlmAddUI;
-}
+class XfireAccount;
+namespace Ui { class XfireAddContact; }
 
 class XfireAddContactPage : public AddContactPage
 {

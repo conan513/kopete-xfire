@@ -35,8 +35,10 @@
 #include "xf_account.h"
 #include "xf_contact.h"
 #include "xf_game_detection.h"
-#include "xf_games_manager.h"
 #include "xf_games_list.h"
+#include "xf_games_manager.h"
+#include "xf_p2p.h"
+#include "xf_p2p_session.h"
 #include "xf_protocol.h"
 #include "xf_server.h"
 
@@ -166,7 +168,7 @@ bool XfireAccount::createContact(const QString &p_contactId, Kopete::MetaContact
 
 void XfireAccount::setStatusMessage(const Kopete::StatusMessage &p_statusMessage)
 {
-    if(isConnected())
+    if(isConnected() && myself()->statusMessage().message() != p_statusMessage.message())
     {
         kDebug() << "Setting status message:" + p_statusMessage.message();
         m_server->sendStatusMessage(p_statusMessage.message());

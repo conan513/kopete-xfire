@@ -19,8 +19,7 @@
 #ifndef XF_GAMES_MANAGER_H
 #define XF_GAMES_MANAGER_H
 
-#include <QObject>
-#include <QtGui/QDialog>
+#include <QDialog>
 #include <QThread>
 
 #include "ui_edit_games.h"

@@ -38,7 +38,9 @@
 #include "xf_account.h"
 #include "xf_contact.h"
 #include "xf_protocol.h"
+#include "xf_p2p.h"
 #include "xf_p2p_natcheck.h"
+#include "xf_p2p_session.h"
 #include "xf_server.h"
 
 #include <QCryptographicHash>

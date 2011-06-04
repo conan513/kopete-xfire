@@ -18,12 +18,15 @@
 
 #include <KDebug>
 
+#include "xf_account.h"
 #include "xf_contact.h"
+#include "xf_p2p.h"
+#include "xf_p2p_filetransfer.h"
 #include "xf_p2p_session.h"
 #include "xf_server.h"
 
 XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact),
-    m_contact(p_contact), m_pingRetries(0), m_natType(0), m_sequenceId(0), m_handshakeDone(FALSE), m_triedLocalAddress(FALSE)
+    m_contact(p_contact), m_p2p(p_contact->m_account->m_p2pConnection), m_pingRetries(0), m_natType(0), m_sequenceId(0), m_handshakeDone(FALSE), m_triedLocalAddress(FALSE)
 {
     kDebug() << m_contact->m_username + ": creating P2P session";
 
@@ -99,6 +102,12 @@ void XfireP2PSession::slotCheckSession()
     //}
 }
 
+void XfireP2PSession::createFileTransfer(quint32 p_fileid, const QString &p_filename, quint64 p_size)
+{
+    XfireP2PFileTransfer *ft = new XfireP2PFileTransfer(this, p_fileid, p_filename, p_size);
+    m_fileTransfers.insert(p_fileid, ft);
+}
+
 void XfireP2PSession::sendMessage(quint32 p_chatMessageIndex, const QString &p_message)
 {
     Xfire::Packet foo(0x0002);
@@ -149,7 +158,7 @@ void XfireP2PSession::sendFileRequestReply(quint32 p_fileid, bool p_reply)
     m_contact->m_account->m_p2pConnection->sendData32(this, m_sequenceId, 0, foo.toByteArray(), "DL");
 }
 
-void XfireP2PSession::sendFileTransferInfo(quint32 p_fileid, quint64 p_offset, quint32 p_chunkSize, quint32 p_chunkCount, quint32 p_messageId)
+void XfireP2PSession::sendFileChunkInfoRequest(quint32 p_fileid, quint64 p_offset, quint32 p_chunkSize, quint32 p_chunkCount, quint32 p_messageId)
 {
     Xfire::PeerToPeerPacket foo(0x3E89);
     foo.addAttribute(new Xfire::Int32AttributeS("fileid", p_fileid));

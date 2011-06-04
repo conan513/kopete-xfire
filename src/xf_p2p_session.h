@@ -26,6 +26,8 @@
 #include <XfireAttribute.h>
 
 class XfireContact;
+class XfireP2PFileTransfer;
+class XfireP2P;
 
 class XfireP2PSession : public QObject
 {
@@ -36,6 +38,7 @@ public:
     XfireP2PSession(XfireContact* p_contact, const QString& p_salt);
     ~XfireP2PSession();
 
+    XfireP2P *m_p2p;
     XfireContact *m_contact;
     QByteArray m_moniker;
     QByteArray m_monikerSelf;
@@ -56,12 +59,15 @@ public:
     bool m_triedLocalAddress;
 
     quint32 m_sequenceId;
+    QHash<quint32, XfireP2PFileTransfer*> m_fileTransfers;
 
-    void sendMessage( quint32 p_chatMessageIndex, const QString &p_message);
+    void createFileTransfer(quint32 p_fileid, const QString& p_filename, quint64 p_size);
+    
+    void sendMessage(quint32 p_chatMessageIndex, const QString &p_message);
     void sendMessageConfirmation(quint32 p_chatMessageIndex);
     void sendTypingStatus(quint32 p_chatMessageIndex, bool p_isTyping);
     void sendFileRequestReply(quint32 p_fileid, bool p_reply);
-    void sendFileTransferInfo(quint32 p_fileid, quint64 p_offset, quint32 p_chunkSize, quint32 p_chunkCount, quint32 p_messageId);
+    void sendFileChunkInfoRequest(quint32 p_fileid, quint64 p_offset, quint32 p_chunkSize, quint32 p_chunkCount, quint32 p_messageId);
     void sendFileDataPacketRequest(quint32 p_fileid, quint64 p_offset, quint32 p_size, quint32 p_messageId);
 
 private:

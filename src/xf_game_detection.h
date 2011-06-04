@@ -26,6 +26,7 @@
 #include <QTimer>
 
 class XfireAccount;
+
 class XfireGameDetection : public QThread
 {
     Q_OBJECT;

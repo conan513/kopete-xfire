@@ -23,8 +23,11 @@
 #include <kopetegroup.h>
 #include <kopetepassword.h>
 
+#include "xf_account.h"
 #include "xf_contact.h"
+#include "xf_p2p.h"
 #include "xf_p2p_natcheck.h"
+#include "xf_p2p_session.h"
 #include "xf_protocol.h"
 #include "xf_server.h"
 
@@ -717,7 +720,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeB *username = static_cast<const Xfire::ListAttributeB*>(p_packet->getAttribute(0x0002));
         const Xfire::ListAttributeB *nickname = static_cast<const Xfire::ListAttributeB*>(p_packet->getAttribute(0x000d));
         const Xfire::ListAttributeB *clanNickname = static_cast<const Xfire::ListAttributeB *>(p_packet->getAttribute(0x006d));
-        // INFO: Unknown attribute 0x0074
+        // FIXME: Unknown attribute 0x0074
 
         if(!clanID || clanID->type() != Xfire::Attribute::Int32 ||
             !userID || userID->type() != Xfire::Attribute::List ||

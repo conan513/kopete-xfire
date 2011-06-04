@@ -43,7 +43,6 @@ class XfireProtocol : public Kopete::Protocol
     Q_OBJECT
 
 public:
-    // Constructor & destructor
     XfireProtocol(QObject *parent, const QVariantList &args);
     ~XfireProtocol();
 

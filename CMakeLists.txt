@@ -29,7 +29,7 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/libxfire
 )
 
-set(kopete_xfire_PART_SRCS
+set(kopete_xfire_PART_SRCS src/xf_p2p_filetransfer.cpp
 	src/xf_account.cpp
 	src/xf_add_contact.cpp
 	src/xf_contact.cpp

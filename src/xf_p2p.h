@@ -19,20 +19,24 @@
 #ifndef XF_P2P_H
 #define XF_P2P_H
 
-#define XFIRE_P2P_TYPE_DATA32           0x0000
-#define XFIRE_P2P_TYPE_PING             0x0010
-#define XFIRE_P2P_TYPE_PONG             0x0020
-#define XFIRE_P2P_TYPE_ACK              0x0040
-#define XFIRE_P2P_TYPE_BADCRC           0x0080
-#define XFIRE_P2P_TYPE_DATA16           0x0300
-#define XFIRE_P2P_TYPE_KEEP_ALIVE_REQ   0x0800
-#define XFIRE_P2P_TYPE_KEEP_ALIVE_REP   0x1000
+#define XFIRE_P2P_TYPE_DATA32               0x0000
+#define XFIRE_P2P_TYPE_PING                 0x0010
+#define XFIRE_P2P_TYPE_PONG                 0x0020
+#define XFIRE_P2P_TYPE_ACK                  0x0040
+#define XFIRE_P2P_TYPE_BADCRC               0x0080
+#define XFIRE_P2P_TYPE_DATA16               0x0300
+#define XFIRE_P2P_TYPE_KEEP_ALIVE_REQ       0x0800
+#define XFIRE_P2P_TYPE_KEEP_ALIVE_REP       0x1000
+
+#define XFIRE_P2P_FT_PRIVATE_FILEID_START   0x80000000
+#define XF_P2P_FT_CHUNK_SIZE                0xC800 // 50 * 1024 bytes = 51200 bytes
+
+#define XFIRE_P2P_FT_DATA_PACKET_SIZE       0x0400 // 1024 Byte
+#define XFIRE_P2P_FT_MAX_REQUESTS   10
 
 #include "XfireAttribute.h"
 #include "XfirePeerToPeerPacket.h"
 #include "XfireTypes.h"
-
-#define XF_P2P_FT_CHUNK_SIZE 0xC800 // 50 * 1024 bytes = 51200 bytes
 
 #include <QUdpSocket>
 
@@ -79,4 +83,3 @@ public slots:
 };
 
 #endif // XF_P2P_H
-// kate: indent-mode cstyle; space-indent on; indent-width 0;

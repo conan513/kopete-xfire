@@ -31,7 +31,7 @@
 XfireGamesList::XfireGamesList()
 {
     m_manager = new QNetworkAccessManager(this);
-    mConfiguredGamesList = new QDomDocument();
+    m_configuredGamesList = new QDomDocument();
     mGamesList = new QDomDocument();
 
     connect(m_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(slotReceivedGamesList(QNetworkReply *)));
@@ -67,7 +67,7 @@ void XfireGamesList::initConfiguredGamesList()
         file.close();
     }
 
-    mConfiguredGamesList->setContent(content);
+    m_configuredGamesList->setContent(content);
 }
 
 void XfireGamesList::initGamesList()
@@ -150,7 +150,7 @@ QDomElement XfireGamesList::getConfiguredGame(QString p_name)
 {
     QDomElement ret;
 
-    QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
+    QDomNodeList games = m_configuredGamesList->elementsByTagName("game");
     for (int i = 0; i < games.count(); i++)
     {
         if (games.at(i).attributes().namedItem("name").nodeValue() == p_name)
@@ -175,7 +175,7 @@ QList<QString> XfireGamesList::configuredGames()
 {
     QList<QString> ret;
 
-    QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
+    QDomNodeList games = m_configuredGamesList->elementsByTagName("game");
     for (int i = 0; i < games.count(); i++)
         ret.append(games.at(i).attributes().namedItem("name").nodeValue());
 
@@ -206,7 +206,7 @@ void XfireGamesList::saveConfiguredGamesList()
     file.open(QFile::WriteOnly | QFile::Truncate);
 
     QTextStream stream(&file);
-    stream << mConfiguredGamesList->toString();
+    stream << m_configuredGamesList->toString();
     file.close();
 }
 
@@ -224,7 +224,7 @@ bool XfireGamesList::gameIsConfigured(QString p_name)
 {
     bool ret = false;
 
-    QDomNodeList games = mConfiguredGamesList->elementsByTagName("game");
+    QDomNodeList games = m_configuredGamesList->elementsByTagName("game");
     for (int i = 0; i < games.count(); i++)
     {
         if (games.at(i).attributes().namedItem("name").nodeValue() == p_name)

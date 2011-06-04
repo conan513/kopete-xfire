@@ -20,15 +20,17 @@
 #include <stdlib.h>
 
 #include <KDebug>
+#include <QFile>
 
 #include "xf_account.h"
 #include "xf_p2p.h"
+#include "xf_p2p_filetransfer.h"
 #include "xf_p2p_natcheck.h"
 #include "xf_p2p_session.h"
 #include "xf_contact.h"
 #include "xf_server.h"
 
-XfireP2P::XfireP2P(XfireAccount *p_account): m_account(p_account), m_messageId(0), m_sessionId(0), m_transferMessageId(0) // FIXME: Rectify this ASAP
+XfireP2P::XfireP2P(XfireAccount *p_account): m_account(p_account), m_messageId(0), m_sessionId(0), m_transferMessageId(0) // FIXME: Rectify this
 {
     // Start NAT type check
     m_natCheck = new XfireP2PNatcheck(this);
@@ -144,7 +146,7 @@ void XfireP2P::slotSocketRead()
         quint32 crc32;
         memcpy(&crc32, datagram.constData() + 48 + size + 16, 4);
 
-        // FIXME: not tested
+        // FIXME: not tested yet
         if(crc32 != calculateCrc32(crc_data, (48 + size + 16) - 44))
         {
             kDebug() << "Received packet with invalid CRC-32";
@@ -190,27 +192,23 @@ void XfireP2P::slotSocketRead()
                 const Xfire::Int64AttributeS *size = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("size"));
                 const Xfire::Int32AttributeS *mtime = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("mtime"));
 
-                kDebug() << "File transfer request received, file:" << filename->string();
-                kDebug() << "File ID: " << fileid->value() << size->value();
+                kDebug() << "File transfer request received, file:" << filename->string() << ", id:" << fileid->value()
+                    << ", size:" << size->value() << "description:" << desc->string();
 
-                session->sendFileRequestReply(fileid->value(), TRUE);
-                session->sendFileTransferInfo(fileid->value(), 0, XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
-
-                // FIXME: Request first chunk
-                // session->sendFileTransferInfo(fileid->value(), 0, XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
-
+                session->createFileTransfer(fileid->value(), filename->string(), size->value());
+                
                 break;
             }
             // File request reply
             case 0x3E88:
             {
-                kDebug() << "GOT file request reply";
+                kDebug() << "File request reply received";
                 break;
             }
             // File transfer info
             case 0x3E89:
             {
-                kDebug() << "GOT file transfer info";
+                kDebug() << "File transfer info request received";
                 break;
             }
             // File chunk info
@@ -222,33 +220,70 @@ void XfireP2P::slotSocketRead()
                 const Xfire::StringAttributeS *checksum = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("checksum"));
                 const Xfire::Int32AttributeS *msgid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("msgid"));
 
-                kDebug() << "Received file chunk info: File ID:" << fileid->value() << "Offset: " << offset->value() << "Size: " << size->value() << "Checksum" << checksum->string() << "MSGID: " << msgid->value();
-                //session->sendFileTransferInfo(fileid->value(), offset->value(), XF_P2P_FT_CHUNK_SIZE, 0, m_transferMessageId++);
-                //session->sendFileDataPacketRequest(fileid->value(), offset->value(), size->value(), msgid->value());
+                kDebug() << "File chunk info received: fileid:" << fileid->value() << "offset:" << offset->value()
+                    << "size:" << size->value() << "checksum" << checksum->string() << "msgid:" << msgid->value();
+
+                session->m_fileTransfers.value(fileid->value())->createNewChunk(offset->value(), size->value());
+
                 break;
             }
             // File data request
             case 0x3E8B:
             {
-                kDebug() << "GOT data packet request";
+                kDebug() << "File chunk request received";
                 break;
             }
             // File data
             case 0x3E8C:
             {
-                kDebug() << "GOT data packet";
+                kDebug() << "File chunk received";
+
+                const Xfire::Int32AttributeS *fileid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("fileid"));
+                const Xfire::Int64AttributeS *offset = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("offset"));
+                const Xfire::Int32AttributeS *size = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("size"));
+                const Xfire::ListAttributeS *data = static_cast<const Xfire::ListAttributeS*>(packet->getAttribute("data"));
+                const Xfire::Int32AttributeS *msgid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("msgid"));
+
+                kDebug() << "offset:" << offset->value();
+                
+                QByteArray ba;
+
+                quint32 o = 0;
+                data->writeDataToByteArray(ba, o);
+                kDebug() << "Actual data:" << ba.toHex();
+
+                XfireP2PFileTransfer *ft;
+                if(session->m_fileTransfers.contains(fileid->value()))
+                    ft = session->m_fileTransfers.value(fileid->value());
+                else
+                {
+                    kDebug() << "File chunk received for unknown file";
+                    break;
+                }
+
+                ft->m_file->write(ba.constData(), size->value());
+                //session->sendFileChunkInfoRequest(ft->m_fileid, offset->value(), XF_P2P_FT_CHUNK_SIZE, 0, session->m_p2p->m_messageId++);
+                
+                // Check checksum
+                QCryptographicHash hasher(QCryptographicHash::Sha1);
+                
+                hasher.addData(ba.constData());
+                QByteArray cs = hasher.result();
+
+                kDebug() << "CHECKSUM GENERATED:" << cs.toHex();
+                
                 break;
             }
             // File completion message
             case 0x3E8D:
             {
-                kDebug() << "GOT file completion msg";
+                kDebug() << "File completion message received";
                 break;
             }
             // File event
             case 0x3E8E:
             {
-                kDebug() << "GOT file event";
+                kDebug() << "File event received";
                 break;
             }
             default:
