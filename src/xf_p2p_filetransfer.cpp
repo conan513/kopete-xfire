@@ -86,14 +86,14 @@ XfireP2PFileChunk::XfireP2PFileChunk(XfireP2PFileTransfer* p_fileTransfer, quint
       
     kDebug() << "File chunk parts to request:" << m_packetsCount;
 
-    // Last chunk?
-    
+    quint32 size = ((m_packetsReceived == m_packetsCount - 1) && ((m_size % XFIRE_P2P_FT_DATA_PACKET_SIZE) != 0)) ?
+        m_size % XFIRE_P2P_FT_DATA_PACKET_SIZE : XFIRE_P2P_FT_DATA_PACKET_SIZE;
     
     // Request chunk parts
     for(quint32 i = 0; i <= m_packetsCount; i++)
     {
         quint64 offset = p_offset + i * XFIRE_P2P_FT_DATA_PACKET_SIZE;
-        m_fileTransfer->m_session->sendFileDataPacketRequest(m_fileTransfer->m_fileid, offset, (i == m_packetsCount) ? (m_size - offset) : XFIRE_P2P_FT_DATA_PACKET_SIZE, m_fileTransfer->m_msgid++);
+        m_fileTransfer->m_session->sendFileDataPacketRequest(m_fileTransfer->m_fileid, offset, size, m_fileTransfer->m_msgid++);
     }
 }
 

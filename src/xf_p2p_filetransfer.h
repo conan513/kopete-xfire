@@ -40,14 +40,13 @@ public:
     // Xfire transfer data
     quint32 m_fileid;
     quint32 m_msgid;
-    bool m_aborted;
         
-    // Chunks
-    quint64 m_chunkCount;
+    // Chunks information
     XfireP2PFileChunk *m_currentChunk;
+    quint64 m_chunkCount;
     quint64 m_bytesTransferred;
         
-    // File
+    // File information
     QFile *m_file;
     quint64 m_size;
 
@@ -72,12 +71,9 @@ public:
 
     quint32 m_packetsCount;
     quint32 m_packetsReceived;
-    quint32 m_lastPacketRequested;
-    quint32 m_requested;
 
     QString *m_checksum;
     QByteArray *m_data;
-    
     
 signals:
     void chunkReady();
