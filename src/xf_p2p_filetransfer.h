@@ -51,7 +51,7 @@ public:
     QFile *m_file;
     quint64 m_size;
 
-public slots: // FIXME: really?
+public slots:
     void slotChunkReady();
 };
 
@@ -63,8 +63,10 @@ public:
     XfireP2PFileChunk(XfireP2PFileTransfer* p_fileTransfer, quint64 p_offset, quint32 p_size);
     ~XfireP2PFileChunk();
 
+    void writeData(const QByteArray &p_data, quint64 p_offset, quint32 p_size);
+    
     XfireP2PFileTransfer *m_fileTransfer;
-
+    
     quint64 m_offset;
     quint32 m_size;
 
@@ -75,10 +77,7 @@ public:
 
     QString *m_checksum;
     QByteArray *m_data;
-
-    bool m_done; // FIXME: get rid of this using slots
     
-    void writeData(const QByteArray &p_data, quint64 p_offset, quint32 p_size);
     
 signals:
     void chunkReady();

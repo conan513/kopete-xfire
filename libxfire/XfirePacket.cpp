@@ -1,3 +1,21 @@
+/**
+* Copyright 2010  Warren Dumortier <nwarrenfl@gmail.com>
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License as
+* published by the Free Software Foundation; either version 2 of
+* the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
+
 #include "XfirePacket.h"
 
 #include <QtEndian>
@@ -44,8 +62,7 @@ const StringIDAttribute *Packet::getAttribute(const QString &p_id) const
 {
     foreach(const Attribute *attr, m_attributes)
     {
-        if(attr->isValid() && (attr->idType() == Attribute::StringID) &&
-               (static_cast<const StringIDAttribute*>(attr)->id() == p_id))
+        if(attr->isValid() && (attr->idType() == Attribute::StringID) && (static_cast<const StringIDAttribute*>(attr)->id() == p_id))
             return static_cast<const StringIDAttribute*>(attr);
     }
 
@@ -56,8 +73,7 @@ const ByteIDAttribute *Packet::getAttribute(quint8 p_id) const
 {
     foreach(const Attribute *attr, m_attributes)
     {
-        if(attr->isValid() && (attr->idType() == Attribute::ByteID) &&
-               (static_cast<const ByteIDAttribute*>(attr)->id() == p_id))
+        if(attr->isValid() && (attr->idType() == Attribute::ByteID) && (static_cast<const ByteIDAttribute*>(attr)->id() == p_id))
             return static_cast<const ByteIDAttribute*>(attr);
     }
 

@@ -1,3 +1,21 @@
+/**
+* Copyright 2010  Warren Dumortier <nwarrenfl@gmail.com>
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License as
+* published by the Free Software Foundation; either version 2 of
+* the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
+
 #include "XfireAttribute.h"
 
 #include <QtEndian>
@@ -7,12 +25,12 @@ namespace Xfire
 Attribute *Attribute::parseAttributeString(const QByteArray &p_data, quint32 &p_offset, quint32 p_len)
 {
     // Get the ID
-    if(( p_len - p_offset) < 4)
+    if((p_len - p_offset) < 4)
         return 0;
     quint8 id_len = *reinterpret_cast<const quint8*>(p_data.constData() + p_offset);
     p_offset++;
 
-    if(( p_len - p_offset) <(id_len + 2))
+    if(( p_len - p_offset) < (id_len + 2))
         return 0;
     QString id = QString::fromUtf8(p_data.constData() + p_offset, id_len);
     p_offset += id_len;
@@ -324,8 +342,7 @@ void SIDAttribute::writeDataToByteArray(QByteArray &p_buffer, quint32 &p_offset)
     p_offset += 16;
 }
 
-ListAttribute::ListAttribute(DataType p_dataType, const QList<ListElement> &p_elements) :
-        m_dataType(p_dataType)
+ListAttribute::ListAttribute(DataType p_dataType, const QList<ListElement> &p_elements) : m_dataType(p_dataType)
 {
     foreach(const ListElement &element, p_elements)
     {
@@ -523,6 +540,7 @@ bool ListAttribute::parseData(const QByteArray &p_data, quint32 &p_offset, quint
             break;
         }
         m_elements.append(element);
+        m_elementsData.append(element.boolean->raw());
     }
 
     return true;
@@ -668,7 +686,7 @@ void Int64Attribute::writeDataToByteArray(QByteArray &p_buffer, quint32 &p_offse
 bool BoolAttribute::parseData(const QByteArray &p_data, quint32 &p_offset, quint32 p_len)
 {
     // Get the byte
-    if(( p_len - p_offset) < 1)
+    if((p_len - p_offset) < 1)
         return false;
     m_byte = *reinterpret_cast<const quint8*>(p_data.constData() + p_offset);
     p_offset++;

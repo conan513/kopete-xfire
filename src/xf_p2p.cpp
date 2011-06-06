@@ -236,34 +236,29 @@ void XfireP2P::slotSocketRead()
             // File data
             case 0x3E8C:
             {
-                kDebug() << "File chunk received";
-
                 const Xfire::Int32AttributeS *fileid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("fileid"));
                 const Xfire::Int64AttributeS *offset = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("offset"));
                 const Xfire::Int32AttributeS *size = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("size"));
                 const Xfire::ListAttributeS *data = static_cast<const Xfire::ListAttributeS*>(packet->getAttribute("data"));
                 const Xfire::Int32AttributeS *msgid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("msgid"));
-                
-                QByteArray ba;
 
-                quint32 o = 0;
-                data->writeDataToByteArray(ba, o);
-                
+                kDebug() << "File data received: fileid:" << fileid->value() << "offset:" << offset->value()
+                    << "size:" << size->value() << "msgid:" << msgid->value();
+
+                // Get data
+                const QByteArray ba = data->elementsData();
+                kDebug() << "Data:" << ba.toHex();
+
                 XfireP2PFileTransfer *ft;
                 if(session->m_fileTransfers.contains(fileid->value()))
                     ft = session->m_fileTransfers.value(fileid->value());
                 else
                 {
-                    kDebug() << "File chunk received for unknown file";
+                    kDebug() << "File data received for unknown chunk/file";
                     break;
                 }
 
                 ft->m_currentChunk->writeData(ba.constData(), offset->value(), size->value());
-                if(ft->m_currentChunk->m_done == TRUE)
-                {
-                    kDebug() << "CHUNK DONE";
-                    ft->m_file->write(ft->m_currentChunk->m_data->constData(), ft->m_currentChunk->m_size);
-                }
                 
                 break;
             }
@@ -287,24 +282,25 @@ void XfireP2P::slotSocketRead()
             }
         }
 
-        sendAck(session, messageId, sequenceId); // Acknowledge packet
+        // Acknowledge packet
+        sendAck(session, messageId, sequenceId);
         break;
     }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REQ:
     {
-        kDebug() << "Received keep-alive request packet";
+        kDebug() << "Received keep-alive request";
         sendKeepAlive(session);
         break;
     }
     case XFIRE_P2P_TYPE_KEEP_ALIVE_REP:
     {
-        kDebug() << "Received keep-alive reply packet";
+        kDebug() << "Keep-alive reply received";
         session->m_keepAliveNeeded = FALSE;
         break;
     }
     default:
     {
-        kDebug() << "Received unknown packet type";
+        kDebug() << "Unknown P2P packet type received";
         break;
     }
     }
