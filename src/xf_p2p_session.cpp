@@ -42,8 +42,8 @@ XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt)
     hasher.addData(p_salt.toAscii());
     m_monikerSelf = hasher.result();
 
-    kDebug() << "Moniker generated: " + m_monikerSelf.toHex();
-    kDebug() << "Peer moniker generated:" + p_contact->m_username + ": " + m_moniker.toHex();
+    kDebug() << "Moniker: " + m_monikerSelf.toHex();
+    kDebug() << "Peer moniker: " + p_contact->m_username + ": " + m_moniker.toHex();
 }
 
 XfireP2PSession::~XfireP2PSession()
@@ -91,21 +91,30 @@ void XfireP2PSession::slotCheckSession()
     }
 
     // Check keep-alive timeout
-    //if(m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 10000)
-        //emit timeout();
+    /*if(m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 10000)
+        emit timeout();
 
     // Request keep-alive
-    //if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
-    //{
-        //m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
-      //  m_lastKeepAlive->restart();
-    //}
+    if(!m_keepAliveNeeded && m_lastKeepAlive->elapsed() >= 60000)
+    {
+        m_contact->m_account->m_p2pConnection->sendKeepAliveRequest(this);
+        m_lastKeepAlive->restart();
+    }*/
 }
 
 void XfireP2PSession::createFileTransfer(quint32 p_fileid, const QString &p_filename, quint64 p_size)
 {
     XfireP2PFileTransfer *ft = new XfireP2PFileTransfer(this, p_fileid, p_filename, p_size);
     m_fileTransfers.insert(p_fileid, ft);
+
+    connect(ft, SIGNAL(ready(XfireP2PFileTransfer*)), this, SLOT(slotFileTransferReady(XfireP2PFileTransfer*)));
+}
+
+void XfireP2PSession::slotFileTransferReady(XfireP2PFileTransfer* p_fileTransfer)
+{
+    kDebug() << "File transfer completed: fileid:" << p_fileTransfer->m_fileid;
+    m_fileTransfers.remove(p_fileTransfer->m_fileid);
+    delete p_fileTransfer;
 }
 
 void XfireP2PSession::sendMessage(quint32 p_chatMessageIndex, const QString &p_message)

@@ -487,7 +487,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
                         if(!m_account->isPeerToPeerEnabled())
                         {
                             sendP2pSession(from->m_sid, 0, 0, 0, 0, 0, salt->string());
-                            kDebug() << from->m_username + ": peer to peer request denied";
+                            kDebug() << from->m_username + ": peer to peer request denied (disabled)";
                             break;
                         }
 

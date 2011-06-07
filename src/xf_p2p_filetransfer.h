@@ -19,6 +19,12 @@
 #ifndef XF_P2P_FILETRANSFER_H
 #define XF_P2P_FILETRANSFER_H
 
+#define XFIRE_P2P_FT_PRIVATE_FILEID_START   0x80000000
+#define XF_P2P_FT_CHUNK_SIZE                0xC800 // 50 * 1024 bytes = 51200 bytes
+
+#define XFIRE_P2P_FT_DATA_PACKET_SIZE       0x0400 // 1024 Byte
+#define XFIRE_P2P_FT_MAX_REQUESTS   10
+
 #include <QByteArray>
 #include <QFile>
 
@@ -35,15 +41,17 @@ public:
 
     XfireP2PSession *m_session;
 
-    void createNewChunk(quint64 p_offset, quint32 p_size);
+    void handleChunkData(const QByteArray &p_data, quint64 p_offset, quint32 p_size);
+    void start(quint64 p_offset, quint32 p_size, const QString& p_checksum);
     
     // Xfire transfer data
     quint32 m_fileid;
     quint32 m_msgid;
         
     // Chunks information
-    XfireP2PFileChunk *m_currentChunk;
-    quint64 m_chunkCount;
+    XfireP2PFileChunk *m_chunk;
+    quint64 m_chunksCount;
+    quint64 m_chunksReceived;
     quint64 m_bytesTransferred;
         
     // File information
@@ -52,6 +60,9 @@ public:
 
 public slots:
     void slotChunkReady();
+
+signals:
+    void ready(XfireP2PFileTransfer *p_fileTransfer);
 };
 
 class XfireP2PFileChunk : public QObject
@@ -62,7 +73,8 @@ public:
     XfireP2PFileChunk(XfireP2PFileTransfer* p_fileTransfer, quint64 p_offset, quint32 p_size);
     ~XfireP2PFileChunk();
 
-    void writeData(const QByteArray &p_data, quint64 p_offset, quint32 p_size);
+    void handleData(const QByteArray &p_data, quint64 p_offset, quint32 p_size);
+    void start(quint64 p_offset, quint32 p_size, const QString &p_checksum);
     
     XfireP2PFileTransfer *m_fileTransfer;
     
@@ -72,8 +84,8 @@ public:
     quint32 m_packetsCount;
     quint32 m_packetsReceived;
 
-    QString *m_checksum;
-    QByteArray *m_data;
+    QByteArray m_data;
+    QString m_checksum;
     
 signals:
     void chunkReady();

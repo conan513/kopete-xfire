@@ -145,7 +145,7 @@ void XfireContact::sendMessage(Kopete::Message &p_message)
         requestP2P();
 
     if(isPeerToPeerActive())
-        m_p2pSession->sendMessage( m_chatMessageIndex, p_message.plainBody());
+        m_p2pSession->sendMessage(m_chatMessageIndex, p_message.plainBody());
     else
         m_account->server()->sendChat(m_sid, m_chatMessageIndex, p_message.plainBody());
 
@@ -158,7 +158,7 @@ void XfireContact::requestP2P()
     if(m_p2pSession)
         return;
 
-    kDebug() << m_username + ": requesting p2p information";
+    kDebug() << m_username + ":" << "requesting p2p information";
 
     // Generate random salt
     QCryptographicHash hasher(QCryptographicHash::Sha1);

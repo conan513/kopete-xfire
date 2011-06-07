@@ -28,12 +28,6 @@
 #define XFIRE_P2P_TYPE_KEEP_ALIVE_REQ       0x0800
 #define XFIRE_P2P_TYPE_KEEP_ALIVE_REP       0x1000
 
-#define XFIRE_P2P_FT_PRIVATE_FILEID_START   0x80000000
-#define XF_P2P_FT_CHUNK_SIZE                0xC800 // 50 * 1024 bytes = 51200 bytes
-
-#define XFIRE_P2P_FT_DATA_PACKET_SIZE       0x0400 // 1024 Byte
-#define XFIRE_P2P_FT_MAX_REQUESTS   10
-
 #include "XfireAttribute.h"
 #include "XfirePeerToPeerPacket.h"
 #include "XfireTypes.h"

@@ -146,7 +146,6 @@ void XfireP2P::slotSocketRead()
         quint32 crc32;
         memcpy(&crc32, datagram.constData() + 48 + size + 16, 4);
 
-        // FIXME: not tested yet
         if(crc32 != calculateCrc32(crc_data, (48 + size + 16) - 44))
         {
             kDebug() << "Received packet with invalid CRC-32";
@@ -159,7 +158,7 @@ void XfireP2P::slotSocketRead()
         {
             if(!strcmp(category, "IM"))
             {
-                kDebug() << "Received im packet";
+                kDebug() << "Received IM packet";
 
                 // Get data into Xfire packet
                 Xfire::Packet *packet = Xfire::Packet::parseData(datagram.mid(40 + 8, size)); // 8 unknown bytes
@@ -169,7 +168,7 @@ void XfireP2P::slotSocketRead()
         }
         else if(!strcmp(category, "DL"))
         {
-            kDebug() << "Received dl packet";
+            kDebug() << "Received DL packet";
 
             quint16 type;
             memcpy(&type, datagram.constData() + 40 + 8 + 4, 2);
@@ -177,7 +176,7 @@ void XfireP2P::slotSocketRead()
             Xfire::PeerToPeerPacket *packet = Xfire::PeerToPeerPacket::parseData(datagram.mid(40 + 8));
             if(!packet || !packet->isValid())
             {
-                kDebug() << "Invalid dl packet received, ignoring";
+                kDebug() << "Invalid DL packet received, ignoring";
                 break;
             }
 
@@ -196,7 +195,6 @@ void XfireP2P::slotSocketRead()
                     << "size:" << size->value() << "description:" << desc->string();
 
                 session->createFileTransfer(fileid->value(), filename->string(), size->value());
-                
                 break;
             }
             // File request reply
@@ -223,7 +221,13 @@ void XfireP2P::slotSocketRead()
                 kDebug() << "File chunk info received: fileid:" << fileid->value() << "offset:" << offset->value()
                     << "size:" << size->value() << "checksum" << checksum->string() << "msgid:" << msgid->value();
 
-                session->m_fileTransfers.value(fileid->value())->createNewChunk(offset->value(), size->value());
+                if(session->m_fileTransfers.contains(fileid->value()))
+                {
+                    XfireP2PFileTransfer *ft = session->m_fileTransfers.value(fileid->value());
+                    ft->start(offset->value(), size->value(), checksum->string());
+                }
+                else
+                    kDebug() << "File chunk info received for unknown file transfer";
 
                 break;
             }
@@ -233,7 +237,7 @@ void XfireP2P::slotSocketRead()
                 kDebug() << "File chunk request received";
                 break;
             }
-            // File data
+            // File chunk data
             case 0x3E8C:
             {
                 const Xfire::Int32AttributeS *fileid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("fileid"));
@@ -243,22 +247,15 @@ void XfireP2P::slotSocketRead()
                 const Xfire::Int32AttributeS *msgid = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("msgid"));
 
                 kDebug() << "File data received: fileid:" << fileid->value() << "offset:" << offset->value()
-                    << "size:" << size->value() << "msgid:" << msgid->value();
+                    << "size:" << size->value() << "msgid:" << msgid->value() << "data:";
 
-                // Get data
-                const QByteArray ba = data->elementsData();
-                kDebug() << "Data:" << ba.toHex();
-
-                XfireP2PFileTransfer *ft;
                 if(session->m_fileTransfers.contains(fileid->value()))
-                    ft = session->m_fileTransfers.value(fileid->value());
-                else
                 {
-                    kDebug() << "File data received for unknown chunk/file";
-                    break;
+                    XfireP2PFileTransfer *ft = session->m_fileTransfers.value(fileid->value());
+                    ft->handleChunkData(data->elementsData(), offset->value(), size->value());
                 }
-
-                ft->m_currentChunk->writeData(ba.constData(), offset->value(), size->value());
+                else
+                    kDebug() << "File data received for unknown file transfer";
                 
                 break;
             }
@@ -378,14 +375,12 @@ void XfireP2P::sendKeepAliveRequest(XfireP2PSession *p_session)
 
 void XfireP2P::sendAck(XfireP2PSession *p_session, quint32 p_sessionId, quint32 p_sequenceId)
 {
-    kDebug() << "Sending ack to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_ACK, p_sessionId, p_sequenceId, 0);
     sendPacket(p_session, foo);
 }
 
 void XfireP2P::sendData16(XfireP2PSession *p_session, quint32 p_sequenceId, quint8 p_encoding, QByteArray p_data, const char *p_category)
 {
-    kDebug() << "Sending data16 to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(p_encoding, p_session->m_monikerSelf, XFIRE_P2P_TYPE_DATA16, m_messageId, p_sequenceId, p_data.size());
 
     quint32 offset = foo.size();
@@ -418,9 +413,7 @@ void XfireP2P::sendData16(XfireP2PSession *p_session, quint32 p_sequenceId, quin
 
 void XfireP2P::sendData32(XfireP2PSession *p_session, quint32 p_sequenceId, quint8 p_encoding, QByteArray p_data, const char *p_category)
 {
-    kDebug() << "Sending data32 to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(p_encoding, p_session->m_monikerSelf, XFIRE_P2P_TYPE_DATA32, m_messageId, p_sequenceId, p_data.size());
-
     quint32 offset = foo.size();
 
     foo.append(QByteArray(4, 0)); // 4 unknown bytes
@@ -451,7 +444,6 @@ void XfireP2P::sendData32(XfireP2PSession *p_session, quint32 p_sequenceId, quin
 
 void XfireP2P::sendBadCrc32(XfireP2PSession *p_session, quint32 p_sequenceId)
 {
-    kDebug() << "Sending badcrc to:" << p_session->m_contact->m_username;
     QByteArray foo = createHeader(0, p_session->m_monikerSelf, XFIRE_P2P_TYPE_BADCRC, m_sessionId, m_messageId, p_sequenceId);
     sendPacket(p_session, foo);
 }

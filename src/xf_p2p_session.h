@@ -79,6 +79,7 @@ private:
 
 private slots:
     void slotCheckSession();
+    void slotFileTransferReady(XfireP2PFileTransfer* p_fileTransfer);
 
 signals:
     void timeout();
