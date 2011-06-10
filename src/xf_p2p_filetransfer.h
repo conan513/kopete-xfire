@@ -30,6 +30,7 @@
 
 class XfireP2PFileChunk;
 class XfireP2PSession;
+namespace Kopete { class Transfer; class FileTransferInfo; }
 
 class XfireP2PFileTransfer : public QObject
 {
@@ -60,6 +61,8 @@ public:
 
 public slots:
     void slotChunkReady();
+    void slotTransferAccepted(Kopete::Transfer *p_transfer, const QString &p_fileName);
+    void slotTransferRefused(const Kopete::FileTransferInfo &p_transfer);
 
 signals:
     void ready(XfireP2PFileTransfer *p_fileTransfer);

@@ -21,7 +21,8 @@
 #include "xf_p2p.h"
 #include "xf_p2p_natcheck.h"
 
-XfireP2PNatcheck::XfireP2PNatcheck(XfireP2P *p_p2p) : m_p2p(p_p2p)
+XfireP2PNatcheck::XfireP2PNatcheck(XfireP2P *p_p2p)
+    : m_p2p(p_p2p)
 {
     m_connection = new QUdpSocket(this);
     m_connection->bind();

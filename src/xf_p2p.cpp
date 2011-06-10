@@ -30,7 +30,11 @@
 #include "xf_contact.h"
 #include "xf_server.h"
 
-XfireP2P::XfireP2P(XfireAccount *p_account): m_account(p_account), m_messageId(0), m_sessionId(0), m_transferMessageId(0) // FIXME: Rectify this
+XfireP2P::XfireP2P(XfireAccount *p_account)
+    : m_account(p_account),
+    m_messageId(0),
+    m_sessionId(0),
+    m_transferMessageId(0) // FIXME: Rectify this
 {
     // Start NAT type check
     m_natCheck = new XfireP2PNatcheck(this);
@@ -177,6 +181,7 @@ void XfireP2P::slotSocketRead()
             if(!packet || !packet->isValid())
             {
                 kDebug() << "Invalid DL packet received, ignoring";
+                delete packet;
                 break;
             }
 
@@ -189,7 +194,7 @@ void XfireP2P::slotSocketRead()
                 const Xfire::StringAttributeS *filename = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("filename"));
                 const Xfire::StringAttributeS *desc = static_cast<const Xfire::StringAttributeS*>(packet->getAttribute("desc"));
                 const Xfire::Int64AttributeS *size = static_cast<const Xfire::Int64AttributeS*>(packet->getAttribute("size"));
-                const Xfire::Int32AttributeS *mtime = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("mtime"));
+                // const Xfire::Int32AttributeS *mtime = static_cast<const Xfire::Int32AttributeS*>(packet->getAttribute("mtime"));
 
                 kDebug() << "File transfer request received, file:" << filename->string() << "id:" << fileid->value()
                     << "size:" << size->value() << "description:" << desc->string();
@@ -277,6 +282,8 @@ void XfireP2P::slotSocketRead()
                 break;
             }
             }
+            
+            delete packet;
         }
 
         // Acknowledge packet

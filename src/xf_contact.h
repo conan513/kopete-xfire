@@ -53,7 +53,6 @@ public:
         XF_P2P_NO
     } CanHandleP2P;
 
-    // Constructor and destructor
     XfireContact(Kopete::Account *pAccount, const QString &uniqueName, const QString &displayName, Kopete::MetaContact *parent);
     ~XfireContact();
 

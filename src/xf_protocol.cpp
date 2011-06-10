@@ -30,13 +30,14 @@ XfireProtocol *XfireProtocol::m_protocol = 0;
 K_PLUGIN_FACTORY(XfireProtocolFactory, registerPlugin<XfireProtocol>(););
 K_EXPORT_PLUGIN(XfireProtocolFactory("kopete_xfire"));
 
-XfireProtocol::XfireProtocol(QObject *parent, const QVariantList &) : Kopete::Protocol(XfireProtocolFactory::componentData(), parent, true),
-        XfireOffline(Kopete::OnlineStatus::Offline, 0, this, 0, QStringList(), i18n("Offline"), i18n("Offline"), Kopete::OnlineStatusManager::Offline),
-        XfireConnecting(Kopete::OnlineStatus::Connecting, 1, this, 2, QStringList(QString::fromUtf8("xfire_connecting")), i18n("Connecting"), i18n("Connecting"), 0, Kopete::OnlineStatusManager::HideFromMenu),
-        XfireOnline(Kopete::OnlineStatus::Online, 2, this, 1, QStringList(), i18n("Online"), i18n("Online"), Kopete::OnlineStatusManager::Online, Kopete::OnlineStatusManager::HasStatusMessage),
-        XfireAway(Kopete::OnlineStatus::Away, 3, this, 1, QStringList(), i18n("Away"), i18n("Away"), Kopete::OnlineStatusManager::Away, Kopete::OnlineStatusManager::HasStatusMessage),
-        propGame("currentGame", i18n("Game"), QString(), Kopete::PropertyTmpl::PrivateProperty),
-        propServer("currentServer", i18n("Server"), QString(), Kopete::PropertyTmpl::PrivateProperty)
+XfireProtocol::XfireProtocol(QObject *parent, const QVariantList &)
+    : Kopete::Protocol(XfireProtocolFactory::componentData(), parent, true),
+    XfireOffline(Kopete::OnlineStatus::Offline, 0, this, 0, QStringList(), i18n("Offline"), i18n("Offline"), Kopete::OnlineStatusManager::Offline),
+    XfireConnecting(Kopete::OnlineStatus::Connecting, 1, this, 2, QStringList(QString::fromUtf8("xfire_connecting")), i18n("Connecting"), i18n("Connecting"), 0, Kopete::OnlineStatusManager::HideFromMenu),
+    XfireOnline(Kopete::OnlineStatus::Online, 2, this, 1, QStringList(), i18n("Online"), i18n("Online"), Kopete::OnlineStatusManager::Online, Kopete::OnlineStatusManager::HasStatusMessage),
+    XfireAway(Kopete::OnlineStatus::Away, 3, this, 1, QStringList(), i18n("Away"), i18n("Away"), Kopete::OnlineStatusManager::Away, Kopete::OnlineStatusManager::HasStatusMessage),
+    propGame("currentGame", i18n("Game"), QString(), Kopete::PropertyTmpl::PrivateProperty),
+    propServer("currentServer", i18n("Server"), QString(), Kopete::PropertyTmpl::PrivateProperty)
 {
     // Load protocol only once
     if(m_protocol)

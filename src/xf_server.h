@@ -63,7 +63,9 @@ public:
     void sendTypingStatus(const Xfire::SessionID &p_sid, quint32 p_chatMessageIndex, bool p_isTyping);
     void sendFriendRemoval(quint32 p_uid);
 
-    QTcpSocket *m_connection;
+    quint32 localAddress() { return m_connection->localAddress().toIPv4Address(); }
+    quint16 localPort() { return m_connection->localPort(); }
+    
     QString m_salt;
 
 private:
@@ -74,6 +76,7 @@ private:
     QString m_password;
 
     // Connection
+    QTcpSocket *m_connection;
     QByteArray m_buffer;
     QTimer *m_heartBeat;
     QTimer *m_connectionTimeout;

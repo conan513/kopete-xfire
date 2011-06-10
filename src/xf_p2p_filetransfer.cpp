@@ -16,43 +16,37 @@
  *
  */
 
+#include <KDebug>
+#include <QCryptographicHash>
+
+#include "kopetecontact.h"
+#include "kopetetransfermanager.h"
+
+#include "xf_contact.h"
 #include "xf_p2p.h"
 #include "xf_p2p_filetransfer.h"
 #include "xf_p2p_session.h"
 
-#include <KDebug>
-#include <QCryptographicHash>
-
-XfireP2PFileTransfer::XfireP2PFileTransfer(XfireP2PSession *parent, quint32 p_fileid, const QString p_filename, quint64 p_size) :
-    m_session(parent), m_fileid(p_fileid), m_size(p_size), m_bytesTransferred(0), m_chunk(0), m_chunksReceived(0), m_chunksCount(0)
+XfireP2PFileTransfer::XfireP2PFileTransfer(XfireP2PSession *parent, quint32 p_fileid, const QString p_filename, quint64 p_size)
+    : m_session(parent),
+    m_file(new QFile(p_filename)),
+    m_fileid(p_fileid),
+    m_chunk(0),
+    m_chunksCount(0),
+    m_chunksReceived(0),
+    m_bytesTransferred(0),
+    m_size(p_size)
 {
-    // Calculate needed chunks to obtain the file
-    m_chunksCount = p_size / XF_P2P_FT_CHUNK_SIZE;
-    if((p_size % XF_P2P_FT_CHUNK_SIZE) != 0)
-        m_chunksCount++;
-
-    // Allocate file
-    m_file = new QFile(p_filename);
-    if(m_file->open(QIODevice::ReadWrite))
-    {
-        kDebug() << "File allocated:" << "filename:" << p_filename << "size:" << p_size;
-        m_file->resize(p_size);
-    }
-
-    // Allocate chunk
-    m_chunk = new XfireP2PFileChunk(this, 0, 0);
-    connect(m_chunk, SIGNAL(chunkReady()), this, SLOT(slotChunkReady()));
-    
-    // Reply to file transfer request
-    m_session->sendFileRequestReply(m_fileid, TRUE);
-    
-    // Request first chunk FIXME: Calculate size here too for -50KB files
-    m_session->sendFileChunkInfoRequest(m_fileid, 0, XF_P2P_FT_CHUNK_SIZE, m_chunksReceived + 1, m_session->m_p2p->m_messageId++);
+    // Ask for incoming transfer to the user
+    Kopete::TransferManager::transferManager()->askIncomingTransfer(dynamic_cast<Kopete::Contact*>(m_session->m_contact), p_filename, p_size);
+    connect(Kopete::TransferManager::transferManager(), SIGNAL(accepted(Kopete::Transfer *, const QString &)), this, SLOT(slotTransferAccepted(Kopete::Transfer *, const QString &)));
+    connect(Kopete::TransferManager::transferManager(), SIGNAL(refused(const Kopete::FileTransferInfo &)), this, SLOT(slotTransferRefused(const Kopete::FileTransferInfo &)));
 }
 
 XfireP2PFileTransfer::~XfireP2PFileTransfer()
 {
     delete m_file;
+    delete m_chunk;
 }
 
 void XfireP2PFileTransfer::start(quint64 p_offset, quint32 p_size, const QString& p_checksum)
@@ -87,6 +81,37 @@ void XfireP2PFileTransfer::slotChunkReady()
     m_session->sendFileChunkInfoRequest(m_fileid, m_chunk->m_offset + XF_P2P_FT_CHUNK_SIZE, size, m_chunksReceived + 1, m_session->m_p2p->m_messageId++);
 }
 
+void XfireP2PFileTransfer::slotTransferAccepted(Kopete::Transfer *p_transfer, const QString &p_fileName)
+{
+    // Calculate needed chunks to obtain the file
+    m_chunksCount = m_size / XF_P2P_FT_CHUNK_SIZE;
+    if((m_size % XF_P2P_FT_CHUNK_SIZE) != 0)
+        m_chunksCount++;
+
+    kDebug() << "Chunk parts needed: " << m_chunksCount;
+
+    // Allocate file
+    if(m_file->open(QIODevice::ReadWrite))
+    {
+        kDebug() << "File allocated:" << "filename:" << p_fileName << "size:" << m_size;
+        m_file->resize(m_size);
+    }
+
+    // Allocate chunk
+    m_chunk = new XfireP2PFileChunk(this, 0, 0);
+    connect(m_chunk, SIGNAL(chunkReady()), this, SLOT(slotChunkReady()));
+
+    // Reply to file transfer request and request first chunk
+    m_session->sendFileRequestReply(m_fileid, TRUE);
+    m_session->sendFileChunkInfoRequest(m_fileid, 0, (m_chunksCount == 1) ? m_size : XF_P2P_FT_CHUNK_SIZE, m_chunksReceived + 1, m_session->m_p2p->m_messageId++);
+}
+
+void XfireP2PFileTransfer::slotTransferRefused(const Kopete::FileTransferInfo &p_transfer)
+{
+    m_session->sendFileRequestReply(m_fileid, FALSE);
+    emit ready(this);
+}
+
 XfireP2PFileChunk::XfireP2PFileChunk(XfireP2PFileTransfer* p_fileTransfer, quint64 p_offset, quint32 p_size) :
     m_fileTransfer(p_fileTransfer), m_offset(p_offset), m_size(p_size), m_packetsReceived(0)
 {
@@ -100,7 +125,6 @@ XfireP2PFileChunk::~XfireP2PFileChunk()
 
 void XfireP2PFileChunk::handleData(const QByteArray &p_data, quint64 p_offset, quint32 p_size)
 {
-    kDebug() << "Writing chunk part" << p_data.toHex();
     kDebug() << "Writing chunk part:" << p_offset << p_size << p_data.toHex();
 
     // Write data to chunk
@@ -114,10 +138,11 @@ void XfireP2PFileChunk::handleData(const QByteArray &p_data, quint64 p_offset, q
         QCryptographicHash hasher(QCryptographicHash::Sha1);
         hasher.addData(m_data);
       
-        // FIXME: request chunk again if checksum didn't match
-        kDebug() << "SHA1:" << hasher.result().toHex();
         if(QString(hasher.result().toHex()).compare(m_checksum) != 0)
-            kDebug() << "CHECKSUM NOT OK!";
+        {
+            kDebug() << "Chunk with invalid checksum received, requesting again";
+            // FIXME: Not implemented yet
+        }
     
         emit chunkReady();
     }
@@ -151,6 +176,6 @@ void XfireP2PFileChunk::start(quint64 p_offset, quint32 p_size, const QString &p
         quint32 size = (i == m_packetsCount - 1) ? (((m_size % XFIRE_P2P_FT_DATA_PACKET_SIZE) == 0) ? XFIRE_P2P_FT_DATA_PACKET_SIZE :m_size % XFIRE_P2P_FT_DATA_PACKET_SIZE) : XFIRE_P2P_FT_DATA_PACKET_SIZE;
         quint64 offset = p_offset + i * XFIRE_P2P_FT_DATA_PACKET_SIZE;
 
-        m_fileTransfer->m_session->sendFileDataPacketRequest(m_fileTransfer->m_fileid, offset, size, m_fileTransfer->m_msgid++);
+        m_fileTransfer->m_session->sendFileDataPacketRequest(m_fileTransfer->m_fileid, offset, size, m_fileTransfer->m_msgid++); // FIXME: Request per 10 chunk parts
     }
 }

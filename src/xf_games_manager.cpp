@@ -30,7 +30,9 @@
 #include "xf_games_list.h"
 #include "xf_games_manager.h"
 
-XfireGamesManager::XfireGamesManager(XfireAccount *p_account) : QDialog(), m_account(p_account)
+XfireGamesManager::XfireGamesManager(XfireAccount *p_account)
+    : QDialog(),
+    m_account(p_account)
 {
     m_dialog = new Ui::Dialog();
     m_dialog->setupUi(this);
@@ -52,6 +54,7 @@ XfireGamesManager::XfireGamesManager(XfireAccount *p_account) : QDialog(), m_acc
 
 XfireGamesManager::~XfireGamesManager()
 {
+    delete m_dialog;
 }
 
 void XfireGamesManager::slotDetectionPathChanged(const KUrl &p_url)

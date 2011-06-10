@@ -17,6 +17,7 @@
  */
 
 #include <QBuffer>
+#include <QCryptographicHash>
 #include <QFile>
 #include <QtNetwork>
 #include <QtGui/QImage>
@@ -43,13 +44,18 @@
 #include "xf_p2p_session.h"
 #include "xf_server.h"
 
-#include <QCryptographicHash>
-
-XfireContact::XfireContact(Kopete::Account *p_account, const QString &p_uniqueName, const QString &p_displayName, Kopete::MetaContact *p_parent) :
-    Kopete::Contact(p_account, p_uniqueName, p_parent), m_username(p_uniqueName), m_chatSession(0L), m_chatMessageIndex(0),
-    m_contactType(XF_FRIEND), m_p2pCapable(XF_P2P_UNKNOWN), m_p2pSession(NULL), m_p2pRequested(false)
+XfireContact::XfireContact(Kopete::Account *p_account, const QString &p_uniqueName, const QString &p_displayName, Kopete::MetaContact *p_parent)
+    : Kopete::Contact(p_account, p_uniqueName, p_parent),
+    m_account(static_cast<XfireAccount*>(p_account)),
+    m_username(p_uniqueName),
+    m_p2pCapable(XF_P2P_UNKNOWN),
+    m_p2pRequested(FALSE),
+    m_p2pSession(0),
+    m_chatMessageIndex(0),
+    m_contactType(XF_FRIEND),
+    m_chatSession(0L)
 {
-    m_account = static_cast<XfireAccount *>(p_account);
+    Q_UNUSED(p_displayName);
 
     setOnlineStatus(XfireProtocol::protocol()->XfireOffline); // Set initial contact status to offline
 
@@ -68,13 +74,13 @@ XfireContact::XfireContact(Kopete::Account *p_account, const QString &p_uniqueNa
     removeProperties(); // Remove old properties
 }
 
-void XfireContact::slotGotAvatar(QNetworkReply *pReply)
+void XfireContact::slotGotAvatar(QNetworkReply *p_reply)
 {
-    if(pReply->error() == QNetworkReply::ContentNotFoundError)
+    if(p_reply->error() == QNetworkReply::ContentNotFoundError)
         return;
 
     QString imageLocation(KStandardDirs::locateLocal("appdata", "xfire/avatars/" + m_username + ".jpg"));
-    QByteArray rawImage = pReply->readAll();
+    QByteArray rawImage = p_reply->readAll();
 
     if(rawImage.isEmpty())
         return;
@@ -84,7 +90,7 @@ void XfireContact::slotGotAvatar(QNetworkReply *pReply)
     image.save(imageLocation, "JPG", -1);
 
     Kopete::Contact::setPhoto(imageLocation);
-    pReply->deleteLater();
+    p_reply->deleteLater();
 }
 
 XfireContact::~XfireContact()
@@ -158,7 +164,7 @@ void XfireContact::requestP2P()
     if(m_p2pSession)
         return;
 
-    kDebug() << m_username + ":" << "requesting p2p information";
+    kDebug() << m_username + ":" << "requesting P2P information";
 
     // Generate random salt
     QCryptographicHash hasher(QCryptographicHash::Sha1);
@@ -169,8 +175,8 @@ void XfireContact::requestP2P()
 
     createP2pSession(randomHash);
     m_account->server()->sendP2pSession(m_sid, m_account->m_p2pConnection->m_natCheck->m_ips[0], m_account->m_p2pConnection->m_connection->localPort(),
-                                            m_account->server()->m_connection->localAddress().toIPv4Address(), m_account->m_p2pConnection->m_connection->localPort(),
-                                            m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
+                                        m_account->server()->localAddress(), m_account->server()->localPort(),
+                                        m_account->m_p2pConnection->m_natCheck->m_type, randomHash);
 }
 
 void XfireContact::receivedMessage(const QString &p_message)

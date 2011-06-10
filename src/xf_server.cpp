@@ -31,15 +31,12 @@
 #include "xf_protocol.h"
 #include "xf_server.h"
 
-XfireServer::XfireServer(XfireAccount *parent) : QObject(parent), m_account(parent)
+XfireServer::XfireServer(XfireAccount *parent) : QObject(parent),
+    m_account(parent),
+    m_connection(new QTcpSocket(this)),
+    m_heartBeat(new QTimer(this)),
+    m_connectionTimeout(new QTimer(this))
 {
-    // Create socket to the Xfire server
-    m_connection = new QTcpSocket(this);
-
-    // Heartbeat & heartbeat timeout
-    m_heartBeat = new QTimer(this);
-    m_connectionTimeout = new QTimer(this);
-
     kDebug() << "Waiting for a connection to the Xfire server";
 
     // Signals
@@ -702,6 +699,9 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
 
         kDebug() << "Clan list received";
 
+        if(!m_account->isClanFriendsEnabled())
+            return;
+
         // Create groups (clans) if needed
         for(int i = 0; i < clanID->elements().size(); i++)
         {
@@ -720,7 +720,7 @@ void XfireServer::handlePacket(const Xfire::Packet *p_packet, XfireP2PSession *p
         const Xfire::ListAttributeB *username = static_cast<const Xfire::ListAttributeB*>(p_packet->getAttribute(0x0002));
         const Xfire::ListAttributeB *nickname = static_cast<const Xfire::ListAttributeB*>(p_packet->getAttribute(0x000d));
         const Xfire::ListAttributeB *clanNickname = static_cast<const Xfire::ListAttributeB *>(p_packet->getAttribute(0x006d));
-        // FIXME: Unknown attribute 0x0074
+        // INFO: Unknown attribute 0x0074
 
         if(!clanID || clanID->type() != Xfire::Attribute::Int32 ||
             !userID || userID->type() != Xfire::Attribute::List ||

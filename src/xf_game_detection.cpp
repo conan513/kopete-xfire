@@ -29,9 +29,11 @@
 #include "xf_game_detection.h"
 #include "xf_games_list.h"
 
-XfireGameDetection::XfireGameDetection(XfireAccount *p_account) : QThread(p_account), m_account(p_account)
-{    
-    m_timer = new QTimer(this); // Initialize game detection timer
+XfireGameDetection::XfireGameDetection(XfireAccount *p_account)
+    : QThread(p_account),
+    m_account(p_account),
+    m_timer(new QTimer(this))
+{
 }
 
 void XfireGameDetection::run()

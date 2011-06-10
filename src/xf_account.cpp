@@ -42,34 +42,30 @@
 #include "xf_protocol.h"
 #include "xf_server.h"
 
-XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId) :
-    Kopete::PasswordedAccount(parent, accountId), m_gamesDetection(0), m_gamesManager(0), m_p2pConnection(0)
+XfireAccount::XfireAccount(XfireProtocol *parent, const QString &accountId)
+    : Kopete::PasswordedAccount(parent, accountId),
+    m_gamesList(new XfireGamesList()),
+    m_gamesDetection(0),
+    m_p2pConnection(0),
+    m_server(new XfireServer(this)),
+    m_gamesManager(new XfireGamesManager(this))
 {
-    kDebug() << "Instantiating account:" << accountId;
-
     // Create the myself contact and set the initial status to offline
     setMyself(new XfireContact(this, accountId, accountId, Kopete::ContactList::self()->myself()));
     myself()->setOnlineStatus(parent->XfireOffline);
 
-    m_server = new XfireServer(this);
-    m_gamesList = new XfireGamesList();
-    m_gamesManager = new XfireGamesManager(this);
     m_openGamesManager = new KAction(KIcon("input-gaming"), i18n("Configure games"), this);
+    QObject::connect(m_openGamesManager, SIGNAL(triggered()), this, SLOT(slotOpenGamesManager()));
 
     QObject::connect(m_gamesList, SIGNAL(gamesListReady()), this, SLOT(slotContinueConnecting()));
     QObject::connect(m_gamesList, SIGNAL(gamesListReady()), m_gamesManager, SLOT(slotUpdate()));
-    QObject::connect(m_openGamesManager, SIGNAL(triggered()), this, SLOT(slotOpenGamesManager()));
 }
 
 XfireAccount::~XfireAccount()
 {
     delete m_gamesManager;
-
-    if(m_gamesDetection)
-        delete m_gamesDetection;
-
-    if(m_p2pConnection)
-        delete m_p2pConnection;
+    delete m_gamesDetection;
+    delete m_p2pConnection;
 }
 
 void XfireAccount::fillActionMenu(KActionMenu *p_actionMenu)
@@ -170,7 +166,7 @@ void XfireAccount::setStatusMessage(const Kopete::StatusMessage &p_statusMessage
 {
     if(isConnected() && myself()->statusMessage().message() != p_statusMessage.message())
     {
-        kDebug() << "Setting status message:" + p_statusMessage.message();
+        kDebug() << "Setting status message:" << p_statusMessage.message();
         m_server->sendStatusMessage(p_statusMessage.message());
     }
 }
@@ -218,25 +214,26 @@ void XfireAccount::newContact(const QString &p_contactId, const QString &p_name,
 
 void XfireAccount::updateContactID(const QString &p_contactId, Xfire::Int32Attribute *p_id)
 {
-    XfireContact *c = static_cast<XfireContact*>(contacts().value(p_contactId));
-    if(c)
-        c->setId(p_id);
+    XfireContact*contact = static_cast<XfireContact* >(contacts().value(p_contactId));
+    if(contact)
+        contact->setId(p_id);
 }
 
 void XfireAccount::updateContactSID(Xfire::Int32Attribute *p_id, Xfire::SIDAttribute *p_sid)
 {
-    XfireContact *c =(XfireContact*)findContact(p_id->value());
-    if(c)
+    XfireContact* contact = (XfireContact* )findContact(p_id->value());
+    if(contact)
     {
-        if(c->m_id == p_id->value())
+        if(contact->m_id == p_id->value())
         {
-            c->m_sid = p_sid->sid(); // Update the SID of the contact
+            // Update the SID of the contact
+            contact->m_sid = p_sid->sid();
 
             // Set the online status of the contact
             if(p_sid->sid().isValid())
-                c->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
+                contact->setOnlineStatus(XfireProtocol::protocol()->XfireOnline);
             else
-                c->setOnlineStatus(XfireProtocol::protocol()->XfireOffline);
+                contact->setOnlineStatus(XfireProtocol::protocol()->XfireOffline);
         }
     }
 }
@@ -254,7 +251,7 @@ void XfireAccount::updateContactGameInformation(const Xfire::SessionID &p_sid, q
         QString message;
         QString gameName = m_gamesList->getGameNameFromID(p_gameId);
 
-        if(p_gameId == 0)
+        if(!p_gameId)
             message = "";
         else if(gameName == 0L)
             message = "Playing " + QString::number(p_gameId);

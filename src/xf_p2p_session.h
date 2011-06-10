@@ -38,8 +38,9 @@ public:
     XfireP2PSession(XfireContact* p_contact, const QString& p_salt);
     ~XfireP2PSession();
 
-    XfireP2P *m_p2p;
     XfireContact *m_contact;
+
+    XfireP2P *m_p2p;
     QByteArray m_moniker;
     QByteArray m_monikerSelf;
 
@@ -69,6 +70,7 @@ public:
     void sendFileRequestReply(quint32 p_fileid, bool p_reply);
     void sendFileChunkInfoRequest(quint32 p_fileid, quint64 p_offset, quint32 p_chunkSize, quint32 p_chunkCount, quint32 p_messageId);
     void sendFileDataPacketRequest(quint32 p_fileid, quint64 p_offset, quint32 p_size, quint32 p_messageId);
+    void sendFileComplete(quint32 p_fileid);
 
 private:
     QTimer *m_timer;

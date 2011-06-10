@@ -25,10 +25,20 @@
 #include "xf_p2p_session.h"
 #include "xf_server.h"
 
-XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt) : QObject(p_contact),
-    m_contact(p_contact), m_p2p(p_contact->m_account->m_p2pConnection), m_pingRetries(0), m_natType(0), m_sequenceId(0), m_handshakeDone(FALSE), m_triedLocalAddress(FALSE)
+XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt)
+    : QObject(p_contact),
+    m_contact(p_contact),
+    m_p2p(p_contact->m_account->m_p2pConnection),
+    m_natType(0),
+    m_handshakeDone(FALSE),
+    m_triedLocalAddress(FALSE), 
+    m_sequenceId(0),
+    m_timer(new QTimer(this)),
+    m_lastKeepAlive(new QTime()),
+    m_lastPing(new QTime()),
+    m_pingRetries(0)
 {
-    kDebug() << m_contact->m_username + ": creating P2P session";
+    kDebug() << "Creating P2P session:" << m_contact->m_username;
 
     // Generate monikers (self and peer)
     QCryptographicHash hasher(QCryptographicHash::Sha1);
@@ -42,16 +52,18 @@ XfireP2PSession::XfireP2PSession(XfireContact *p_contact, const QString &p_salt)
     hasher.addData(p_salt.toAscii());
     m_monikerSelf = hasher.result();
 
-    kDebug() << "Moniker: " + m_monikerSelf.toHex();
-    kDebug() << "Peer moniker: " + p_contact->m_username + ": " + m_moniker.toHex();
+    kDebug() << "Monikers generated:" << "self moniker:" << m_monikerSelf.toHex() <<
+                                         "peer moniker" << p_contact->m_username + ":" << m_moniker.toHex(); 
 }
 
 XfireP2PSession::~XfireP2PSession()
 {
-    kDebug() << m_contact->m_username + ": removing P2P session";
+    kDebug() << "Removing P2P session;" << m_contact->m_username;
 
     delete m_lastPing;
     delete m_lastKeepAlive;
+    qDeleteAll(m_fileTransfers);
+
     m_timer->stop();
 }
 
@@ -66,10 +78,8 @@ void XfireP2PSession::setRemoteAddress(quint32 p_ip, quint16 p_port)
     m_remoteIp = p_ip;
     m_remotePort = p_port;
 
-    m_lastPing = new QTime();
-    m_lastKeepAlive = new QTime();
-
-    m_timer = new QTimer(this);
+    m_lastPing->restart();
+    m_lastKeepAlive->restart();
     m_timer->start(1000);
 
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(slotCheckSession()));
@@ -113,6 +123,8 @@ void XfireP2PSession::createFileTransfer(quint32 p_fileid, const QString &p_file
 void XfireP2PSession::slotFileTransferReady(XfireP2PFileTransfer* p_fileTransfer)
 {
     kDebug() << "File transfer completed: fileid:" << p_fileTransfer->m_fileid;
+    sendFileComplete(p_fileTransfer->m_fileid);
+
     m_fileTransfers.remove(p_fileTransfer->m_fileid);
     delete p_fileTransfer;
 }
@@ -188,4 +200,12 @@ void XfireP2PSession::sendFileDataPacketRequest(quint32 p_fileid, quint64 p_offs
     foo.addAttribute(new Xfire::Int32AttributeS("msgid", p_messageId));
     
     m_contact->m_account->m_p2pConnection->sendData32(this, m_sequenceId, 0, foo.toByteArray(), "DL");
+}
+
+void XfireP2PSession::sendFileComplete(quint32 p_fileid)
+{
+    Xfire::PeerToPeerPacket foo(0x3E8B);
+    foo.addAttribute(new Xfire::Int32AttributeS("fileid", p_fileid));
+
+    m_p2p->sendData32(this, m_sequenceId, 0, foo.toByteArray(), "DL");
 }

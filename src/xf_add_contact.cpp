@@ -33,8 +33,9 @@
 #include "xf_server.h"
 #include "ui_add_contact.h"
 
-XfireAddContactPage::XfireAddContactPage(Kopete::Account *account, QWidget *parent): AddContactPage(parent),
-mAccount(account)
+XfireAddContactPage::XfireAddContactPage(Kopete::Account *account, QWidget *parent)
+    : AddContactPage(parent),
+    mAccount(account)
 {
     mWidget = new Ui::XfireAddContact();
     mWidget->setupUi(this);
