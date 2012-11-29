@@ -16,6 +16,7 @@
 *
 */
 
+#include <unistd.h>
 #include <QDir>
 #include <QtXml/QDomDocument>
 #include <QFile>
